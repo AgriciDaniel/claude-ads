@@ -72,7 +72,7 @@ Account — TikTok
 | Meta ASC | 150+ in campaign | 2-4 weeks |
 | Meta Standard | 5+ per ad set | 2-4 weeks |
 | TikTok | 6+ per ad group | 5-7 days |
-| Google PMax | Text + 15 images + 5 videos per asset group | 4-8 weeks |
+| Google PMax | Text + 20 images + 5 videos per asset group | 4-8 weeks |
 
 ### Seasonal Creative Calendar
 - **Q1**: New year deals, resolution products

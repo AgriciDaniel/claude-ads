@@ -45,7 +45,7 @@
 | M31 | UGC / social-native content | High | ≥30% of creative assets are UGC or social-native | 10-30% UGC content | <10% UGC (all polished/corporate) |
 | M32 | Advantage+ Creative | Medium | Advantage+ enhancements enabled (test vs control) | — | Not tested |
 | M-CR1 | Creative freshness | High | New creative tested within last 30 days | New creative 30-60 days ago | No new creative in >60 days |
-| M-CR2 | Frequency — Prospecting | High | Ad set frequency <3.0 in last 7 days | Frequency 3.0-5.0 | Frequency >5.0 (audience exhausted) |
+| M-CR2 | Frequency — Prospecting (ad set) | High | Ad set frequency <3.0 in last 7 days | Frequency 3.0-5.0 | Frequency >5.0 (audience exhausted) |
 | M-CR3 | Frequency — Retargeting | Medium | Ad set frequency <8.0 in last 7 days | Frequency 8.0-12.0 | Frequency >12.0 |
 | M-CR4 | CTR benchmark | High | CTR ≥1.0% | CTR 0.5-1.0% | CTR <0.5% |
 
@@ -67,7 +67,7 @@
 | M34 | Placement performance review | Medium | Breakdown reviewed monthly; underperformers excluded | Reviewed quarterly | Never reviewed |
 | M35 | Attribution setting | High | 7-day click / 1-day view attribution | 1-day click only | Attribution not configured |
 | M36 | Bid strategy appropriateness | High | Cost Cap for margin protection; Lowest Cost for volume | — | Bid Cap set below historical CPA |
-| M37 | Frequency cap monitoring | High | Prospecting frequency <4.0 (7-day) | Frequency 4.0-6.0 | Frequency >6.0 |
+| M37 | Frequency cap monitoring (campaign) | High | Campaign-level prospecting frequency <4.0 (7-day) | Frequency 4.0-6.0 | Frequency >6.0 |
 | M38 | Breakdown reporting | Medium | Age, gender, placement, platform reviewed monthly | Reviewed quarterly | Never reviewed |
 | M39 | UTM parameters | Medium | UTM parameters on all ad URLs for GA4 attribution | UTMs on some ads | No UTM parameters |
 | M40 | A/B testing active | Medium | At least 1 active A/B test (Experiments) | Test planned | No testing infrastructure |

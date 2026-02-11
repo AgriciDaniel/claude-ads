@@ -20,7 +20,7 @@ description: >
 5. Read `ads/references/scoring-system.md` for weighted scoring algorithm
 6. Evaluate all applicable checks as PASS, WARNING, or FAIL
 7. Calculate TikTok Ads Health Score (0-100)
-7. Generate findings report with action plan
+8. Generate findings report with action plan
 
 ## What to Analyze
 

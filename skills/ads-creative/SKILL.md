@@ -19,7 +19,7 @@ description: >
 4. Read `ads/references/scoring-system.md` for weighted scoring algorithm
 5. Evaluate creative quality per platform
 6. Assess cross-platform creative consistency
-6. Generate production priority recommendations
+7. Generate production priority recommendations
 
 ## Per-Platform Assessment
 

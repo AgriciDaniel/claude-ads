@@ -11,6 +11,7 @@ description: >
   advertising", "Google Ads", "Meta Ads", "Facebook Ads", "LinkedIn Ads",
   "TikTok Ads", "Microsoft Ads", "Bing Ads", "ad audit", "campaign audit",
   "ROAS", "conversion tracking", "creative fatigue", "bid strategy".
+argument-hint: "audit | google | meta | youtube | linkedin | tiktok | microsoft | creative | landing | budget | plan <type> | competitor"
 allowed-tools:
   - Read
   - Grep

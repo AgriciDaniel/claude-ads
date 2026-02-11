@@ -18,7 +18,7 @@
 | Meta (FB/IG) | Primary | 35-40% | Precise interest targeting, video-heavy, retargeting |
 | YouTube | Primary | 35-40% | Long-form content, VSL pre-rolls, intent-based audiences |
 | Email | Supporting | 15-20% | Nurture sequences, launch campaigns, repeat buyers |
-| TikTok | Testing | 5-10% | Education content, organic-to-paid amplification |
+| TikTok | Testing | 5-10% | Education content, organic-to-paid amplification (min $50/day campaign) |
 | Google Search | Testing | 5% | High-intent "best [topic] course" queries |
 
 ## Campaign Architecture

@@ -5,6 +5,18 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-02-11
+
+### Fixed
+- M-CR2 vs M37 frequency threshold ambiguity: clarified M-CR2 is ad set level (<3.0) and M37 is campaign level (<4.0)
+- Ecommerce template PMax image count aligned to G31 audit check (15 → 20 images per asset group)
+- Real estate template budget percentages widened to bracket 100% (was 90-105%, now 80-110%)
+- Info products template TikTok allocation note: added minimum $50/day campaign budget caveat
+- Duplicate step numbering in ads-tiktok (two step 7s) and ads-creative (two step 6s)
+
+### Added
+- `argument-hint` field on orchestrator skill for CLI subcommand hints
+
 ## [1.1.0] - 2026-02-11
 
 ### Fixed

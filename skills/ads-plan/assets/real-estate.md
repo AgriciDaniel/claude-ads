@@ -31,10 +31,10 @@
 
 | Platform | Role | Budget % | Why |
 |----------|------|----------|-----|
-| Meta Lead Forms | Primary | 45-50% | Visual property ads, listing promotion, seller leads, lead gen forms |
-| Google Search | Primary | 35-40% | High-intent "homes for sale in [area]" queries |
+| Meta Lead Forms | Primary | 40-50% | Visual property ads, listing promotion, seller leads, lead gen forms |
+| Google Search | Primary | 30-40% | High-intent "homes for sale in [area]" queries |
 | LinkedIn | Testing | 5-10% | Luxury real estate, investor targeting, relocation |
-| YouTube | Testing | 5% | Property tours, neighborhood guides, agent brand |
+| YouTube | Testing | 5-10% | Property tours, neighborhood guides, agent brand |
 
 ## Campaign Architecture
 
