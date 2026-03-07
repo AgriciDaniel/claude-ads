@@ -1,16 +1,16 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Claude Ads Uninstaller for Windows
+    Claude AI Ads Uninstaller for Windows
 .DESCRIPTION
-    Removes the Claude Ads skill, sub-skills, agents, and reference files
+    Removes the Claude AI Ads skill, sub-skills, agents, and reference files
     from Claude Code on Windows systems.
 #>
 
 $ErrorActionPreference = "Stop"
 
 function Main {
-    Write-Host "→ Uninstalling Claude Ads..."
+    Write-Host "→ Uninstalling Claude AI Ads..."
 
     $ClaudeDir = Join-Path $env:USERPROFILE ".claude"
 
@@ -45,7 +45,7 @@ function Main {
         }
     }
 
-    Write-Host "✓ Claude Ads uninstalled." -ForegroundColor Green
+    Write-Host "✓ Claude AI Ads uninstalled." -ForegroundColor Green
 }
 
 Main
