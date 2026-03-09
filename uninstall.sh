@@ -2,7 +2,7 @@
 set -euo pipefail
 
 main() {
-    echo "→ Uninstalling Claude Ads..."
+    echo "→ Uninstalling Claude AI Ads..."
 
     # Remove main skill (orchestrator + references)
     rm -rf "${HOME}/.claude/skills/ads"
@@ -17,7 +17,7 @@ main() {
         rm -f "${HOME}/.claude/agents/${agent}.md"
     done
 
-    echo "✓ Claude Ads uninstalled."
+    echo "✓ Claude AI Ads uninstalled."
 }
 
 main "$@"
