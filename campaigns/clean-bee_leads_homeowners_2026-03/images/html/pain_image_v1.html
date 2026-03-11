@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1080px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #fff;
+}
+
+/* ═══════════════════════════ TOP AMBER BAND ═══════════════════════════ */
+.top-band {
+  background: #F5A623;
+  padding: 28px 52px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo-icon {
+  width: 52px; height: 52px;
+  background: rgba(0,0,0,0.14); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+.logo-name { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: -0.3px; }
+.logo-sub { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.72); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+.top-phone {
+  background: rgba(0,0,0,0.16); border-radius: 40px;
+  padding: 11px 24px; font-size: 18px; font-weight: 800; color: #fff;
+}
+
+/* ═══════════════════════════ HEADLINE SECTION ═══════════════════════════ */
+.headline-section {
+  background: #1a1a1a;
+  padding: 36px 52px 32px;
+}
+.hl-eyebrow {
+  font-size: 12px; font-weight: 700; color: #F5A623;
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 14px;
+}
+.hl-main {
+  font-size: 70px; font-weight: 900; color: #fff;
+  line-height: 1.0; letter-spacing: -2px;
+}
+.hl-main em { font-style: normal; color: #F5A623; }
+.hl-sub {
+  font-size: 22px; color: rgba(255,255,255,0.6);
+  margin-top: 14px; font-weight: 400; line-height: 1.45;
+  max-width: 700px;
+}
+
+/* ═══════════════════════════ CONSEQUENCE BOX ═══════════════════════════ */
+.consequence-row {
+  display: flex;
+  background: #FFF8EC;
+  border-top: 3px solid #F5A623;
+  padding: 28px 52px;
+  gap: 32px;
+}
+.consequence-item {
+  flex: 1;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.con-icon {
+  font-size: 32px; flex-shrink: 0; margin-top: 2px;
+}
+.con-text {}
+.con-title { font-size: 17px; font-weight: 800; color: #111; margin-bottom: 4px; }
+.con-desc { font-size: 14px; color: #666; line-height: 1.45; }
+
+/* ═══════════════════════════ PRICE + OFFER ═══════════════════════════ */
+.offer-row {
+  display: flex;
+  height: 260px;
+}
+.offer-left {
+  flex: 1;
+  background: #F5A623;
+  padding: 36px 48px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.offer-eyebrow {
+  font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.5);
+  letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 10px;
+}
+.offer-price {
+  font-size: 100px; font-weight: 900; color: #fff;
+  line-height: 1; letter-spacing: -3px;
+}
+.offer-per { font-size: 22px; font-weight: 600; color: rgba(255,255,255,0.8); margin-top: 4px; }
+.offer-includes {
+  margin-top: 16px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.offer-includes span {
+  font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.9);
+  display: flex; align-items: center; gap: 8px;
+}
+.offer-includes span::before { content: '✓'; font-weight: 900; }
+
+.offer-right {
+  flex: 0 0 420px;
+  background: #fff;
+  padding: 36px 44px;
+  display: flex; flex-direction: column; justify-content: center;
+  border-left: 1px solid #eee;
+}
+.offer-cta-label {
+  font-size: 13px; font-weight: 700; color: #F5A623;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;
+}
+.offer-cta-text {
+  font-size: 28px; font-weight: 900; color: #111;
+  line-height: 1.15; margin-bottom: 20px;
+}
+.cta-btn {
+  background: #F5A623; color: #fff;
+  font-size: 20px; font-weight: 800;
+  padding: 18px 36px; border-radius: 50px; display: inline-block;
+  box-shadow: 0 6px 20px rgba(245,166,35,0.4); align-self: flex-start;
+}
+
+/* ═══════════════════════════ STATS FOOTER ═══════════════════════════ */
+.stats-footer {
+  display: flex;
+  background: #111;
+  height: 110px;
+}
+.stat {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.stat + .stat { border-left: 1px solid rgba(255,255,255,0.08); }
+.stat-num { font-size: 30px; font-weight: 900; color: #F5A623; line-height: 1; }
+.stat-lbl { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+.stat-contact { font-size: 13px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- TOP AMBER HEADER -->
+<div class="top-band">
+  <div class="logo">
+    <div class="logo-icon">🐝</div>
+    <div>
+      <div class="logo-name">Clean Bee</div>
+      <div class="logo-sub">Cleaning Service · Montréal</div>
+    </div>
+  </div>
+  <div class="top-phone">(438) 544-4441</div>
+</div>
+
+<!-- HEADLINE -->
+<div class="headline-section">
+  <div class="hl-eyebrow">⚠ What happens when you skip the clean</div>
+  <div class="hl-main">Your home has <em>more bacteria</em><br>than you think.</div>
+  <div class="hl-sub">Kitchen surfaces. Bathroom floors. Door handles.<br>Dust mites, mold spores, and allergens build up every day.</div>
+</div>
+
+<!-- CONSEQUENCE ITEMS -->
+<div class="consequence-row">
+  <div class="consequence-item">
+    <div class="con-icon">🦠</div>
+    <div class="con-text">
+      <div class="con-title">Bacteria multiply daily</div>
+      <div class="con-desc">Kitchen counters can harbour 200× more bacteria than a toilet seat. Most cleaning products miss 40% of surfaces.</div>
+    </div>
+  </div>
+  <div class="consequence-item">
+    <div class="con-icon">😤</div>
+    <div class="con-text">
+      <div class="con-title">Allergens affect your sleep</div>
+      <div class="con-desc">Dust mites thrive in unbrushed carpets and soft furnishings — the #1 trigger for indoor allergies.</div>
+    </div>
+  </div>
+  <div class="consequence-item">
+    <div class="con-icon">⏱</div>
+    <div class="con-text">
+      <div class="con-title">3+ hours of your weekend</div>
+      <div class="con-desc">The average Montréal homeowner spends 3–4 hours cleaning per week. That's 200 hours a year.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICE + CTA -->
+<div class="offer-row">
+  <div class="offer-left">
+    <div class="offer-eyebrow">The solution costs less than you think</div>
+    <div class="offer-price">$95</div>
+    <div class="offer-per">per professional visit</div>
+    <div class="offer-includes">
+      <span>Insured &amp; vetted professionals</span>
+      <span>Eco-friendly products</span>
+      <span>Same-day available</span>
+    </div>
+  </div>
+  <div class="offer-right">
+    <div class="offer-cta-label">✦ Get started today</div>
+    <div class="offer-cta-text">Free quote.<br>No commitment.</div>
+    <div class="cta-btn">Get a Free Quote →</div>
+  </div>
+</div>
+
+<!-- STATS FOOTER -->
+<div class="stats-footer">
+  <div class="stat">
+    <div class="stat-num">100+</div>
+    <div class="stat-lbl">Homes Cleaned</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">5.0★</div>
+    <div class="stat-lbl">Google Rating</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-lbl">Satisfaction</div>
+  </div>
+  <div class="stat" style="flex:2;">
+    <div class="stat-contact">
+      housecleaningmontreal.site<br>
+      100 Rue Ontario E, Montréal
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

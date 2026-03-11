@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1080px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #23212C;
+  display: flex; flex-direction: column;
+}
+
+/* ═══ LAYOUT: PHOTO LEFT | COPY RIGHT ═══ */
+.main-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ─── LEFT: PHOTO PANEL ─── */
+.photo-panel {
+  flex: 0 0 520px;
+  position: relative;
+  overflow: hidden;
+  background: #2a2830;
+}
+.photo-panel img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+/* gradient fade on right edge so it blends into dark panel */
+.photo-panel::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to right,
+    rgba(35,33,44,0) 60%,
+    rgba(35,33,44,0.95) 100%
+  );
+}
+/* top badge */
+.photo-badge {
+  position: absolute; top: 32px; left: 32px; z-index: 10;
+  background: #F3C622;
+  border-radius: 40px;
+  padding: 10px 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.badge-bee { font-size: 22px; }
+.badge-text { font-size: 14px; font-weight: 800; color: #23212C; letter-spacing: -0.2px; }
+.badge-sub { font-size: 10px; font-weight: 700; color: rgba(35,33,44,0.55); letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* bottom caption strip on photo */
+.photo-caption {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+  background: linear-gradient(to top, rgba(35,33,44,0.92) 0%, transparent 100%);
+  padding: 48px 28px 28px;
+}
+.photo-caption-text {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.55);
+  letter-spacing: 0.5px;
+}
+
+/* ─── RIGHT: COPY PANEL ─── */
+.copy-panel {
+  flex: 1;
+  background: #23212C;
+  padding: 48px 48px 40px 40px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+
+.eyebrow {
+  font-size: 11px; font-weight: 700; color: #F3C622;
+  letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.headline {
+  font-size: 46px; font-weight: 900; color: #fff;
+  line-height: 1.05; letter-spacing: -1.5px;
+}
+.headline em { font-style: normal; color: #F3C622; }
+
+.sub {
+  font-size: 17px; color: rgba(255,255,255,0.5);
+  margin-top: 16px; line-height: 1.6; font-weight: 400;
+}
+
+/* pain points */
+.pain-list {
+  display: flex; flex-direction: column; gap: 14px;
+  margin-top: 32px;
+}
+.pain-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  padding: 16px 18px;
+  border-left: 3px solid #F3C622;
+}
+.pain-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.pain-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 3px; }
+.pain-desc { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+
+/* price + CTA block */
+.bottom-block {
+  margin-top: 28px;
+}
+.price-row {
+  display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px;
+}
+.price-num {
+  font-size: 68px; font-weight: 900; color: #F3C622;
+  line-height: 1; letter-spacing: -3px;
+}
+.price-label {
+  font-size: 16px; color: rgba(255,255,255,0.45);
+  font-weight: 500; line-height: 1.4;
+}
+
+.cta-btn {
+  display: block; width: 100%;
+  background: #F3C622; color: #23212C;
+  font-size: 20px; font-weight: 900;
+  padding: 20px 32px; border-radius: 14px;
+  text-align: center; letter-spacing: -0.3px;
+}
+
+.trust-row {
+  margin-top: 14px;
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.trust-chip {
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
+  letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px;
+}
+.trust-chip::before { content: '✓'; color: #F3C622; font-weight: 900; }
+
+/* ═══ FOOTER BAR ═══ */
+.footer-bar {
+  height: 72px;
+  background: #1a1821;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  border-top: 2px solid #F3C622;
+}
+.footer-stat { display: flex; flex-direction: column; align-items: center; }
+.footer-num { font-size: 22px; font-weight: 900; color: #F3C622; line-height: 1; }
+.footer-lbl { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+.footer-contact { font-size: 12px; color: rgba(255,255,255,0.3); text-align: right; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="main-row">
+
+  <!-- PHOTO PANEL (left) -->
+  <div class="photo-panel">
+    <img src="../team.jpg" alt="Clean Bee team" />
+
+    <div class="photo-badge">
+      <span class="badge-bee">🐝</span>
+      <div>
+        <div class="badge-text">Clean Bee</div>
+        <div class="badge-sub">Montréal</div>
+      </div>
+    </div>
+
+    <div class="photo-caption">
+      <div class="photo-caption-text">Your dedicated cleaning team — insured &amp; vetted</div>
+    </div>
+  </div>
+
+  <!-- COPY PANEL (right) -->
+  <div class="copy-panel">
+
+    <div>
+      <div class="eyebrow">⚠ What you're living with right now</div>
+      <div class="headline">Your home has<br><em>more bacteria</em><br>than you think.</div>
+      <div class="sub">Kitchen surfaces. Bathroom floors.<br>Dust mites build up every day.</div>
+
+      <div class="pain-list">
+        <div class="pain-item">
+          <div class="pain-icon">🦠</div>
+          <div>
+            <div class="pain-title">Bacteria multiply daily</div>
+            <div class="pain-desc">Kitchen counters hold 200× more bacteria than a toilet seat — most products miss 40% of surfaces.</div>
+          </div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">😤</div>
+          <div>
+            <div class="pain-title">Allergens wreck your sleep</div>
+            <div class="pain-desc">Dust mites in carpets and soft furnishings — the #1 trigger of indoor allergies.</div>
+          </div>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">⏱</div>
+          <div>
+            <div class="pain-title">200+ hours of your life per year</div>
+            <div class="pain-desc">Average Montréal homeowner cleans 3–4 hrs/week. That's time you'll never get back.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-block">
+      <div class="price-row">
+        <div class="price-num">$95</div>
+        <div class="price-label">per professional<br>visit — all-inclusive</div>
+      </div>
+      <div class="cta-btn">Get My Free Quote →</div>
+      <div class="trust-row">
+        <div class="trust-chip">Insured &amp; vetted</div>
+        <div class="trust-chip">Same-day available</div>
+        <div class="trust-chip">Satisfaction guarantee</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-bar">
+  <div class="footer-stat">
+    <div class="footer-num">100+</div>
+    <div class="footer-lbl">Homes Cleaned</div>
+  </div>
+  <div class="footer-stat">
+    <div class="footer-num">5.0 ★</div>
+    <div class="footer-lbl">Google Rating</div>
+  </div>
+  <div class="footer-stat">
+    <div class="footer-num">100%</div>
+    <div class="footer-lbl">Satisfaction</div>
+  </div>
+  <div class="footer-contact">
+    housecleaningmontreal.site<br>
+    (438) 544-4441 · 100 Rue Ontario E
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1080px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #FFFDF7;
+}
+
+/* ═══ TOP HEADER ═══ */
+.header {
+  background: #1a1a1a;
+  padding: 22px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 13px; }
+.logo-icon {
+  width: 48px; height: 48px; background: #F5A623; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+}
+.logo-name { font-size: 21px; font-weight: 900; color: #fff; }
+.logo-sub { font-size: 10px; color: #F5A623; letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+.header-right { text-align: right; }
+.header-phone { font-size: 20px; font-weight: 800; color: #F5A623; }
+.header-web { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+
+/* ═══ HERO ═══ */
+.hero {
+  background: #F5A623;
+  padding: 52px 52px 44px;
+  position: relative;
+  overflow: hidden;
+}
+/* Decorative honeycomb circles */
+.hero::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute; bottom: -80px; right: 100px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+.hero-eyebrow {
+  font-size: 13px; font-weight: 700; color: rgba(0,0,0,0.5);
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 32px; height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px;
+}
+.hero-headline {
+  font-size: 76px; font-weight: 900; color: #fff;
+  line-height: 0.95; letter-spacing: -2.5px; margin-bottom: 20px;
+  position: relative; z-index: 1;
+}
+.hero-sub {
+  font-size: 22px; color: rgba(255,255,255,0.85);
+  font-weight: 400; line-height: 1.45; max-width: 680px;
+  position: relative; z-index: 1;
+}
+
+/* ═══ SPLIT SECTION ═══ */
+.split {
+  display: flex;
+  height: 416px;
+}
+
+/* Left: pricing cards */
+.split-left {
+  flex: 0 0 400px;
+  background: #fff;
+  padding: 36px 40px;
+  display: flex; flex-direction: column; gap: 16px;
+  border-right: 2px solid #FFF0CE;
+}
+.pricing-header {
+  font-size: 13px; font-weight: 700; color: #F5A623;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
+}
+.pricing-card {
+  background: #FFF8EC;
+  border-radius: 14px; border: 1.5px solid #F5E0A0;
+  padding: 18px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pricing-card.featured {
+  background: #F5A623; border-color: #F5A623;
+}
+.pc-label { font-size: 15px; font-weight: 700; color: #111; }
+.pc-label.w { color: #fff; }
+.pc-desc { font-size: 12px; color: #888; margin-top: 2px; }
+.pc-desc.w { color: rgba(255,255,255,0.75); }
+.pc-price { font-size: 30px; font-weight: 900; color: #F5A623; }
+.pc-price.w { color: #fff; }
+.badges {
+  margin-top: auto;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.badge {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 600; color: #444;
+}
+.badge-dot {
+  width: 10px; height: 10px; background: #F5A623; border-radius: 50%; flex-shrink: 0;
+}
+
+/* Right: big comparison visual */
+.split-right {
+  flex: 1;
+  background: #1a1a1a;
+  padding: 36px 44px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.comparison-label {
+  font-size: 11px; font-weight: 700; color: #F5A623;
+  letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 20px;
+}
+.comparison-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 24px;
+}
+.cmp-marker {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900; flex-shrink: 0;
+}
+.cmp-marker.bad { background: rgba(255,80,80,0.15); color: #ff6b6b; border: 1.5px solid rgba(255,80,80,0.3); }
+.cmp-marker.good { background: rgba(245,166,35,0.15); color: #F5A623; border: 1.5px solid rgba(245,166,35,0.3); }
+.cmp-text {}
+.cmp-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.cmp-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.45; }
+
+/* ═══ BOTTOM STRIP ═══ */
+.bottom-strip {
+  background: #F5A623;
+  padding: 24px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.bs-left {}
+.bs-cta { font-size: 24px; font-weight: 900; color: #fff; }
+.bs-sub { font-size: 14px; color: rgba(255,255,255,0.75); margin-top: 3px; }
+.cta-btn {
+  background: #fff; color: #111;
+  font-size: 19px; font-weight: 900;
+  padding: 16px 40px; border-radius: 50px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* ═══ STATS FOOTER ═══ */
+.stats-footer {
+  background: #111; display: flex; height: 88px;
+}
+.stat {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.stat + .stat { border-left: 1px solid rgba(255,255,255,0.07); }
+.stat-num { font-size: 26px; font-weight: 900; color: #F5A623; }
+.stat-lbl { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.35); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
+.stat-info { font-size: 12px; color: rgba(255,255,255,0.35); text-align: center; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🐝</div>
+    <div>
+      <div class="logo-name">Clean Bee</div>
+      <div class="logo-sub">Cleaning Service</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-phone">(438) 544-4441</div>
+    <div class="header-web">housecleaningmontreal.site</div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Professional Home Cleaning · Montréal</div>
+  <div class="hero-headline">Cheaper than<br>you think.</div>
+  <div class="hero-sub">Most Montréal homeowners assume professional cleaning costs $200+.<br>Our prices start at just $95 — and we think it shows.</div>
+</div>
+
+<!-- SPLIT -->
+<div class="split">
+  <!-- Pricing -->
+  <div class="split-left">
+    <div class="pricing-header">📋 Transparent pricing</div>
+
+    <div class="pricing-card">
+      <div>
+        <div class="pc-label">Studio / 1 Bedroom</div>
+        <div class="pc-desc">Approx. 2 hrs · Full clean</div>
+      </div>
+      <div class="pc-price">$95</div>
+    </div>
+
+    <div class="pricing-card featured">
+      <div>
+        <div class="pc-label w">2–3 Bedrooms ★ Most Popular</div>
+        <div class="pc-desc w">Approx. 3 hrs · Deep clean</div>
+      </div>
+      <div class="pc-price w">$135</div>
+    </div>
+
+    <div class="pricing-card">
+      <div>
+        <div class="pc-label">4+ Bedrooms</div>
+        <div class="pc-desc">Custom quote · Full home</div>
+      </div>
+      <div class="pc-price">$180+</div>
+    </div>
+
+    <div class="badges">
+      <div class="badge"><div class="badge-dot"></div> No hidden fees</div>
+      <div class="badge"><div class="badge-dot"></div> Free quote — no commitment</div>
+      <div class="badge"><div class="badge-dot"></div> Satisfaction guarantee</div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="split-right">
+    <div class="comparison-label">Without Clean Bee vs. With Clean Bee</div>
+
+    <div class="comparison-item">
+      <div class="cmp-marker bad">✗</div>
+      <div class="cmp-text">
+        <div class="cmp-title">3–4 hours of your weekend — gone</div>
+        <div class="cmp-desc">Scrubbing, vacuuming, mopping. Every. Single. Week.</div>
+      </div>
+    </div>
+
+    <div class="comparison-item">
+      <div class="cmp-marker bad">✗</div>
+      <div class="cmp-text">
+        <div class="cmp-title">Bacteria and allergens build up</div>
+        <div class="cmp-desc">Consumer products miss 40% of surfaces even after a full clean.</div>
+      </div>
+    </div>
+
+    <div class="comparison-item">
+      <div class="cmp-marker good">✓</div>
+      <div class="cmp-text">
+        <div class="cmp-title">Professional clean from $95</div>
+        <div class="cmp-desc">Vetted pros with eco-friendly products. Before &amp; after photos.</div>
+      </div>
+    </div>
+
+    <div class="comparison-item">
+      <div class="cmp-marker good">✓</div>
+      <div class="cmp-text">
+        <div class="cmp-title">Book in 30 seconds. Same-day available.</div>
+        <div class="cmp-desc">Online booking, instant confirmation, 100% satisfaction guarantee.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM STRIP -->
+<div class="bottom-strip">
+  <div class="bs-left">
+    <div class="bs-cta">Book your first clean today.</div>
+    <div class="bs-sub">100 Rue Ontario E, Montréal · info@housecleaningmontreal.site</div>
+  </div>
+  <div class="cta-btn">Get a Free Quote →</div>
+</div>
+
+<!-- STATS FOOTER -->
+<div class="stats-footer">
+  <div class="stat">
+    <div class="stat-num">100+</div>
+    <div class="stat-lbl">Homes Cleaned</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">5.0★</div>
+    <div class="stat-lbl">Google Rating</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-lbl">Satisfaction</div>
+  </div>
+  <div class="stat" style="flex:2;">
+    <div class="stat-info">Same-day available · Insured &amp; vetted<br>Plateau · NDG · Verdun · Laval · South Shore</div>
+  </div>
+</div>
+
+</body>
+</html>

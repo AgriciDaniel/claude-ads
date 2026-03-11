@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Bee</title>
+<style>
+  body { margin: 0; background: #111; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+  #bee { cursor: grab; }
+</style>
+</head>
+<body>
+<div id="bee"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+var el = document.getElementById('bee');
+var W = Math.min(window.innerWidth, 600);
+var H = Math.min(window.innerHeight, 600);
+
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(50, 1, 0.1, 50);
+camera.position.set(0, 0, 6);
+camera.lookAt(0, 0, 0);
+
+var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x000000, 0);
+el.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+var kl = new THREE.DirectionalLight(0xffffff, 1.0); kl.position.set(2, 4, 5); scene.add(kl);
+var fl = new THREE.PointLight(0xf5a623, 1.2, 15); fl.position.set(-3, 1, 4); scene.add(fl);
+var rl = new THREE.PointLight(0xffc857, 0.6, 12); rl.position.set(3, -1, -2); scene.add(rl);
+
+var yellow = new THREE.MeshStandardMaterial({ color: 0xf5a623, roughness: 0.35, metalness: 0.05 });
+var dark = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5 });
+var white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+var wingMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
+var crownMat = new THREE.MeshStandardMaterial({ color: 0xf5a623, roughness: 0.2, metalness: 0.5, emissive: 0xf5a623, emissiveIntensity: 0.2 });
+var blushMat = new THREE.MeshStandardMaterial({ color: 0xff8855, transparent: true, opacity: 0.3 });
+
+var bee = new THREE.Group();
+
+// Wings behind
+var wShape = new THREE.Shape();
+wShape.ellipse(0, 0, 0.7, 0.4, 0, Math.PI * 2, false, 0);
+var wGeo = new THREE.ShapeGeometry(wShape);
+var wL = new THREE.Mesh(wGeo, wingMat); wL.position.set(-0.7, 0.8, -0.4); wL.rotation.set(0.2, -0.3, 0.6); bee.add(wL);
+var wR = new THREE.Mesh(wGeo, wingMat); wR.position.set(0.7, 0.8, -0.4); wR.rotation.set(0.2, 0.3, -0.6); bee.add(wR);
+
+// Body
+var bodyGeo = new THREE.SphereGeometry(1, 32, 32); bodyGeo.scale(0.85, 1.1, 0.8);
+bee.add(new THREE.Mesh(bodyGeo, yellow));
+for (var i = -1; i <= 1; i++) {
+  var st = new THREE.Mesh(new THREE.CylinderGeometry(0.87, 0.87, 0.12, 32), dark);
+  st.position.y = i * 0.35; bee.add(st);
+}
+
+// Head
+var headM = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), yellow);
+headM.position.y = 1.4; bee.add(headM);
+
+// Eyes
+var ewGeo = new THREE.SphereGeometry(0.18, 16, 16);
+var eyeL = new THREE.Mesh(ewGeo, white); eyeL.position.set(-0.22, 1.45, 0.48); bee.add(eyeL);
+var eyeR = new THREE.Mesh(ewGeo, white); eyeR.position.set(0.22, 1.45, 0.48); bee.add(eyeR);
+var pupGeo = new THREE.SphereGeometry(0.1, 12, 12);
+var pupL = new THREE.Mesh(pupGeo, dark); pupL.position.set(-0.2, 1.45, 0.6); bee.add(pupL);
+var pupR = new THREE.Mesh(pupGeo, dark); pupR.position.set(0.24, 1.45, 0.6); bee.add(pupR);
+var shGeo = new THREE.SphereGeometry(0.04, 8, 8);
+var shL = new THREE.Mesh(shGeo, white); shL.position.set(-0.16, 1.5, 0.65); bee.add(shL);
+var shR = new THREE.Mesh(shGeo, white); shR.position.set(0.28, 1.5, 0.65); bee.add(shR);
+
+// Smile
+var smC = new THREE.QuadraticBezierCurve3(
+  new THREE.Vector3(-0.2, 1.22, 0.52),
+  new THREE.Vector3(0, 1.12, 0.58),
+  new THREE.Vector3(0.2, 1.22, 0.52)
+);
+bee.add(new THREE.Mesh(new THREE.TubeGeometry(smC, 16, 0.025, 8, false), dark));
+
+// Blush
+var blGeo = new THREE.SphereGeometry(0.1, 10, 10);
+bee.add(new THREE.Mesh(blGeo, blushMat)).position.set(-0.4, 1.3, 0.4);
+bee.add(new THREE.Mesh(blGeo, blushMat)).position.set(0.4, 1.3, 0.4);
+
+// Antennae
+[-1, 1].forEach(function(s) {
+  var ac = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(s * 0.15, 1.9, 0),
+    new THREE.Vector3(s * 0.4, 2.4, 0.1),
+    new THREE.Vector3(s * 0.5, 2.5, 0.15)
+  );
+  bee.add(new THREE.Mesh(new THREE.TubeGeometry(ac, 10, 0.025, 8, false), dark));
+  var tip = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), yellow);
+  tip.position.set(s * 0.5, 2.5, 0.15); bee.add(tip);
+});
+
+// Crown
+var crPts = [];
+for (var j = 0; j <= 10; j++) {
+  var a = (j / 10) * Math.PI * 2;
+  var r = j % 2 === 0 ? 0.3 : 0.5;
+  crPts.push(new THREE.Vector2(Math.cos(a) * r, Math.sin(a) * r));
+}
+var crGeo = new THREE.ExtrudeGeometry(new THREE.Shape(crPts), { depth: 0.12, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02 });
+var crown = new THREE.Mesh(crGeo, crownMat);
+crown.position.set(0, 2.05, 0); crown.rotation.x = -0.4; crown.scale.set(0.5, 0.5, 0.5);
+bee.add(crown);
+
+// Sparkles
+var pGeo = new THREE.BufferGeometry();
+var pArr = new Float32Array(35 * 3);
+for (var pi = 0; pi < 105; pi++) pArr[pi] = (Math.random() - 0.5) * 6;
+pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+var pMat = new THREE.PointsMaterial({ color: 0xf5a623, size: 0.08, transparent: true, opacity: 0.6 });
+var particles = new THREE.Points(pGeo, pMat); scene.add(particles);
+
+bee.position.set(0, -0.5, 0);
+scene.add(bee);
+
+// Mouse follow
+var mouseX = 0, mouseY = 0;
+el.addEventListener('mousemove', function(e) {
+  var rect = el.getBoundingClientRect();
+  mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+  mouseY = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
+});
+
+var time = 0;
+(function animate() {
+  requestAnimationFrame(animate);
+  time += 0.016;
+  bee.position.y = -0.5 + Math.sin(time * 1.5) * 0.15;
+  wL.rotation.z = 0.6 + Math.sin(time * 15) * 0.3;
+  wR.rotation.z = -0.6 - Math.sin(time * 15) * 0.3;
+  bee.rotation.y += (mouseX * 0.3 - bee.rotation.y) * 0.05;
+  bee.rotation.x += (mouseY * 0.15 - bee.rotation.x) * 0.05;
+  crownMat.emissiveIntensity = 0.2 + Math.sin(time * 2) * 0.1;
+  particles.rotation.y = time * 0.12;
+  pMat.opacity = 0.4 + Math.sin(time * 2) * 0.2;
+  renderer.render(scene, camera);
+})();
+</script>
+</body>
+</html>

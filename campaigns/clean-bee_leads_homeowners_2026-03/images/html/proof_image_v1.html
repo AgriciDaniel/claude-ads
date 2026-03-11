@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1080px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: #FFFDF7;
+}
+
+/* ═══ HEADER ═══ */
+.header {
+  background: #F5A623;
+  padding: 22px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 13px; }
+.logo-icon {
+  width: 48px; height: 48px; background: rgba(0,0,0,0.14); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+}
+.logo-name { font-size: 21px; font-weight: 900; color: #fff; }
+.logo-sub { font-size: 10px; color: rgba(255,255,255,0.7); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+.header-phone {
+  background: rgba(0,0,0,0.14); border-radius: 40px;
+  padding: 11px 24px; font-size: 18px; font-weight: 800; color: #fff;
+}
+
+/* ═══ HEADLINE BAND ═══ */
+.hl-band {
+  background: #fff;
+  padding: 32px 52px 28px;
+  border-bottom: 3px solid #F5A623;
+}
+.hl-eyebrow {
+  font-size: 12px; font-weight: 700; color: #F5A623;
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px;
+}
+.hl-main {
+  font-size: 60px; font-weight: 900; color: #111;
+  line-height: 1.0; letter-spacing: -2px;
+}
+.hl-main em { font-style: normal; color: #F5A623; }
+
+/* ═══ TESTIMONIAL AREA ═══ */
+.testimonial-section {
+  display: flex;
+  padding: 36px 52px 32px;
+  gap: 32px;
+  background: #FFF8EC;
+  flex: 1;
+}
+
+/* Big quote card */
+.big-quote {
+  flex: 1;
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 40px 32px;
+  box-shadow: 0 6px 32px rgba(245,166,35,0.12);
+  border: 1.5px solid #F5E0A0;
+  position: relative;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.quote-mark {
+  font-size: 96px; font-weight: 900; color: #F5A623;
+  line-height: 0.8; margin-bottom: 8px; opacity: 0.4;
+}
+.quote-text {
+  font-size: 28px; font-weight: 600; color: #111;
+  line-height: 1.45; flex: 1;
+}
+.quote-text em { font-style: italic; color: #F5A623; }
+.reviewer {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 28px; padding-top: 22px;
+  border-top: 1.5px solid #FFF0CE;
+}
+.reviewer-avatar {
+  width: 52px; height: 52px;
+  background: #F5A623; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 900; color: #fff; flex-shrink: 0;
+}
+.reviewer-name { font-size: 16px; font-weight: 800; color: #111; }
+.reviewer-loc { font-size: 13px; color: #888; margin-top: 2px; }
+.stars { font-size: 24px; color: #F5A623; letter-spacing: 3px; margin-left: auto; }
+
+/* Side cards stack */
+.side-cards {
+  flex: 0 0 360px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.side-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  border: 1.5px solid #F5E0A0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+.sc-stars { font-size: 18px; color: #F5A623; letter-spacing: 2px; margin-bottom: 8px; }
+.sc-text { font-size: 15px; color: #444; line-height: 1.45; font-style: italic; margin-bottom: 10px; }
+.sc-author { font-size: 13px; font-weight: 700; color: #111; }
+.sc-loc { font-size: 12px; color: #888; }
+
+/* Google badge */
+.google-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 4px;
+}
+.google-badge {
+  background: #4285F4; color: #fff;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+}
+.review-count { font-size: 12px; color: #888; }
+
+/* ═══ FEATURES ROW ═══ */
+.features-row {
+  display: flex;
+  background: #fff;
+  padding: 20px 52px;
+  gap: 0;
+  border-top: 2px solid #FFF0CE; border-bottom: 2px solid #FFF0CE;
+}
+.feature { flex: 1; display: flex; align-items: center; gap: 10px; }
+.feature + .feature { border-left: 1px solid #F5E0A0; padding-left: 28px; margin-left: 4px; }
+.feat-icon { font-size: 22px; flex-shrink: 0; }
+.feat-text { font-size: 14px; font-weight: 700; color: #333; }
+
+/* ═══ BOTTOM ═══ */
+.bottom {
+  background: #1a1a1a;
+  padding: 24px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.bottom-price {
+  display: flex; align-items: baseline; gap: 6px;
+}
+.price-from { font-size: 14px; color: rgba(255,255,255,0.45); }
+.price-num { font-size: 42px; font-weight: 900; color: #F5A623; line-height: 1; }
+.price-unit { font-size: 15px; color: rgba(255,255,255,0.5); }
+.bottom-contact { text-align: center; }
+.bc-phone { font-size: 22px; font-weight: 800; color: #F5A623; }
+.bc-detail { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+.cta-btn {
+  background: #F5A623; color: #fff;
+  font-size: 19px; font-weight: 800;
+  padding: 16px 36px; border-radius: 50px;
+  box-shadow: 0 4px 20px rgba(245,166,35,0.4);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🐝</div>
+    <div>
+      <div class="logo-name">Clean Bee</div>
+      <div class="logo-sub">Cleaning Service</div>
+    </div>
+  </div>
+  <div class="header-phone">(438) 544-4441</div>
+</div>
+
+<!-- HEADLINE -->
+<div class="hl-band">
+  <div class="hl-eyebrow">★ 100+ Happy Montréal Homes</div>
+  <div class="hl-main">Montréal's <em>most-loved</em> cleaning service.</div>
+</div>
+
+<!-- TESTIMONIAL SECTION -->
+<div class="testimonial-section">
+
+  <!-- Big quote -->
+  <div class="big-quote">
+    <div>
+      <div class="quote-mark">"</div>
+      <div class="quote-text">
+        "The team was <em>incredible.</em> Showed up on time, left the place <em>absolutely spotless.</em> I'll never go back to doing it myself — this is worth every single penny."
+      </div>
+    </div>
+    <div>
+      <div class="reviewer">
+        <div class="reviewer-avatar">S</div>
+        <div>
+          <div class="reviewer-name">Sophie M.</div>
+          <div class="reviewer-loc">Plateau-Mont-Royal, Montréal</div>
+          <div class="google-row">
+            <div class="google-badge">Google Review</div>
+            <div class="review-count">Verified ✓</div>
+          </div>
+        </div>
+        <div class="stars">★★★★★</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side cards -->
+  <div class="side-cards">
+    <div class="side-card">
+      <div class="sc-stars">★★★★★</div>
+      <div class="sc-text">"Same-day booking worked perfectly. The bathroom has never looked so clean."</div>
+      <div class="sc-author">Marc T.</div>
+      <div class="sc-loc">Mile End</div>
+    </div>
+    <div class="side-card">
+      <div class="sc-stars">★★★★★</div>
+      <div class="sc-text">"Eco-friendly products, before &amp; after photos, and $95 for my condo. Booked again already."</div>
+      <div class="sc-author">Camille R.</div>
+      <div class="sc-loc">NDG</div>
+    </div>
+    <div class="side-card">
+      <div class="sc-stars">★★★★★</div>
+      <div class="sc-text">"Vetted, insured, and genuinely thorough. Best cleaning service in Montréal."</div>
+      <div class="sc-author">Jean-François L.</div>
+      <div class="sc-loc">Verdun</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FEATURES ROW -->
+<div class="features-row">
+  <div class="feature">
+    <div class="feat-icon">🛡</div>
+    <div class="feat-text">Insured &amp; Vetted</div>
+  </div>
+  <div class="feature">
+    <div class="feat-icon">🌿</div>
+    <div class="feat-text">Eco-Friendly Products</div>
+  </div>
+  <div class="feature">
+    <div class="feat-icon">⚡</div>
+    <div class="feat-text">Same-Day Available</div>
+  </div>
+  <div class="feature">
+    <div class="feat-icon">📸</div>
+    <div class="feat-text">Before &amp; After Photos</div>
+  </div>
+  <div class="feature">
+    <div class="feat-icon">💯</div>
+    <div class="feat-text">Satisfaction Guarantee</div>
+  </div>
+</div>
+
+<!-- BOTTOM -->
+<div class="bottom">
+  <div class="bottom-price">
+    <span class="price-from">From</span>
+    <span class="price-num">$95</span>
+    <span class="price-unit">/ visit</span>
+  </div>
+  <div class="bottom-contact">
+    <div class="bc-phone">(438) 544-4441</div>
+    <div class="bc-detail">housecleaningmontreal.site · 100 Rue Ontario E, Montréal</div>
+  </div>
+  <div class="cta-btn">Get a Free Quote →</div>
+</div>
+
+</body>
+</html>

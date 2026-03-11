@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1080px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  position: relative;
+  background: #23212C;
+}
+
+/* ═══ FULL-BLEED PHOTO BACKGROUND ═══ */
+.bg-photo {
+  position: absolute; inset: 0;
+  z-index: 0;
+}
+.bg-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+/* dark gradient overlay — heavier at bottom for copy legibility */
+.bg-photo::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(35,33,44,0.55) 0%,
+      rgba(35,33,44,0.30) 35%,
+      rgba(35,33,44,0.75) 65%,
+      rgba(35,33,44,0.97) 100%
+    );
+}
+
+/* ═══ ALL CONTENT ON TOP ═══ */
+.content {
+  position: relative; z-index: 10;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 60px 48px;
+}
+
+/* ─── TOP BAR ─── */
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo-pill {
+  background: rgba(243,198,34,0.92);
+  border-radius: 50px;
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 12px;
+  backdrop-filter: blur(8px);
+}
+.logo-bee { font-size: 24px; }
+.logo-name { font-size: 18px; font-weight: 900; color: #23212C; letter-spacing: -0.3px; }
+.logo-loc { font-size: 10px; font-weight: 700; color: rgba(35,33,44,0.55); letter-spacing: 2px; text-transform: uppercase; }
+
+.top-badge {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(12px);
+  border-radius: 40px; padding: 12px 24px;
+  font-size: 15px; font-weight: 700; color: #fff;
+}
+
+/* ─── CENTRE SPACE (empty — photo shows here) ─── */
+.centre-space { flex: 1; }
+
+/* ─── BOTTOM COPY BLOCK ─── */
+.bottom-block {}
+
+.eyebrow {
+  font-size: 12px; font-weight: 700; color: #F3C622;
+  letter-spacing: 3px; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.headline {
+  font-size: 72px; font-weight: 900; color: #fff;
+  line-height: 1.0; letter-spacing: -2.5px;
+  margin-bottom: 12px;
+}
+.headline em { font-style: normal; color: #F3C622; }
+
+.sub {
+  font-size: 22px; color: rgba(255,255,255,0.65);
+  font-weight: 400; line-height: 1.5;
+  max-width: 680px;
+  margin-bottom: 32px;
+}
+
+/* pricing row */
+.pricing-row {
+  display: flex; gap: 16px; margin-bottom: 32px;
+}
+.price-card {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  border-radius: 16px; padding: 20px 24px;
+}
+.price-card.featured {
+  background: #F3C622;
+  border-color: #F3C622;
+}
+.pc-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.price-card .pc-label { color: rgba(255,255,255,0.5); }
+.price-card.featured .pc-label { color: rgba(35,33,44,0.6); }
+.pc-price { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -1.5px; }
+.price-card .pc-price { color: #fff; }
+.price-card.featured .pc-price { color: #23212C; }
+.pc-desc { font-size: 12px; font-weight: 600; margin-top: 4px; }
+.price-card .pc-desc { color: rgba(255,255,255,0.4); }
+.price-card.featured .pc-desc { color: rgba(35,33,44,0.55); }
+.pc-badge {
+  display: inline-block;
+  background: #23212C;
+  color: #F3C622;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 20px; margin-bottom: 8px;
+}
+
+/* CTA + trust */
+.cta-row {
+  display: flex; align-items: center; gap: 24px;
+}
+.cta-btn {
+  background: #F3C622; color: #23212C;
+  font-size: 22px; font-weight: 900;
+  padding: 22px 48px; border-radius: 16px;
+  letter-spacing: -0.3px; white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(243,198,34,0.45);
+}
+.trust-stack {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.trust-line {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.45);
+  display: flex; align-items: center; gap: 8px;
+}
+.trust-line::before { content: '✓'; color: #F3C622; font-weight: 900; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- FULL-BLEED PHOTO -->
+<div class="bg-photo">
+  <img src="../team.jpg" alt="Clean Bee team" />
+</div>
+
+<div class="content">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo-pill">
+      <span class="logo-bee">🐝</span>
+      <div>
+        <div class="logo-name">Clean Bee</div>
+        <div class="logo-loc">Montréal · Mobile Cleaners</div>
+      </div>
+    </div>
+    <div class="top-badge">⭐ 5.0 Google · 100+ Homes Cleaned</div>
+  </div>
+
+  <div class="centre-space"></div>
+
+  <!-- BOTTOM COPY -->
+  <div class="bottom-block">
+    <div class="eyebrow">✦ Montréal mobile cleaners</div>
+    <div class="headline">A cleaner home<br>in <em>one visit.</em></div>
+    <div class="sub">Professional home cleaning from $95 — insured, vetted, and satisfaction-guaranteed.</div>
+
+    <div class="pricing-row">
+      <div class="price-card featured">
+        <div class="pc-badge">Most Popular</div>
+        <div class="pc-label">Studio / 1-Bed</div>
+        <div class="pc-price">$95</div>
+        <div class="pc-desc">All-inclusive · from</div>
+      </div>
+      <div class="price-card">
+        <div class="pc-label">2-Bedroom</div>
+        <div class="pc-price">$135</div>
+        <div class="pc-desc">All-inclusive · from</div>
+      </div>
+      <div class="price-card">
+        <div class="pc-label">3-Bed / House</div>
+        <div class="pc-price">$180+</div>
+        <div class="pc-desc">Custom quote</div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <div class="cta-btn">Get My Quote →</div>
+      <div class="trust-stack">
+        <div class="trust-line">Insured &amp; vetted professionals</div>
+        <div class="trust-line">Same-day availability</div>
+        <div class="trust-line">100% satisfaction guarantee</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

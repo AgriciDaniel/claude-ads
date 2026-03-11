@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1080px; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  display: flex; flex-direction: column;
+  background: #23212C;
+}
+
+/* ═══ TOP PHOTO SECTION (≈ 50% height) ═══ */
+.photo-section {
+  position: relative;
+  flex: 0 0 520px;
+  overflow: hidden;
+}
+.photo-section img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  display: block;
+}
+/* gradient fades into dark at bottom */
+.photo-section::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(35,33,44,0.25) 0%,
+    rgba(35,33,44,0.0) 40%,
+    rgba(35,33,44,0.85) 100%
+  );
+}
+
+/* logo top-left */
+.photo-logo {
+  position: absolute; top: 30px; left: 36px; z-index: 10;
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(243,198,34,0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 40px; padding: 10px 20px;
+}
+.logo-bee { font-size: 22px; }
+.logo-name { font-size: 16px; font-weight: 900; color: #23212C; }
+.logo-sub { font-size: 9px; font-weight: 700; color: rgba(35,33,44,0.55); letter-spacing: 2px; text-transform: uppercase; }
+
+/* rating badge top-right */
+.rating-badge {
+  position: absolute; top: 30px; right: 36px; z-index: 10;
+  background: rgba(35,33,44,0.7); border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 16px; padding: 14px 20px; text-align: center;
+}
+.rating-num { font-size: 32px; font-weight: 900; color: #F3C622; line-height: 1; }
+.rating-stars { font-size: 16px; color: #F3C622; margin: 3px 0; }
+.rating-src { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* headline over photo bottom */
+.photo-headline {
+  position: absolute; bottom: 28px; left: 36px; right: 36px; z-index: 10;
+}
+.ph-eyebrow {
+  font-size: 11px; font-weight: 700; color: #F3C622;
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;
+}
+.ph-main {
+  font-size: 44px; font-weight: 900; color: #fff;
+  line-height: 1.05; letter-spacing: -1.5px;
+}
+.ph-main em { font-style: normal; color: #F3C622; }
+
+/* ═══ BOTTOM DARK SECTION ═══ */
+.bottom-section {
+  flex: 1;
+  background: #1e1c28;
+  display: flex; flex-direction: column;
+  padding: 28px 36px 32px;
+}
+
+/* reviews grid: 1 featured + 2 small */
+.reviews-grid {
+  display: flex; gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.review-featured {
+  flex: 1;
+  background: #F3C622;
+  border-radius: 16px;
+  padding: 24px 26px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.rf-stars { font-size: 18px; color: #23212C; margin-bottom: 12px; }
+.rf-quote {
+  font-size: 18px; font-weight: 700; color: #23212C;
+  line-height: 1.45; flex: 1;
+  font-style: italic;
+}
+.rf-attr {
+  margin-top: 16px;
+  font-size: 13px; font-weight: 800; color: rgba(35,33,44,0.65);
+  display: flex; align-items: center; gap: 8px;
+}
+.rf-verified {
+  font-size: 10px; font-weight: 700;
+  background: rgba(35,33,44,0.12); border-radius: 20px;
+  padding: 3px 8px; letter-spacing: 0.5px;
+}
+
+.reviews-stack {
+  flex: 0 0 260px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.review-mini {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.rm-stars { font-size: 13px; color: #F3C622; margin-bottom: 6px; }
+.rm-quote { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.5; font-style: italic; flex: 1; }
+.rm-attr { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); margin-top: 8px; }
+
+/* CTA strip */
+.cta-strip {
+  margin-top: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px; padding: 16px 24px;
+  border: 1px solid rgba(243,198,34,0.2);
+}
+.cta-left {}
+.cta-price {
+  font-size: 28px; font-weight: 900; color: #F3C622;
+  line-height: 1; letter-spacing: -1px;
+}
+.cta-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.cta-trust {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.ct-line {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.4);
+  display: flex; align-items: center; gap: 6px;
+}
+.ct-line::before { content: '✓'; color: #F3C622; font-weight: 900; }
+.cta-btn {
+  background: #F3C622; color: #23212C;
+  font-size: 18px; font-weight: 900;
+  padding: 18px 32px; border-radius: 12px;
+  letter-spacing: -0.3px; white-space: nowrap;
+  box-shadow: 0 6px 24px rgba(243,198,34,0.35);
+}
+</style>
+</head>
+<body>
+
+<!-- TOP PHOTO -->
+<div class="photo-section">
+  <img src="../team.jpg" alt="Clean Bee team" />
+
+  <div class="photo-logo">
+    <span class="logo-bee">🐝</span>
+    <div>
+      <div class="logo-name">Clean Bee</div>
+      <div class="logo-sub">Montréal Cleaners</div>
+    </div>
+  </div>
+
+  <div class="rating-badge">
+    <div class="rating-num">5.0</div>
+    <div class="rating-stars">★★★★★</div>
+    <div class="rating-src">Google</div>
+  </div>
+
+  <div class="photo-headline">
+    <div class="ph-eyebrow">✦ Real Montréalers. Real results.</div>
+    <div class="ph-main">Montréal's <em>most-loved</em><br>cleaning service.</div>
+  </div>
+</div>
+
+<!-- BOTTOM REVIEWS + CTA -->
+<div class="bottom-section">
+
+  <div class="reviews-grid">
+
+    <!-- FEATURED REVIEW -->
+    <div class="review-featured">
+      <div class="rf-stars">★★★★★</div>
+      <div class="rf-quote">"I was skeptical at first — now I've booked them three times. The team was punctual, thorough, and my apartment has never looked this good. Genuinely impressed."</div>
+      <div class="rf-attr">
+        Sophie M., Plateau-Mont-Royal
+        <span class="rf-verified">✓ Google Verified</span>
+      </div>
+    </div>
+
+    <!-- MINI REVIEWS STACK -->
+    <div class="reviews-stack">
+      <div class="review-mini">
+        <div class="rm-stars">★★★★★</div>
+        <div class="rm-quote">"Booked same-day and they arrived on time. Spotless result. Absolutely worth it."</div>
+        <div class="rm-attr">Marc T. · Rosemont</div>
+      </div>
+      <div class="review-mini">
+        <div class="rm-stars">★★★★★</div>
+        <div class="rm-quote">"Professional, fast, and eco-friendly products. My go-to for monthly cleans now."</div>
+        <div class="rm-attr">Amélie L. · Verdun</div>
+      </div>
+      <div class="review-mini">
+        <div class="rm-stars">★★★★★</div>
+        <div class="rm-quote">"Great value for $95. Kitchen and bathrooms were immaculate. Highly recommend."</div>
+        <div class="rm-attr">David K. · NDG</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA STRIP -->
+  <div class="cta-strip">
+    <div class="cta-left">
+      <div class="cta-price">From $95</div>
+      <div class="cta-label">housecleaningmontreal.site · (438) 544-4441</div>
+    </div>
+    <div class="cta-trust">
+      <div class="ct-line">Insured &amp; vetted</div>
+      <div class="ct-line">Same-day availability</div>
+    </div>
+    <div class="cta-btn">Get My Quote →</div>
+  </div>
+
+</div>
+
+</body>
+</html>
