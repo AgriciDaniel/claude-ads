@@ -8,7 +8,7 @@ urllib3>=2.6.3,<3.0.0             # CRITICAL: CVE-2026-21441 (CVSS 8.9), CVE-202
 
 # Image generation (required for /ads generate and /ads photoshoot)
 google-genai>=1.16.0,<2.0.0       # Gemini image generation (default provider)
-Pillow>=11.0.0,<12.0.0            # Image dimension validation (format-adapter agent)
+Pillow>=11.0.0,<13.0.0            # Image dimension validation (format-adapter agent)
 
 # Optional alternative providers (install only the one you need)
 # openai>=1.75.0,<2.0.0           # OpenAI gpt-image-1
