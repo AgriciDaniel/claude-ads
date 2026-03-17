@@ -61,9 +61,13 @@ When the user invokes `/ads audit`, delegate to subagents in parallel:
 1. **Collect context** (see Context Intake above — do this first)
 2. Collect account data (exports, screenshots, or pasted metrics)
 3. Detect business type and identify active platforms
-4. Spawn subagents: audit-google, audit-meta, audit-creative, audit-tracking, audit-budget, audit-compliance
-5. Collect results and generate unified report with Ads Health Score (0-100)
-6. Create prioritized action plan with Quick Wins
+4. Spawn subagents via Task tool with `context: fork`:
+   ```
+   audit-google, audit-meta, audit-creative, audit-tracking, audit-budget, audit-compliance
+   ```
+5. **Validate**: verify each subagent returned valid JSON scores before aggregating
+6. Collect results and generate unified report with Ads Health Score (0-100)
+7. Create prioritized action plan with Quick Wins
 
 For individual commands (`/ads google`, `/ads meta`, etc.), load the relevant
 sub-skill directly. Still collect context first if not already provided.

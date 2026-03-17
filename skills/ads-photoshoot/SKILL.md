@@ -1,13 +1,6 @@
 ---
 name: ads-photoshoot
-description: >
-  Product photography enhancement for ad creatives using AI image generation.
-  Takes a product image and generates 5 professional photography styles for
-  ad use: Studio, Floating, Ingredient, In Use, and Lifestyle. Requires
-  GOOGLE_API_KEY or configured ADS_IMAGE_PROVIDER. Triggers on: "product
-  photo", "product photography", "photoshoot", "enhance product image",
-  "product shoot", "product photos for ads", "generate product photos",
-  "studio shot", "lifestyle photo".
+description: "Product photography enhancement for ad creatives using AI image generation. Takes a product image and generates 5 professional photography styles for ad use: Studio, Floating, Ingredient, In Use, and Lifestyle. Requires GOOGLE_API_KEY or configured ADS_IMAGE_PROVIDER. Triggers on: 'product photo', 'product photography', 'photoshoot', 'enhance product image', 'product shoot', 'product photos for ads', 'generate product photos', 'studio shot', 'lifestyle photo'."
 ---
 
 # Ads Photoshoot — AI Product Photography

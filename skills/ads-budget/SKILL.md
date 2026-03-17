@@ -1,11 +1,6 @@
 ---
 name: ads-budget
-description: >
-  Budget allocation and bidding strategy review across all ad platforms.
-  Evaluates spend distribution, bidding strategy appropriateness, scaling
-  readiness, and identifies campaigns to kill or scale. Uses 70/20/10 rule,
-  3x Kill Rule, and 20% scaling rule. Use when user says "budget allocation",
-  "bidding strategy", "ad spend", "ROAS target", "media budget", or "scaling".
+description: "Budget allocation and bidding strategy review across all ad platforms. Evaluates spend distribution, bidding strategy appropriateness, scaling readiness, and identifies campaigns to kill or scale. Uses 70/20/10 rule, 3x Kill Rule, and 20% scaling rule. Use when user says 'budget allocation', 'bidding strategy', 'ad spend', 'ROAS target', 'media budget', or 'scaling'."
 ---
 
 # Budget Allocation & Bidding Strategy
@@ -17,8 +12,10 @@ description: >
 3. Read `ads/references/bidding-strategies.md` for strategy decision trees
 4. Read `ads/references/benchmarks.md` for CPC/CPA benchmarks
 5. Read `ads/references/scoring-system.md` for health score algorithm
-6. Evaluate budget allocation, bidding strategy, and scaling readiness
-7. Generate recommendations with kill list and scale list
+6. **Validate**: confirm spend data covers ≥14 days before evaluating kill/scale decisions
+7. Evaluate budget allocation, bidding strategy, and scaling readiness
+8. **Validate**: verify kill list candidates have sufficient data (≥20 clicks or ≥$100 spend) before recommending pause
+9. Generate recommendations with kill list and scale list
 
 ## Budget Allocation Framework
 

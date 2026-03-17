@@ -1,11 +1,6 @@
 ---
 name: ads-apple
-description: >
-  Apple Search Ads (ASA) deep analysis for mobile app advertisers. Evaluates
-  campaign structure, bid health, Creative Sets, MMP attribution, budget pacing,
-  TAP coverage (Today/Search/Product Pages), and goal CPA benchmarks by country.
-  Use when user says "Apple Search Ads", "ASA", "App Store ads", "Apple ads",
-  "Search Ads", or is advertising a mobile app on iOS.
+description: "Apple Search Ads (ASA) deep analysis for mobile app advertisers. Evaluates campaign structure, bid health, Creative Sets, MMP attribution, budget pacing, TAP coverage (Today/Search/Product Pages), and goal CPA benchmarks by country. Use when user says 'Apple Search Ads', 'ASA', 'App Store ads', 'Apple ads', 'Search Ads', or is advertising a mobile app on iOS."
 ---
 
 # Apple Search Ads (ASA) Deep Analysis
@@ -13,10 +8,11 @@ description: >
 ## Process
 
 1. Collect ASA account data (exports from Apple Search Ads dashboard or pasted metrics)
-2. Identify active placement types (Search Results, Search Tab, Today Tab, Product Pages)
-3. Evaluate all applicable checks as PASS, WARNING, or FAIL
-4. Calculate ASA Health Score (0-100)
-5. Generate findings report with action plan
+2. **Validate**: confirm data includes campaign-level spend, installs, and CPT for ≥30 days
+3. Identify active placement types (Search Results, Search Tab, Today Tab, Product Pages)
+4. Evaluate all applicable checks as PASS, WARNING, or FAIL
+5. Calculate ASA Health Score (0-100)
+6. Generate findings report with action plan
 
 ## What to Analyze
 

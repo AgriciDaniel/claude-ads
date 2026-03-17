@@ -1,12 +1,6 @@
 ---
 name: ads-generate
-description: >
-  AI image generation for paid ad creatives. Reads campaign-brief.md and
-  brand-profile.json to produce platform-sized ad images using Gemini
-  (default) or a configured provider. Requires GOOGLE_API_KEY or
-  ADS_IMAGE_PROVIDER + matching key. Triggers on: "generate ads", "create
-  images", "make ad creatives", "generate visuals", "create ad images",
-  "generate campaign images", "make the images", "generate from brief".
+description: "AI image generation for paid ad creatives. Reads campaign-brief.md and brand-profile.json to produce platform-sized ad images using Gemini (default) or a configured provider. Requires GOOGLE_API_KEY or ADS_IMAGE_PROVIDER + matching key. Triggers on: 'generate ads', 'create images', 'make ad creatives', 'generate visuals', 'create ad images', 'generate campaign images', 'make the images', 'generate from brief'."
 ---
 
 # Ads Generate — AI Ad Image Generator

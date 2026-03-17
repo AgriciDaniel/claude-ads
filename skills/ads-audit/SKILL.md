@@ -1,11 +1,6 @@
 ---
 name: ads-audit
-description: >
-  Full multi-platform paid advertising audit with parallel subagent delegation.
-  Analyzes Google Ads, Meta Ads, LinkedIn Ads, TikTok Ads, and Microsoft Ads
-  accounts. Generates health score per platform and aggregate score. Use when
-  user says "audit", "full ad check", "analyze my ads", "account health check",
-  or "PPC audit".
+description: "Full multi-platform paid advertising audit with parallel subagent delegation. Analyzes Google Ads, Meta Ads, LinkedIn Ads, TikTok Ads, and Microsoft Ads accounts. Generates health score per platform and aggregate score. Use when user says 'audit', 'full ad check', 'analyze my ads', 'account health check', or 'PPC audit'."
 ---
 
 # Full Multi-Platform Ads Audit
@@ -13,17 +8,19 @@ description: >
 ## Process
 
 1. **Collect account data** — request exports, screenshots, or API access
-2. **Detect business type** — analyze account signals per ads orchestrator
-3. **Identify active platforms** — determine which platforms are in use
-4. **Delegate to subagents** (if available, otherwise run inline sequentially):
+2. **Validate**: confirm at least one platform's data is available before proceeding
+3. **Detect business type** — analyze account signals per ads orchestrator
+4. **Identify active platforms** — determine which platforms are in use
+5. **Delegate to subagents** (if available, otherwise run inline sequentially):
    - `audit-google` — Conversion tracking, wasted spend, structure, keywords, ads, settings (G01-G74)
    - `audit-meta` — Pixel/CAPI health, creative fatigue, structure, audience (M01-M46)
    - `audit-creative` — LinkedIn, TikTok, Microsoft creative checks + cross-platform synthesis
    - `audit-tracking` — LinkedIn, TikTok, Microsoft tracking + cross-platform tracking health
    - `audit-budget` — LinkedIn, TikTok, Microsoft budget/bidding + cross-platform allocation
    - `audit-compliance` — All-platform compliance, settings, performance benchmarks
-5. **Score** — calculate per-platform and aggregate Ads Health Score (0-100)
-6. **Report** — generate prioritized action plan with Quick Wins
+6. **Validate**: verify each subagent returned valid scores with required fields before aggregating
+7. **Score** — calculate per-platform and aggregate Ads Health Score (0-100)
+8. **Report** — generate prioritized action plan with Quick Wins
 
 ## Data Collection
 

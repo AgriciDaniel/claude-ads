@@ -1,11 +1,6 @@
 ---
 name: ads-plan
-description: >
-  Strategic paid advertising planning with industry-specific templates.
-  Covers platform selection, campaign architecture, budget planning,
-  creative strategy, and phased implementation roadmap. Use when user says
-  "ad plan", "ad strategy", "campaign planning", "media plan", "PPC strategy",
-  or "advertising plan".
+description: "Strategic paid advertising planning with industry-specific templates. Covers platform selection, campaign architecture, budget planning, creative strategy, and phased implementation roadmap. Use when user says 'ad plan', 'ad strategy', 'campaign planning', 'media plan', 'PPC strategy', or 'advertising plan'."
 ---
 
 # Strategic Paid Advertising Plan

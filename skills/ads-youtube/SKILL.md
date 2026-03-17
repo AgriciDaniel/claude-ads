@@ -1,11 +1,6 @@
 ---
 name: ads-youtube
-description: >
-  YouTube Ads specific analysis covering campaign types, creative quality,
-  audience targeting, and measurement. Evaluates video ad performance across
-  skippable, non-skippable, bumper, Shorts, and Demand Gen formats. Use when
-  user says "YouTube Ads", "video ads", "pre-roll", "bumper ads", "YouTube
-  campaign", or "Shorts ads".
+description: "YouTube Ads specific analysis covering campaign types, creative quality, audience targeting, and measurement. Evaluates video ad performance across skippable, non-skippable, bumper, Shorts, and Demand Gen formats. Use when user says 'YouTube Ads', 'video ads', 'pre-roll', 'bumper ads', 'YouTube campaign', or 'Shorts ads'."
 ---
 
 # YouTube Ads Analysis
@@ -17,8 +12,10 @@ description: >
 3. Read `ads/references/platform-specs.md` for video specifications
 4. Read `ads/references/benchmarks.md` for YouTube benchmarks
 5. Read `ads/references/scoring-system.md` for health score algorithm
-6. Evaluate campaign setup, creative quality, targeting, and measurement
-7. Generate YouTube-specific findings report with health score
+6. **Validate**: confirm at least one active video campaign exists before proceeding
+7. Evaluate campaign setup, creative quality, targeting, and measurement
+8. **Validate**: verify all campaign types identified before generating report
+9. Generate YouTube-specific findings report with health score
 
 ## Campaign Types Assessment
 

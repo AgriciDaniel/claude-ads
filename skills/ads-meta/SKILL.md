@@ -1,11 +1,6 @@
 ---
 name: ads-meta
-description: >
-  Meta Ads deep analysis covering Facebook and Instagram advertising.
-  Evaluates 46 checks across Pixel/CAPI health, creative diversity and fatigue,
-  account structure, and audience targeting. Includes Advantage+ assessment.
-  Use when user says "Meta Ads", "Facebook Ads", "Instagram Ads", "Advantage+",
-  or "Meta campaign".
+description: "Meta Ads deep analysis covering Facebook and Instagram advertising. Evaluates 46 checks across Pixel/CAPI health, creative diversity and fatigue, account structure, and audience targeting. Includes Advantage+ assessment. Use when user says 'Meta Ads', 'Facebook Ads', 'Instagram Ads', 'Advantage+', or 'Meta campaign'."
 ---
 
 # Meta Ads Deep Analysis
