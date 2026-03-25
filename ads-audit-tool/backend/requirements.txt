@@ -1,0 +1,21 @@
+# Core
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# Google Ads API
+google-ads==25.1.0
+
+# Database
+sqlalchemy==2.0.36
+alembic==1.14.1
+asyncpg==0.30.0
+
+# Auth
+python-jose[cryptography]==3.3.0
+httpx==0.28.1
+
+# Utilities
+python-dotenv==1.0.1
+cryptography==44.0.0
