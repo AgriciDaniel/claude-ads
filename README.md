@@ -35,13 +35,13 @@ Comprehensive paid advertising audit and optimization skill for Claude Code. Cov
 Add the marketplace and install in Claude Code:
 
 ```shell
-/plugin marketplace add agricidaniel/claude-ads
+/plugin marketplace add AgriciDaniel/claude-ads
 /plugin install claude-ads@agricidaniel-claude-ads
 ```
 
 This registers claude-ads as a native plugin with auto-updates, namespace isolation, and proper version tracking.
 
-> **macOS workaround:** Use lowercase `agricidaniel/claude-ads` (not `AgriciDaniel/claude-ads`). Mixed-case names trigger a rename failure on case-insensitive macOS filesystems ([#17](https://github.com/AgriciDaniel/claude-ads/issues/17)). The lowercase form works identically.
+> **macOS workaround:** Use lowercase `agricidaniel/claude-ads` (not `AgriciDaniel/claude-ads`). Mixed-case names trigger a rename failure on case-insensitive macOS filesystems.
 
 ### One-Command Install (Unix/macOS/Linux)
 
