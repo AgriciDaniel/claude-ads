@@ -41,6 +41,8 @@ Add the marketplace and install in Claude Code:
 
 This registers claude-ads as a native plugin with auto-updates, namespace isolation, and proper version tracking.
 
+> **macOS workaround:** Use lowercase `agricidaniel/claude-ads` (not `AgriciDaniel/claude-ads`). Mixed-case names trigger a rename failure on case-insensitive macOS filesystems.
+
 ### One-Command Install (Unix/macOS/Linux)
 
 ```bash
