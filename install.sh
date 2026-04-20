@@ -84,7 +84,7 @@ main() {
         echo "  ✓ banana-claude detected (image generation ready)"
     else
         echo "  ⚠ banana-claude not installed. Image generation (/ads generate, /ads photoshoot) requires it."
-        echo "    Install: curl -fsSL https://raw.githubusercontent.com/AgriciDaniel/banana-claude/main/install.sh | bash"
+        echo "    Install: claude plugin install banana-claude@AgriciDaniel --scope user"
         echo "    Then run: /banana setup (to configure API key)"
     fi
 
