@@ -13,6 +13,7 @@ Usage:
 import argparse
 import json
 import sys
+from typing import Any
 
 from url_utils import validate_url
 
@@ -23,7 +24,7 @@ except ImportError:
     sys.exit(1)
 
 
-def analyze_landing(url: str, timeout: int = 30000) -> dict:
+def analyze_landing(url: str, timeout: int = 30000) -> dict[str, Any]:
     """
     Analyze landing page quality for ad campaign relevance.
 
@@ -102,9 +103,9 @@ def analyze_landing(url: str, timeout: int = 30000) -> dict:
                     };
                 }
             """)
-            if perf.get("ttfb"):
+            if perf.get("ttfb") is not None:
                 result["performance"]["ttfb_ms"] = round(perf["ttfb"])
-            if perf.get("domContentLoaded"):
+            if perf.get("domContentLoaded") is not None:
                 result["performance"]["dom_content_loaded_ms"] = round(perf["domContentLoaded"])
 
             # CLS
@@ -225,7 +226,7 @@ def analyze_landing(url: str, timeout: int = 30000) -> dict:
                     setTimeout(() => resolve(null), 3000);
                 })
             """)
-            if lcp:
+            if lcp is not None:
                 result["performance"]["lcp_ms"] = round(lcp)
 
             result["mobile"]["viewport_meta"] = page.query_selector('meta[name="viewport"]') is not None
@@ -250,13 +251,13 @@ def analyze_landing(url: str, timeout: int = 30000) -> dict:
     return result
 
 
-def grade_landing(result: dict) -> dict:
+def grade_landing(result: dict[str, Any]) -> dict[str, str]:
     """Grade landing page quality based on ad audit criteria."""
     grades = {}
 
     # G59: Mobile speed (LCP)
     lcp = result["performance"].get("lcp_ms")
-    if lcp:
+    if lcp is not None:
         if lcp < 2500:
             grades["G59_mobile_speed"] = "PASS"
         elif lcp < 4000:
@@ -296,7 +297,7 @@ def grade_landing(result: dict) -> dict:
     return grades
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Analyze landing page quality for ad campaigns")
     parser.add_argument("url", help="URL to analyze")
     parser.add_argument("--timeout", "-t", type=int, default=30000, help="Timeout in ms")
@@ -316,10 +317,10 @@ def main():
 
         print("\nPerformance:")
         lcp = result["performance"]["lcp_ms"]
-        lcp_status = "GOOD" if lcp and lcp < 2500 else "SLOW" if lcp else "N/A"
+        lcp_status = "GOOD" if lcp is not None and lcp < 2500 else "SLOW" if lcp is not None else "N/A"
         print(f"  LCP: {lcp}ms ({lcp_status})")
         cls = result["performance"]["cls"]
-        cls_status = "GOOD" if cls is not None and cls < 0.1 else "POOR" if cls else "N/A"
+        cls_status = "GOOD" if cls is not None and cls < 0.1 else "POOR" if cls is not None else "N/A"
         print(f"  CLS: {cls} ({cls_status})")
         print(f"  TTFB: {result['performance']['ttfb_ms']}ms")
 
