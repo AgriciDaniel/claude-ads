@@ -93,6 +93,30 @@ def _sanitize_error(err: Exception) -> str:
     )
 
 
+def _validate_output_dir(output_dir: str) -> Path:
+    """Resolve output_dir and refuse paths that escape the allowed base.
+
+    The base is the current working directory by default. Set the
+    CLAUDE_ADS_OUTPUT_BASE env var to allow writing under a different root
+    (e.g. when an orchestrator legitimately needs an absolute path outside
+    CWD). The script-level filename sanitisation in run_batch already strips
+    path components from job filenames; this helper closes the matching gap
+    on --output-dir itself.
+
+    See: https://github.com/AgriciDaniel/claude-ads/issues/30
+    """
+    base = Path(os.environ.get("CLAUDE_ADS_OUTPUT_BASE", os.getcwd())).resolve()
+    resolved = Path(output_dir).resolve()
+    try:
+        resolved.relative_to(base)
+    except ValueError:
+        raise ValueError(
+            f"output_dir {output_dir!r} resolves outside allowed base {str(base)!r}. "
+            f"Set CLAUDE_ADS_OUTPUT_BASE to override."
+        )
+    return resolved
+
+
 def _actual_dimensions(image_bytes: bytes) -> tuple[int, int] | None:
     """
     Extract actual width/height from PNG or JPEG header without PIL.
@@ -425,7 +449,12 @@ def run_batch(batch_file: str, output_dir: str, provider: str, model: str | None
         print(f"Error: Batch file contains {len(jobs)} jobs, max is {MAX_BATCH_SIZE}", file=sys.stderr)
         sys.exit(1)
 
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    try:
+        safe_output_dir = _validate_output_dir(output_dir)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    safe_output_dir.mkdir(parents=True, exist_ok=True)
     results = []
 
     for i, job in enumerate(jobs):
@@ -434,7 +463,7 @@ def run_batch(batch_file: str, output_dir: str, provider: str, model: str | None
         output_name = job.get("output", f"image_{i:03d}.png")
         # Security: strip path components to prevent directory traversal
         output_name = Path(output_name).name
-        output_path = str(Path(output_dir) / output_name)
+        output_path = str(safe_output_dir / output_name)
         reference_image = job.get("reference_image", None)
         if reference_image and Path(reference_image).suffix.lower() not in _ALLOWED_IMAGE_EXTENSIONS:
             print(f"  ⚠ Skipping invalid reference image: {reference_image}", file=sys.stderr)
