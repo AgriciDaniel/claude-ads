@@ -8,7 +8,7 @@ license: MIT
 # Ads: Multi-Platform Paid Advertising Audit & Optimization
 
 Comprehensive ad account analysis across all major platforms (Google, Meta,
-LinkedIn, TikTok, Microsoft). Orchestrates 17 specialized sub-skills and
+LinkedIn, TikTok, Microsoft). Orchestrates 19 specialized sub-skills and
 10 agents (6 audit + 4 creative).
 
 ## Quick Reference
