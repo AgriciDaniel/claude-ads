@@ -3,6 +3,8 @@ name: ads
 description: "Multi-platform paid advertising audit and optimization skill. Analyzes Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, and Apple Ads. 250+ checks with scoring, parallel agents, industry templates, and AI creative generation."
 argument-hint: "audit | google | meta | youtube | linkedin | tiktok | microsoft | apple | creative | landing | budget | plan <type> | competitor | dna <url> | create | generate | photoshoot"
 license: MIT
+tested_date: 2026-05-17
+tested_with: claude-code v2.x
 ---
 
 # Ads: Multi-Platform Paid Advertising Audit & Optimization

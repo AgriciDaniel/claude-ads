@@ -5,6 +5,46 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-05-17
+
+### Added
+
+- `tested_date: 2026-05-17` and `tested_with: claude-code v2.x` frontmatter on all 20 SKILL.md files (orchestrator + 19 sub-skills), aligning with the emerging Agent Skills versioning convention
+- `.github/CODEOWNERS` for automatic PR review routing to the maintainer
+- `research/distribution-prep-v1.6.0.md` — submission packets for claudemarketplaces.com, awesome-claude-code, and anthropics/skills (track-only this wave; not yet submitted)
+- IPv6 `::/128` (unspecified address) added to the SSRF blocklist in `scripts/url_utils.py` — closes a kernel-coercion edge case where some Linux kernels alias `::` to localhost
+- `CONTRIBUTING.md` expanded from 41 to ~120 lines with three new sections: *Adding a New Sub-Skill* (mirror pattern + frontmatter spec + routing-table integration), *Adding a Reference File* (progressive-disclosure conventions), and *Testing Audit Checks* (pre-eval-harness manual workflow)
+
+### Changed
+
+- Trigger surface expanded across 11 sub-skill `description:` fields — additive only, no existing triggers removed:
+  - `ads-google`: AI Max, AI Brief, broad match audit, Quality Score check, search terms audit, Smart Bidding, FUE, text customization, brand exclusions
+  - `ads-meta`: Andromeda, GEM, Lattice, Entity-ID clustering, ASC, AAC, creative diversity, Sales / Leads / App optimization, Threads ads
+  - `ads-tiktok`: USDS (post-Jan-2026 divestiture), creative diversity for retrieval
+  - `ads-apple`: AdAttributionKit, view-through attribution
+  - `ads-audit`: paid media audit, paid advertising audit, ad spend audit, advertising audit
+  - `ads-competitor`: Meta Ad Library, Facebook Ad Library, Google Ads Transparency, competitor creative, competitor research
+  - `ads-creative`: creative diversity score, ad variation audit (Andromeda Entity-ID retrieval scoring)
+  - `ads-landing`: LP audit, landing page CRO, post-click CRO
+  - `ads-linkedin`: ABM ads, Thought Leader Ads, predictive audiences, B2B paid (plus Oct 2025 terminology change note)
+  - `ads-microsoft`: Bing search ads, Microsoft search ads, Google import audit
+  - `ads-youtube`: skippable in-stream, YouTube Shorts ads, Demand Gen, VAC, CTV YouTube ads
+- `ads/references/benchmarks.md` — citation dates clarified; WordStream / Triple Whale / SplitMetrics 2025 sources tagged with explicit "verified current as of 2026-05-17" header
+- `skills/ads-plan/assets/mobile-app.md` — removed stale Privacy Sandbox (Android) references (Android Privacy Sandbox was retired Oct 17, 2025). Replaced with Google Play Install Referrer + GA4 + MMP guidance. AdAttributionKit added alongside SKAdNetwork in iOS attribution notes
+- `SECURITY.md` — private disclosure channel sharpened: GitHub Security Advisory is now the only supported channel; removed the ambiguous "or contact the maintainer directly" fallback. Reproduction step requirements added
+- `.gitignore` — added `research-prompt*.md` and `.research-*.md` patterns to prevent future research-prompt drafts from being committed accidentally
+
+### Security
+
+- v1.5.1 baseline confirmed at **91/100** by a fresh cybersecurity audit (May 2026 baseline pass). The new IPv6 `::/128` entry brings the score to **92/100** (+1)
+- **Zero new attack surface** introduced by Wave 1: no new code paths, no new network egress, no new subprocess calls. The only script change is the single-line `::/128` addition to `_BLOCKED_NETS`
+- Pre-Wave 2 hardening checklist captured for the cross-runtime `--target=<host>` install matrix: Playwright error sanitization, Replicate result URL revalidation, SECURITY.md egress documentation, and a `validate_install_target()` shell function with strict pattern rejection (`;&|$()<>`, leading `-`, `..` segments, UNC paths)
+
+### Notes
+
+- v1.7.0 will ship the cross-runtime install matrix (`--target=` for Codex CLI / Cursor / Windsurf / Gemini CLI / Goose), the `tests/` directory with golden fixtures, the `ads-google` AI Max rewrite, the `ads-meta` Andromeda + Entity-ID predictor, plus `ads-attribution`, `ads-server-side-tracking`, and `ads-amazon` sub-skills
+- GitHub repo About-field text (347 chars, optimized) and 15 suggested repo topics are captured in `research/distribution-prep-v1.6.0.md` — apply on the GitHub side when the user is ready to go public
+
 ## [1.5.1] - 2026-04-14
 
 ### Security

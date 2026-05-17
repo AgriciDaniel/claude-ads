@@ -1,4 +1,4 @@
-<!-- Updated: 2026-02-11 -->
+<!-- Updated: 2026-05-17 -->
 # Mobile App Paid Advertising Template
 
 ## Industry Characteristics
@@ -8,7 +8,7 @@
 - LTV (lifetime value) optimization is critical; not all installs are equal
 - App store optimization (ASO) and paid acquisition work together
 - Deep linking required for seamless ad-to-app experience
-- Attribution complexity; SKAdNetwork (iOS) and Privacy Sandbox (Android)
+- Attribution complexity; AdAttributionKit/SKAdNetwork (iOS); Google Play Install Referrer + GA4 + MMP (Android, post Privacy Sandbox retirement Oct 17, 2025)
 - High install volume needed for algorithm optimization (especially Google UAC)
 
 ## Recommended Platform Mix
@@ -155,8 +155,8 @@ Account; TikTok
 ## Attribution & Measurement
 
 - **MMP required**: AppsFlyer, Adjust, Branch, or Singular
-- **SKAdNetwork (iOS)**: limited to 63 conversion values, 24-48h delay
-- **Privacy Sandbox (Android)**: Attribution Reporting API, Topics API
+- **AdAttributionKit (iOS)**: dual attribution with SKAdNetwork (SKAN v1-3), configurable windows per WWDC 2025, view-through 24h post-impression; SKAN alone limited to 63 conversion values
+- **Android attribution (post Oct 2025)**: Google Play Install Referrer + GA4 + MMP — Privacy Sandbox (Attribution Reporting API, Topics API, Protected Audience) was retired Oct 17, 2025
 - **Cohort analysis**: Day 1, Day 7, Day 30 retention rates
 - **LTV modeling**: predict 180-day LTV from Day 7 behavior
 - **Key formula**: LTV > (CPI × 3) for sustainable growth

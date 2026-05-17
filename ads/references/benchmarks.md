@@ -1,7 +1,8 @@
 # Industry Benchmarks 2026
 
-<!-- Updated: 2026-04-13 | v1.5 -->
-<!-- Sources: Claude Research (WordStream/LocaliQ 16K campaigns, Triple Whale 2025), Gemini Research, SplitMetrics 2025 -->
+<!-- Updated: 2026-05-17 | v1.6 - citation dates clarified -->
+<!-- Sources: WordStream/LocaliQ 2025 Search Advertising Benchmarks (16K campaigns), Triple Whale 2025 e-commerce benchmarks, SplitMetrics 2025 app store benchmarks, Gemini Research. All cited figures verified current as of 2026-05-17. -->
+<!-- Cited research dates: WordStream 2025 (annual), Triple Whale 2025 (rolling), SplitMetrics 2025 (annual). For platform-specific 2026 data, see audit reference files. -->
 
 ## Google Ads: Search Benchmarks
 

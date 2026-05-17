@@ -82,3 +82,7 @@ youtube-script.pdf
 # Internal QA artifacts
 AUDIT-REPORT.md
 .github-audit/
+
+# Research prompt drafts (the actual research outputs live in research/)
+research-prompt*.md
+.research-*.md
