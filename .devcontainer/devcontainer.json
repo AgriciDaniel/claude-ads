@@ -1,0 +1,19 @@
+{
+  "name": "Claude-Ads Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "pycqa.isort",
+        "pycqa.flake8"
+      ]
+    }
+  },
+  "postCreateCommand": "pip install -r requirements.txt && pre-commit install"
+}
