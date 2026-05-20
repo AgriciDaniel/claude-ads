@@ -23,7 +23,7 @@ set -euo pipefail
 # possible via --target=...). Custom --skill-dir paths are validated against
 # `;&|$()<>` ` `, leading dashes, `..` segments, and UNC-style paths.
 
-REPO_URL="https://github.com/AI-Marketing-Hub/claude-ads"
+REPO_URL="https://github.com/AgriciDaniel/claude-ads"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Target whitelist + path mapping
@@ -221,7 +221,7 @@ main() {
     trap 'rm -rf "${TEMP_DIR}"' EXIT
 
     echo "↓ Downloading Claude Ads..."
-    git clone --depth 1 "${REPO_URL}" "${TEMP_DIR}/claude-ads" 2>/dev/null
+    git clone --depth 1 "${REPO_URL}" "${TEMP_DIR}/claude-ads"
 
     # Copy main skill + references
     echo "→ Installing skill files..."
