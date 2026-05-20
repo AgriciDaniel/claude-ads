@@ -12,7 +12,7 @@ Pillow>=11.0.0,<13.0.0            # Image dimension validation
 
 # PDF report generation (used by generate_report.py)
 reportlab>=4.0,<5.0.0             # PDF layout and rendering
-matplotlib>=3.8.0,<4.0.0          # Health score gauge and platform bar charts
+matplotlib>=3.10.9,<4.0.0          # Health score gauge and platform bar charts
 
 # Image generation: banana-claude is the default provider (no pip packages needed).
 # Install banana-claude separately: https://github.com/AgriciDaniel/claude-banana
