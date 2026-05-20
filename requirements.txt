@@ -4,7 +4,7 @@
 
 # Core dependencies (landing page analysis, brand screenshots)
 requests>=2.32.4,<3.0.0           # CVE-2024-47081, CVE-2024-35195 fixes
-playwright>=1.56.0,<2.0.0         # CVE-2025-59288 fix (macOS); used by ads-dna screenshots
+playwright>=1.58.0,<2.0.0         # CVE-2025-59288 fix (macOS); used by ads-dna screenshots
 urllib3>=2.6.3,<3.0.0             # CRITICAL: CVE-2026-21441 (CVSS 8.9), CVE-2025-66418
 
 # Image validation (used by format-adapter agent)
