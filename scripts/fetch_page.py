@@ -50,6 +50,14 @@ def fetch_page(
         "error": None,
     }
 
+    # Block SSRF bypass via userinfo with backslash (urlparse vs requests differential)
+    parsed = urlparse(url)
+    if parsed.username or parsed.password:
+        result["error"] = "URL with userinfo is not allowed"
+        return result
+    if '\\' in parsed.hostname or '\\' in url:
+        result["error"] = "URL with backslash is not allowed"
+        return result
     try:
         url = validate_url(url)
     except ValueError as e:
