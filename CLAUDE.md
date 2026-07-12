@@ -1,104 +1,70 @@
-# Claude Ads: Paid Advertising Audit & Optimization Skill
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-This repository contains **Claude Ads**, a Tier 4 Claude Code skill for comprehensive
-paid advertising analysis across all major platforms. It follows the Agent Skills open
-standard and the 3-layer architecture (directive, orchestration, execution). 22 sub-skills,
-10 agents (6 audit + 4 creative), and 12 industry templates cover Google, Meta, YouTube, LinkedIn,
-TikTok, Microsoft, Apple, and Amazon Ads with 250+ weighted audit checks, plus cross-platform
-attribution and server-side tracking deep dives.
+**Claude Ads** is a Tier 4 Claude Code skill (also packaged as a plugin, `.claude-plugin/plugin.json`) for paid advertising audit and optimization across Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, Apple, and Amazon Ads. It follows the Agent Skills open standard and a 3-layer architecture: **directive** (`ads/SKILL.md` orchestrator) → **orchestration** (22 sub-skills in `skills/`, 10 agents in `agents/`) → **execution** (Python scripts in `scripts/`). 250+ weighted audit checks, 12 industry templates, attribution and server-side tracking deep dives, AI creative generation.
+
+There is no application to run — the deliverable is the skill itself (Markdown skills + agents + Python CLI scripts) plus its eval harness.
+
+## Development Commands
+
+```bash
+# One-time dev setup
+pip install -r requirements.txt -r requirements-dev.txt
+
+# Run the full eval harness (41 pytest tests)
+pytest tests/ -v --tb=short
+
+# Run one test file / one test
+pytest tests/audit/test_scoring_math.py -v
+pytest tests/routing/test_creative_routing.py::test_name -v
+
+# CI parity checks (what .github/workflows/ci.yml runs besides pytest)
+find . -name "*.py" -not -path "./.git/*" -exec python3 -m py_compile {} \;
+python3 -m json.tool .claude-plugin/plugin.json > /dev/null
+bash -n install.sh && bash -n uninstall.sh
+```
+
+Scripts run standalone with a CLI and JSON output, e.g. `python3 scripts/analyze_landing.py --help`. Local skill install for manual testing: `bash install.sh` (default target Claude Code; `--target=codex|cursor|windsurf|gemini|goose` are experimental cross-host installs — target keys are whitelist-validated).
 
 ## Architecture
 
 ```
-claude-ads/
-  CLAUDE.md                          # Project instructions (this file)
-  ads/                               # Main orchestrator skill
-    SKILL.md                         # Entry point, routing table, core rules
-    references/                      # On-demand knowledge files (25 files)
-  scripts/                           # Python execution scripts (repo root; installed under <SKILL_BASE>/ads/scripts/)
-  skills/                            # 22 specialized sub-skills (Wave 2)
-    ads-audit/SKILL.md              # Full multi-platform audit
-    ads-google/SKILL.md             # Google Ads deep analysis (incl. AI Max)
-    ads-meta/SKILL.md               # Meta/Facebook Ads (Andromeda + GEM + Lattice + Entity-ID predictor)
-    ads-youtube/SKILL.md            # YouTube Ads (Demand Gen, Shorts, CTV)
-    ads-linkedin/SKILL.md           # LinkedIn Ads analysis
-    ads-tiktok/SKILL.md             # TikTok Ads (post-USDS)
-    ads-microsoft/SKILL.md          # Microsoft/Bing Ads analysis
-    ads-apple/SKILL.md              # Apple Ads (AdAttributionKit, dual attribution)
-    ads-amazon/SKILL.md             # Amazon Ads (Sponsored Products/Brands/Display, ACOS/TACOS)
-    ads-attribution/SKILL.md        # Cross-platform attribution audit
-    ads-server-side-tracking/SKILL.md # sGTM, CAPI Gateway, dedup, hashing
-    ads-creative/SKILL.md           # Creative quality + Entity-ID retrieval scoring
-    ads-landing/SKILL.md            # Landing page analysis
-    ads-budget/SKILL.md             # Budget allocation optimization
-    ads-plan/SKILL.md               # Strategic ad planning by industry
-    ads-competitor/SKILL.md         # Competitor ad research
-    ads-math/SKILL.md               # PPC financial calculator
-    ads-test/SKILL.md               # A/B test design
-    ads-dna/SKILL.md                # Brand DNA extraction
-    ads-create/SKILL.md             # Campaign concepts and copy briefs
-    ads-generate/SKILL.md           # AI ad image generation
-    ads-photoshoot/SKILL.md         # Product photography in 5 styles
-  agents/                            # 10 agents (6 audit + 4 creative)
-    audit-google.md                # Google Ads audit agent
-    audit-meta.md                  # Meta Ads audit agent
-    audit-creative.md              # Creative quality agent
-    audit-tracking.md              # Conversion tracking agent
-    audit-budget.md                # Budget analysis agent
-    audit-compliance.md            # Compliance verification agent
-    creative-strategist.md         # Campaign concept strategist
-    visual-designer.md             # AI image generation orchestrator
-    copy-writer.md                 # Headlines, CTAs, primary text
-    format-adapter.md              # Asset dimension validation
-  tests/                             # 41-test pytest eval harness (Wave 2)
-    conftest.py                    # Shared fixtures
-    fixtures/check-catalog.yaml    # 209-check canonical catalog
-    routing/                       # Trigger → skill snapshot tests
-    audit/                         # Catalog coverage + scoring math tests
-    scripts/                       # SSRF + sanitize_error regression tests
-  install.sh / install.ps1          # Cross-platform installers
-  uninstall.sh / uninstall.ps1      # Cross-platform uninstallers
+ads/SKILL.md          # Orchestrator: routing table, context intake, core rules
+ads/references/       # 26 on-demand knowledge files (progressive disclosure)
+skills/ads-*/SKILL.md # 22 sub-skills, one directory per domain
+agents/*.md           # 10 agents (6 audit + 4 creative), invoked via Task tool
+scripts/*.py          # Execution layer: landing analysis, screenshots, PDF reports
+tests/                # Eval harness (routing, audit coverage, scoring math, script security)
 ```
 
-## Commands
+### How routing works (the part that spans multiple files)
 
-| Command | Purpose |
-|---------|---------|
-| `/ads audit` | Full multi-platform audit with 6 parallel agents (Wave 2 sub-skills run standalone; see notes) |
-| `/ads google` | Google Ads deep analysis (incl. AI Max) |
-| `/ads meta` | Meta/Facebook Ads analysis (Andromeda + GEM + Lattice) |
-| `/ads youtube` | YouTube Ads analysis |
-| `/ads linkedin` | LinkedIn Ads analysis |
-| `/ads tiktok` | TikTok Ads analysis |
-| `/ads microsoft` | Microsoft/Bing Ads analysis |
-| `/ads apple` | Apple Ads (AdAttributionKit, dual attribution) |
-| `/ads amazon` | Amazon Ads (Sponsored Products/Brands/Display, ACOS/TACOS) — *Wave 2* |
-| `/ads attribution` | Cross-platform attribution audit (AAK, GA4, Consent Mode V2, MMP) — *Wave 2* |
-| `/ads tracking` | Server-side tracking pipeline audit (sGTM, CAPI Gateway, dedup, hashing) — *Wave 2* |
-| `/ads creative` | Creative quality and fatigue assessment |
-| `/ads landing` | Landing page conversion analysis |
-| `/ads budget` | Budget allocation optimization |
-| `/ads plan <type>` | Strategic ad planning by industry |
-| `/ads competitor` | Competitor ad research |
-| `/ads math` | PPC financial calculator (CPA, ROAS, break-even, LTV:CAC) |
-| `/ads test` | A/B test design (hypothesis, significance, sample size) |
-| `/ads report` | PDF audit report generation for client deliverables |
-| `/ads dna <url>` | Extract brand DNA from website → `brand-profile.json` |
-| `/ads create` | Generate campaign concepts + copy briefs → `campaign-brief.md` |
-| `/ads generate` | Generate AI ad images from brief → `ad-assets/` |
-| `/ads photoshoot` | Product photography in 5 styles |
+- `ads/SKILL.md` is the only user-facing entry point (`/ads <command>`). Its routing table maps commands/trigger phrases to sub-skills.
+- Sub-skills carry `user-invokable: false` frontmatter — they are dispatched by the orchestrator, not invoked directly. **Routing happens via the `description:` frontmatter field**: it must contain 6–12 trigger synonyms (platform names, abbreviations, colloquial phrasings). Adding a sub-skill without updating the orchestrator's routing table breaks dispatch.
+- Sub-skills load `ads/references/*.md` on demand (audit checklists, benchmarks, creative specs) instead of inlining knowledge.
+- `/ads audit` fans out the 6 audit agents in parallel via the Task tool with `context: fork` — never via Bash.
+- The creative pipeline chains agents through files: `ads dna` → `brand-profile.json` → `creative-strategist` → `campaign-brief.md` → `copy-writer` / `visual-designer` → `generation-manifest.json` → `format-adapter` → `format-report.md`.
 
-## Development Rules
+### Eval harness structure
 
-- Keep SKILL.md files under 500 lines / 5000 tokens
-- Reference files should be focused; aim for under 350 lines. Split when a
-  single reference exceeds that and starts mixing concerns
-- Scripts must have docstrings, CLI interface, and JSON output
-- Follow kebab-case naming for all skill directories
-- Agents invoked via Task tool with `context: fork`, never via Bash
-- No hardcoded credentials; use MCP servers for external API access
+- `tests/fixtures/check-catalog.yaml` — canonical catalog of 209 audit checks; coverage tests assert reference files stay in sync with it.
+- `tests/routing/` — snapshot tests that trigger phrases route to the right sub-skill (fixtures in `evals/creative-evals.json`).
+- `tests/audit/` — check-catalog coverage + Health Score scoring math.
+- `tests/scripts/` — security regressions (SSRF redirect bypass, credential redaction in `scripts/url_utils.py`). Treat these as load-bearing: `url_utils.py` guards every outbound fetch.
+- Shared session-scoped fixtures live in `tests/conftest.py` (`repo_root`, `check_catalog`, `creative_evals`, `skill_descriptions`).
+
+## Conventions
+
+- SKILL.md files: under 500 lines / 5000 tokens. Sub-skill frontmatter requires `name`, `description` (with triggers), `user-invokable: false`, `tested_date`, `tested_with`.
+- Reference files: focused, aim under 350 lines; split when one file mixes concerns. Add a dated header (`<!-- Updated: YYYY-MM-DD | v<x.y> -->`) and cite sources inline. Audit check IDs follow platform-letter + number (G01, M01, L01, T01, B01, A01).
+- New audit checks need deterministic pass/warn/fail conditions and a corresponding entry in `tests/fixtures/check-catalog.yaml`.
+- Scripts: docstring, CLI interface, JSON output; prefer stdlib over third-party. Shell scripts use `set -euo pipefail`.
+- Kebab-case for all skill directories and files; sub-skill dirs are prefixed `ads-`.
+- No hardcoded credentials; external API access goes through MCP servers.
+- To add a sub-skill, mirror an existing one (`skills/ads-microsoft/` is the cleanest template, `skills/ads-google/` the densest) and follow CONTRIBUTING.md.
 
 ## Release Blog Post
 
