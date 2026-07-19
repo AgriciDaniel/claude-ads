@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-11",
+  "generated_at": "2026-07-17",
   "claims": [
     {
       "id": "CLM-0001",
@@ -529,6 +529,18 @@
       "last_verified": "2026-07-11",
       "refresh_due": "2026-08-10",
       "owner": "native-export-owner"
+    },
+    {
+      "id": "CLM-0210",
+      "statement": "TweetClaw is an MIT-licensed OpenClaw plugin for X public-data workflows, while remote MCP clients use Xquik's separate hosted MCP endpoint.",
+      "scope": "optional read-only public X evidence for competitor research; no configured-access or paid-performance claim",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["xquik-tweetclaw-repository", "xquik-mcp-client-docs"],
+      "load_bearing": false,
+      "last_verified": "2026-07-17",
+      "refresh_due": "2026-08-16",
+      "owner": "competitor-research-owner"
     }
   ]
 }

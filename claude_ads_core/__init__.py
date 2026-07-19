@@ -110,4 +110,4 @@ __all__ = [
     "write_report_bundle",
 ]
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"

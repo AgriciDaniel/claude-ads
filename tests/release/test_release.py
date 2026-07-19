@@ -5,8 +5,10 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
+import tomllib
 import zipfile
 
 import pytest
@@ -105,6 +107,39 @@ def _repository(tmp_path: Path) -> Path:
     _git(root, "add", ".")
     _git(root, "commit", "--quiet", "-m", "fixture")
     return root
+
+
+def _version_match(root: Path, relative: str, pattern: str) -> str:
+    text = (root / relative).read_text(encoding="utf-8")
+    matches = re.findall(pattern, text, flags=re.MULTILINE)
+    assert len(matches) == 1, f"expected one version in {relative}"
+    return matches[0]
+
+
+def test_public_version_metadata_is_consistent() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    plugin = json.loads(
+        (root / ".claude-plugin/plugin.json").read_text(encoding="utf-8")
+    )
+    marketplace = json.loads(
+        (root / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    )
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+
+    versions = {
+        "citation": _version_match(root, "CITATION.cff", r'^version: "([^"]+)"$'),
+        "core": _version_match(
+            root, "claude_ads_core/__init__.py", r'^__version__ = "([^"]+)"$'
+        ),
+        "marketplace metadata": marketplace["metadata"]["version"],
+        "marketplace plugin": marketplace["plugins"][0]["version"],
+        "plugin": plugin["version"],
+        "project": project["project"]["version"],
+        "report generator": _version_match(
+            root, "scripts/generate_report.py", r'^__version__ = "([^"]+)"$'
+        ),
+    }
+    assert set(versions.values()) == {plugin["version"]}, versions
 
 
 @pytest.mark.parametrize(
