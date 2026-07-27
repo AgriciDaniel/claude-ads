@@ -22,7 +22,14 @@ def target_case(tmp_path, monkeypatch):
     target = next(item for item in inventory["targets"] if item["id"] == "runtime-linux-cp311")
     monkeypatch.setattr(verifier.release, "_load_dependency_inventory", lambda root: inventory)
     monkeypatch.setattr(verifier, "native_target_id", lambda profile: "runtime-linux-cp311")
-    monkeypatch.setattr(verifier.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout="a" * 40 + "\n"))
+    # verifier.subprocess is the shared stdlib module, so an unconditional patch
+    # also hijacks subprocess.check_output -> platform.platform() on macOS.
+    _real_run = verifier.subprocess.run
+    def _fake_run(*a, **k):
+        if a and list(a[0])[:1] == ["git"]:
+            return SimpleNamespace(returncode=0, stdout="a" * 40 + "\n")
+        return _real_run(*a, **k)
+    monkeypatch.setattr(verifier.subprocess, "run", _fake_run)
     report = {"pip_version": __import__("pip").__version__, "install": []}
     wheels = tmp_path / "wheels"; wheels.mkdir()
     expected_hashes = {}
