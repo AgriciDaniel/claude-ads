@@ -22,7 +22,10 @@ def target_case(tmp_path, monkeypatch):
     target = next(item for item in inventory["targets"] if item["id"] == "runtime-linux-cp311")
     monkeypatch.setattr(verifier.release, "_load_dependency_inventory", lambda root: inventory)
     monkeypatch.setattr(verifier, "native_target_id", lambda profile: "runtime-linux-cp311")
-    monkeypatch.setattr(verifier.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout="a" * 40 + "\n"))
+    # Stub only `git rev-parse`; delegate the rest, since subprocess.check_output
+    # is built on run() and platform.platform() shells out on some hosts.
+    real_run = verifier.subprocess.run
+    monkeypatch.setattr(verifier.subprocess, "run", lambda cmd, *a, **k: SimpleNamespace(returncode=0, stdout="a" * 40 + "\n") if list(cmd[:2]) == ["git", "rev-parse"] else real_run(cmd, *a, **k))
     report = {"pip_version": __import__("pip").__version__, "install": []}
     wheels = tmp_path / "wheels"; wheels.mkdir()
     expected_hashes = {}
