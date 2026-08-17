@@ -1,7 +1,19 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-11",
+  "generated_at": "2026-08-17",
   "claims": [
+    {
+      "id": "CLM-0210",
+      "statement": "The Atlas Cloud Qwen Image 3.0 Text-to-Image schema documents asynchronous image submission with explicit model, prompt, and width*height size fields, prediction polling states, and completed output URLs.",
+      "scope": "scripts/generate_image.py Atlas text-to-image adapter contract only",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["atlas-qwen-image-3-schema-official"],
+      "load_bearing": true,
+      "last_verified": "2026-08-17",
+      "refresh_due": "2026-09-16",
+      "owner": "creative-provider-owner"
+    },
     {
       "id": "CLM-0001",
       "statement": "The v1.8.1 baseline contains 22 focused sub-skills, 11 agent prompts, and dedicated skill surfaces for eight named advertising platforms.",

@@ -5,9 +5,9 @@ This local CLI is a fallback for environments whose approved image capability is
 not exposed through a host-native tool. It has no default provider or model.
 Select both from current capability evidence for every run.
 
-Implemented adapters are Gemini, OpenAI, Stability AI, and Replicate. Adapter
-availability does not imply operator approval, account access, model availability,
-or fitness for a placement.
+Implemented adapters are Atlas Cloud, Gemini, OpenAI, Stability AI, and Replicate.
+Adapter availability does not imply operator approval, account access, model
+availability, or fitness for a placement.
 
 Usage:
     python generate_image.py "prompt text" --provider "$ADS_IMAGE_PROVIDER" --model "$ADS_IMAGE_MODEL" --ratio 9:16 --output ad.png
@@ -20,6 +20,7 @@ Environment variables:
     OPENAI_API_KEY       Required for openai provider
     STABILITY_API_KEY    Required for stability provider
     REPLICATE_API_TOKEN  Required for replicate provider
+    ATLASCLOUD_API_KEY   Required for atlas provider
 
 See ads/references/image-providers.md for pricing and capability details.
 """
@@ -79,6 +80,11 @@ RETRY_BACKOFF = [1, 2, 4, 8]  # seconds
 
 MAX_BATCH_SIZE = 50
 MAX_DIMENSION = 8192
+
+ATLAS_API_BASE = "https://api.atlascloud.ai"
+ATLAS_MAX_POLL_ATTEMPTS = 60
+ATLAS_POLL_INTERVAL_SECONDS = 2
+ATLAS_MAX_IMAGE_BYTES = 25 * 1024 * 1024
 
 
 def _windows_acl_api():
@@ -903,6 +909,7 @@ def _actual_dimensions(image_bytes: bytes) -> tuple[int, int] | None:
 def _get_api_key(provider: str) -> str:
     """Retrieve API key for the given provider from environment."""
     key_map = {
+        "atlas":     ("ATLASCLOUD_API_KEY",    "www.atlascloud.ai/console/api-keys"),
         "gemini":    ("GOOGLE_API_KEY",      "console.cloud.google.com/apis/credentials"),
         "openai":    ("OPENAI_API_KEY",       "platform.openai.com/api-keys"),
         "stability": ("STABILITY_API_KEY",    "platform.stability.ai"),
@@ -911,7 +918,8 @@ def _get_api_key(provider: str) -> str:
 
     if provider not in key_map:
         print(
-            f"Error: Unknown provider '{provider}'. Valid options: gemini, openai, stability, replicate",
+            f"Error: Unknown provider '{provider}'. Valid options: "
+            "atlas, gemini, openai, stability, replicate",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -1148,6 +1156,126 @@ def generate_replicate(prompt: str, width: int, height: int, api_key: str, model
     return resp.content
 
 
+def _atlas_json_response(response: Any, operation: str) -> dict[str, Any]:
+    """Validate an Atlas response and return its prediction object."""
+    if response.status_code < 200 or response.status_code >= 300:
+        raise RuntimeError(f"Atlas Cloud {operation} failed with HTTP {response.status_code}")
+    try:
+        try:
+            payload = response.json()
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError(f"Atlas Cloud {operation} returned invalid JSON") from exc
+    finally:
+        response.close()
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Atlas Cloud {operation} returned a non-object response")
+    api_code = payload.get("code")
+    if api_code not in (None, 200):
+        raise RuntimeError(f"Atlas Cloud {operation} failed with API code {api_code}")
+    prediction = payload.get("data", payload)
+    if not isinstance(prediction, dict):
+        raise RuntimeError(f"Atlas Cloud {operation} returned an invalid prediction object")
+    return prediction
+
+
+def _atlas_download_image(url: str) -> bytes:
+    """Download one Atlas result without forwarding API credentials."""
+    if urlparse(url).scheme != "https":
+        raise RuntimeError("Atlas Cloud returned a non-HTTPS output URL")
+    try:
+        import requests
+    except ImportError:
+        print("Error: requests package required. pip install requests", file=sys.stderr)
+        sys.exit(1)
+
+    response = guarded_request(requests, "GET", url, stream=True, timeout=120)
+    try:
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"Atlas Cloud output download failed with HTTP {response.status_code}"
+            )
+        content_type = response.headers.get("content-type", "").split(";", 1)[0].lower()
+        if content_type and not content_type.startswith("image/"):
+            raise RuntimeError(f"Atlas Cloud output is not an image ({content_type})")
+        content_length = response.headers.get("content-length")
+        if content_length:
+            try:
+                declared_size = int(content_length)
+            except ValueError as exc:
+                raise RuntimeError("Atlas Cloud output has an invalid Content-Length") from exc
+            if declared_size > ATLAS_MAX_IMAGE_BYTES:
+                raise RuntimeError("Atlas Cloud output exceeds the 25 MiB limit")
+
+        chunks: list[bytes] = []
+        total = 0
+        for chunk in response.iter_content(chunk_size=64 * 1024):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > ATLAS_MAX_IMAGE_BYTES:
+                raise RuntimeError("Atlas Cloud output exceeds the 25 MiB limit")
+            chunks.append(chunk)
+        image_bytes = b"".join(chunks)
+    finally:
+        response.close()
+
+    if not image_bytes or _actual_dimensions(image_bytes) is None:
+        raise RuntimeError("Atlas Cloud output is not a supported PNG or JPEG image")
+    return image_bytes
+
+
+def generate_atlas(prompt: str, width: int, height: int, api_key: str, model: str) -> bytes:
+    """Generate an image using Atlas Cloud's asynchronous prediction API."""
+    try:
+        import requests
+    except ImportError:
+        print("Error: requests package required. pip install requests", file=sys.stderr)
+        sys.exit(1)
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    submission = guarded_request(
+        requests,
+        "POST",
+        f"{ATLAS_API_BASE}/api/v1/model/generateImage",
+        headers=headers,
+        json={"model": model, "prompt": prompt, "size": f"{width}*{height}", "n": 1},
+        timeout=120,
+    )
+    prediction = _atlas_json_response(submission, "submission")
+    prediction_id = prediction.get("id")
+    if not isinstance(prediction_id, str) or not re.fullmatch(
+        r"[A-Za-z0-9._-]{1,200}", prediction_id
+    ):
+        raise RuntimeError("Atlas Cloud submission did not return a valid prediction ID")
+
+    poll_url = f"{ATLAS_API_BASE}/api/v1/model/prediction/{prediction_id}"
+    for attempt in range(ATLAS_MAX_POLL_ATTEMPTS):
+        if attempt:
+            time.sleep(ATLAS_POLL_INTERVAL_SECONDS)
+        poll = guarded_request(
+            requests,
+            "GET",
+            poll_url,
+            headers=headers,
+            timeout=60,
+        )
+        prediction = _atlas_json_response(poll, "prediction poll")
+        status = str(prediction.get("status", "")).lower()
+        if status == "completed":
+            outputs = prediction.get("outputs")
+            if not isinstance(outputs, list) or not outputs or not isinstance(outputs[0], str):
+                raise RuntimeError("Atlas Cloud completed without an image output URL")
+            return _atlas_download_image(outputs[0])
+        if status == "failed":
+            raise RuntimeError("Atlas Cloud image generation failed")
+        if status not in {"", "created", "starting", "queued", "processing"}:
+            raise RuntimeError(f"Atlas Cloud returned unknown prediction status: {status}")
+    raise TimeoutError("Atlas Cloud image generation did not complete before the polling limit")
+
+
 def generate_image(
     prompt: str,
     ratio: str,
@@ -1162,7 +1290,14 @@ def generate_image(
     provider, model = _require_selection(provider, model)
     width, height = _dims_from_ratio(ratio)
 
-    if provider == "gemini":
+    if provider == "atlas":
+        if reference_image_path:
+            raise ValueError(
+                "The atlas adapter does not declare reference-image support; "
+                "choose a verified compatible capability or omit the reference image"
+            )
+        image_bytes = generate_atlas(prompt, width, height, api_key, model)
+    elif provider == "gemini":
         image_bytes = generate_gemini(
             prompt, width, height, api_key, model, reference_image_path
         )
