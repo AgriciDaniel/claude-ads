@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-17",
+  "generated_at": "2026-08-22",
   "claims": [
     {
       "id": "CLM-0001",
@@ -538,8 +538,8 @@
       "verdict": "verified",
       "source_ids": ["xquik-tweetclaw-repository", "xquik-mcp-client-docs"],
       "load_bearing": false,
-      "last_verified": "2026-07-17",
-      "refresh_due": "2026-08-16",
+      "last_verified": "2026-08-22",
+      "refresh_due": "2026-09-21",
       "owner": "competitor-research-owner"
     }
   ]
