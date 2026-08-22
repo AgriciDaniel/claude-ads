@@ -22,6 +22,10 @@ def target_case(tmp_path, monkeypatch):
     target = next(item for item in inventory["targets"] if item["id"] == "runtime-linux-cp311")
     monkeypatch.setattr(verifier.release, "_load_dependency_inventory", lambda root: inventory)
     monkeypatch.setattr(verifier, "native_target_id", lambda profile: "runtime-linux-cp311")
+    monkeypatch.setattr(verifier.platform, "libc_ver", lambda: ("glibc", "2.39"))
+    monkeypatch.setattr(verifier.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(verifier.platform, "platform", lambda: "Linux-test")
+    monkeypatch.setattr(verifier.platform, "python_implementation", lambda: "CPython")
     monkeypatch.setattr(verifier.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout="a" * 40 + "\n"))
     report = {"pip_version": __import__("pip").__version__, "install": []}
     wheels = tmp_path / "wheels"; wheels.mkdir()

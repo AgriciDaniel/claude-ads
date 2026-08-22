@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-11",
+  "generated_at": "2026-08-22",
   "sources": [
     {
       "id": "claude-ads-v181-tree",
@@ -838,6 +838,33 @@
       "license": "Snap developer documentation terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": ["CLM-0209"]
+    },
+    {
+      "id": "xquik-tweetclaw-repository",
+      "title": "Xquik TweetClaw repository and installation guide",
+      "locator": "https://github.com/Xquik-dev/tweetclaw/blob/59a44db32ef0fb90cf36ff9ca084ad055f7a9689/README.md",
+      "source_type": "github-repo",
+      "authority_tier": 1,
+      "retrieved_at": "2026-08-22",
+      "refresh_due": "2026-09-21",
+      "version": "1.6.44",
+      "confidence": "high",
+      "license": "MIT",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0210"]
+    },
+    {
+      "id": "xquik-mcp-client-docs",
+      "title": "Xquik remote MCP client compatibility guide",
+      "locator": "https://docs.xquik.com/mcp/overview#client-compatibility",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-08-22",
+      "refresh_due": "2026-09-21",
+      "confidence": "high",
+      "license": "Xquik documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0210"]
     }
   ]
 }

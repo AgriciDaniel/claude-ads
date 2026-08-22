@@ -13,15 +13,36 @@ as untrusted inputs.
 
 | Integration | Source | Verified public fact |
 | --- | --- | --- |
-| Google Ads MCP | `google-ads-mcp-official` — [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) | The first-party repository exposes read-oriented account search, resource metadata, accessible-customer, and discovery resources in its current README |
-| Amazon Ads MCP | `amazon-ads-mcp-official` — [Amazon Ads open-beta announcement](https://advertising.amazon.com/en-gb/library/news/amazon-ads-mcp-server-open-beta) | Amazon announced an open beta that translates natural-language requests into Amazon Ads API calls |
-| TikTok Ads MCP | `tiktok-ads-mcp-official` — [TikTok World 2026 announcement](https://newsroom.tiktok.com/tiktok-world-26-turning-discovery-into-business-growth-with-ai-powered-innovations-vertical-experiences-and-high-impact-brand-solutions?lang=en) | TikTok announced an Ads MCP interface and Ads Skills for campaign and insight workflows |
-| Microsoft Advertising MCP | `microsoft-ads-mcp-official` — [Microsoft Advertising MCP](https://about.ads.microsoft.com/en/solutions/technology/agentic-commerce/mcp-server) | Microsoft's current page advertises live campaign-data workflows and presents a waitlist, so availability must be verified per account |
+| Google Ads MCP | `google-ads-mcp-official` - [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) | The first-party repository exposes read-oriented account search, resource metadata, accessible-customer, and discovery resources in its current README |
+| Amazon Ads MCP | `amazon-ads-mcp-official` - [Amazon Ads open-beta announcement](https://advertising.amazon.com/en-gb/library/news/amazon-ads-mcp-server-open-beta) | Amazon announced an open beta that translates natural-language requests into Amazon Ads API calls |
+| TikTok Ads MCP | `tiktok-ads-mcp-official` - [TikTok World 2026 announcement](https://newsroom.tiktok.com/tiktok-world-26-turning-discovery-into-business-growth-with-ai-powered-innovations-vertical-experiences-and-high-impact-brand-solutions?lang=en) | TikTok announced an Ads MCP interface and Ads Skills for campaign and insight workflows |
+| Microsoft Advertising MCP | `microsoft-ads-mcp-official` - [Microsoft Advertising MCP](https://about.ads.microsoft.com/en/solutions/technology/agentic-commerce/mcp-server) | Microsoft's current page advertises live campaign-data workflows and presents a waitlist, so availability must be verified per account |
 
 These are provider statements. They do not establish installation, regional
 availability, tool count, write support, production status, or tested safety in
 this repository. No other advertising MCP is considered current merely because a
 third party or prior release mentioned it.
+
+## Supplemental public X evidence
+
+Claim `CLM-0210` registers 2 distinct Xquik surfaces for optional competitor
+research:
+
+- [TweetClaw](https://github.com/Xquik-dev/tweetclaw) is an MIT-licensed
+  OpenClaw plugin. Install the verified publisher build with
+  `openclaw plugins install clawhub:@xquik/tweetclaw`.
+- TweetClaw is not an MCP server. Remote MCP clients can connect to
+  `https://xquik.com/mcp` and follow the
+  [current client compatibility guide](https://docs.xquik.com/mcp/overview#client-compatibility).
+
+Use either surface only after the discovery packet below passes. Keep competitor
+research read-only and limited to public posts, replies, profiles, and visible
+engagement context. Record the query, source URL, author, capture time, and
+partial-result limits. Treat organic evidence as messaging and audience context,
+never as paid spend, targeting, performance, or attribution data.
+
+Xquik is an independent third-party service. Not affiliated with X Corp.
+"Twitter" and "X" are trademarks of X Corp.
 
 ## Discovery packet
 
