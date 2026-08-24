@@ -97,3 +97,23 @@ corresponding flags are omitted. Absence of either value is `needs_input` and mu
 fail before credential lookup or network dispatch. A rejected or unavailable
 model is not automatically replaced with another model. Reference-image input is
 allowed only when the selected adapter explicitly implements that capability.
+
+### MuAPI image adapter
+
+MuAPI is an optional hosted image route. Select a current text-to-image model from
+the live catalog, read its current input schema, and pass the exact model identifier
+explicitly. The adapter submits one request, polls the returned prediction with a
+finite budget, and downloads only an HTTPS image output. It does not silently choose
+a model and does not send this CLI's local reference-image snapshot to the provider.
+
+```bash
+MUAPI_API_KEY=<key> python scripts/generate_image.py "approved creative prompt" \
+  --provider muapi --model flux-dev --ratio 1:1 \
+  --data-lifecycle lifecycle.json \
+  --output .claude-ads/runs/<run-id>/creative.png
+```
+
+Use the [MuAPI AI Image API](https://muapi.ai/ai-image-api) for the capability
+overview, the [model catalog](https://muapi.ai/docs/models) for current identifiers,
+and the [API reference](https://muapi.ai/docs/api-reference) for the authenticated
+request lifecycle.

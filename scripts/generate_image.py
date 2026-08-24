@@ -5,7 +5,7 @@ This local CLI is a fallback for environments whose approved image capability is
 not exposed through a host-native tool. It has no default provider or model.
 Select both from current capability evidence for every run.
 
-Implemented adapters are Gemini, OpenAI, Stability AI, and Replicate. Adapter
+Implemented adapters are Gemini, OpenAI, Stability AI, Replicate, and MuAPI. Adapter
 availability does not imply operator approval, account access, model availability,
 or fitness for a placement.
 
@@ -20,6 +20,7 @@ Environment variables:
     OPENAI_API_KEY       Required for openai provider
     STABILITY_API_KEY    Required for stability provider
     REPLICATE_API_TOKEN  Required for replicate provider
+    MUAPI_API_KEY        Required for muapi provider
 
 See ads/references/image-providers.md for pricing and capability details.
 """
@@ -40,7 +41,7 @@ import time
 import zlib
 from pathlib import Path
 from typing import Any, Mapping
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 from claude_ads_core.contracts import ContractError, load_contract, validate_contract
 # Single source of truth for credential redaction (see scripts/url_utils.py).
@@ -79,6 +80,9 @@ RETRY_BACKOFF = [1, 2, 4, 8]  # seconds
 
 MAX_BATCH_SIZE = 50
 MAX_DIMENSION = 8192
+MUAPI_API_BASE = "https://api.muapi.ai"
+MUAPI_MAX_POLLS = 60
+MUAPI_POLL_INTERVAL = 2
 
 
 def _windows_acl_api():
@@ -907,11 +911,12 @@ def _get_api_key(provider: str) -> str:
         "openai":    ("OPENAI_API_KEY",       "platform.openai.com/api-keys"),
         "stability": ("STABILITY_API_KEY",    "platform.stability.ai"),
         "replicate": ("REPLICATE_API_TOKEN",  "replicate.com/account/api-tokens"),
+        "muapi":     ("MUAPI_API_KEY",         "muapi.ai/access-keys"),
     }
 
     if provider not in key_map:
         print(
-            f"Error: Unknown provider '{provider}'. Valid options: gemini, openai, stability, replicate",
+            f"Error: Unknown provider '{provider}'. Valid options: gemini, openai, stability, replicate, muapi",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -1148,6 +1153,186 @@ def generate_replicate(prompt: str, width: int, height: int, api_key: str, model
     return resp.content
 
 
+def _muapi_request(method: str, path: str, api_key: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Make one guarded MuAPI JSON request against the fixed public API origin."""
+    try:
+        import requests
+    except ImportError as exc:
+        raise RuntimeError("requests package required for muapi provider") from exc
+
+    if not path.startswith("/api/v1/"):
+        raise ValueError("MuAPI path must be an /api/v1 endpoint")
+    response = guarded_request(
+        requests,
+        method,
+        f"{MUAPI_API_BASE}{path}",
+        headers={"Accept": "application/json", "x-api-key": api_key},
+        json=body,
+        timeout=60,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    if not isinstance(payload, dict):
+        raise RuntimeError("MuAPI returned a non-object JSON response")
+    return payload
+
+
+def _muapi_find_model(identifier: str, api_key: str) -> dict[str, Any]:
+    catalog = _muapi_request("GET", "/api/v1/models", api_key)
+    models = catalog.get("models")
+    if not isinstance(models, list):
+        raise RuntimeError("MuAPI model catalog did not contain a models array")
+    for item in models:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip()
+        endpoint = str(item.get("endpoint") or "").strip()
+        category = str(item.get("category") or "").strip().lower()
+        if identifier not in {name, endpoint}:
+            continue
+        if category not in {"text to image", "image to image"}:
+            raise ValueError(f"MuAPI model '{name}' is not an image-generation model")
+        if not endpoint.startswith("/api/v1/"):
+            raise RuntimeError("MuAPI catalog returned an invalid model endpoint")
+        return {"name": name, "endpoint": endpoint, "category": category}
+    raise ValueError(f"No current MuAPI image model matched '{identifier}'")
+
+
+def _muapi_dimension(value: int, schema: Mapping[str, Any]) -> int:
+    minimum = int(schema.get("minValue", 1))
+    maximum = int(schema.get("maxValue", MAX_DIMENSION))
+    step = max(1, int(schema.get("step", 1)))
+    rounded = round(value / step) * step
+    return max(minimum, min(maximum, rounded))
+
+
+def _muapi_payload(prompt: str, width: int, height: int, schema: Mapping[str, Any]) -> dict[str, Any]:
+    properties = schema.get("schemas", {}).get("input_data", {}).get("properties", {})
+    if not isinstance(properties, dict) or "prompt" not in properties:
+        raise RuntimeError("Selected MuAPI model did not expose a prompt input schema")
+    payload: dict[str, Any] = {"prompt": prompt}
+    if "width" in properties and "height" in properties:
+        payload["width"] = _muapi_dimension(width, properties["width"])
+        payload["height"] = _muapi_dimension(height, properties["height"])
+    elif "aspect_ratio" in properties:
+        supported = properties["aspect_ratio"].get("enum", [])
+        requested = min(
+            ASPECT_RATIOS,
+            key=lambda ratio: abs(
+                (ASPECT_RATIOS[ratio][0] / ASPECT_RATIOS[ratio][1]) - (width / height)
+            ),
+        )
+        if requested in supported:
+            payload["aspect_ratio"] = requested
+        elif "Auto" in supported:
+            payload["aspect_ratio"] = "Auto"
+    if "num_images" in properties:
+        payload["num_images"] = 1
+    return payload
+
+
+def _muapi_output_urls(value: Any) -> list[str]:
+    if isinstance(value, str) and value.startswith("https://"):
+        return [value]
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            result.extend(_muapi_output_urls(item))
+        return result
+    if isinstance(value, dict):
+        result = []
+        for key, item in value.items():
+            if key in {"get", "request_url", "status", "id", "created_at"}:
+                continue
+            result.extend(_muapi_output_urls(item))
+        return result
+    return []
+
+
+def _muapi_request_id(value: Mapping[str, Any]) -> str | None:
+    data = value.get("data")
+    candidates = [value.get("request_id"), value.get("id")]
+    if isinstance(data, dict):
+        candidates.extend([data.get("request_id"), data.get("id")])
+    for candidate in candidates:
+        if candidate:
+            return str(candidate)
+    return None
+
+
+def _muapi_download(url: str) -> bytes:
+    try:
+        import requests
+    except ImportError as exc:
+        raise RuntimeError("requests package required for muapi provider") from exc
+    if not url.startswith("https://"):
+        raise RuntimeError("MuAPI returned a non-HTTPS output URL")
+    response = guarded_request(
+        requests,
+        "GET",
+        url,
+        headers={"Accept": "image/*"},
+        timeout=120,
+    )
+    response.raise_for_status()
+    return response.content
+
+
+def generate_muapi(
+    prompt: str,
+    width: int,
+    height: int,
+    api_key: str,
+    model: str,
+    reference_image_path: str | None = None,
+) -> bytes:
+    """Generate one image through an explicitly selected current MuAPI model."""
+    if reference_image_path:
+        raise ValueError(
+            "The muapi adapter does not declare reference-image support; "
+            "use a verified image-to-image capability through a provider that supports local references"
+        )
+    selected = _muapi_find_model(model, api_key)
+    detail = _muapi_request("GET", f"/api/v1/models/{quote(selected['name'], safe='')}", api_key)
+    schema = detail.get("input_schema")
+    if not isinstance(schema, dict):
+        raise RuntimeError("MuAPI model metadata did not include an input schema")
+    payload = _muapi_payload(prompt, width, height, schema)
+
+    submission = _muapi_request("POST", selected["endpoint"], api_key, payload)
+    request_id = _muapi_request_id(submission)
+    if not request_id:
+        raise RuntimeError("MuAPI submission did not return a request ID")
+
+    for attempt in range(MUAPI_MAX_POLLS):
+        result = _muapi_request(
+            "GET",
+            f"/api/v1/predictions/{quote(request_id, safe='')}/result",
+            api_key,
+        )
+        data = result.get("data")
+        status = str(
+            result.get("status")
+            or (data.get("status") if isinstance(data, dict) else "")
+            or ""
+        ).lower()
+        outputs = _muapi_output_urls(result.get("outputs"))
+        if not outputs:
+            outputs = _muapi_output_urls(result.get("output"))
+        if not outputs:
+            outputs = _muapi_output_urls(result.get("data"))
+        if outputs:
+            return _muapi_download(outputs[0])
+        if status in {"failed", "error", "canceled", "cancelled", "timeout"}:
+            detail_message = result.get("error")
+            if not detail_message and isinstance(data, dict):
+                detail_message = data.get("error")
+            raise RuntimeError(f"MuAPI generation failed: {detail_message or status}")
+        if attempt + 1 < MUAPI_MAX_POLLS:
+            time.sleep(MUAPI_POLL_INTERVAL)
+    raise RuntimeError(f"MuAPI prediction did not finish after {MUAPI_MAX_POLLS} polls for request {request_id}")
+
+
 def generate_image(
     prompt: str,
     ratio: str,
@@ -1187,6 +1372,8 @@ def generate_image(
                 "choose a verified compatible capability or omit the reference image"
             )
         image_bytes = generate_replicate(prompt, width, height, api_key, model)
+    elif provider == "muapi":
+        image_bytes = generate_muapi(prompt, width, height, api_key, model, reference_image_path)
     else:
         print(f"Error: Unknown provider '{provider}'", file=sys.stderr)
         sys.exit(1)

@@ -105,6 +105,67 @@ def test_reference_image_is_not_silently_dropped_for_unsupported_adapter(monkeyp
         )
 
 
+def test_muapi_uses_current_catalog_schema_and_bounded_polling(monkeypatch):
+    responses = iter([
+        {
+            "models": [
+                {"name": "flux-dev", "category": "Text to Image", "endpoint": "/api/v1/flux-dev"},
+            ],
+        },
+        {
+            "input_schema": {
+                "schemas": {
+                    "input_data": {
+                        "properties": {
+                            "prompt": {"type": "string"},
+                            "width": {"minValue": 128, "maxValue": 2048, "step": 64},
+                            "height": {"minValue": 128, "maxValue": 2048, "step": 64},
+                            "num_images": {"minValue": 1, "maxValue": 4, "step": 1},
+                        },
+                    },
+                },
+            },
+        },
+        {"request_id": "request-1", "status": "queued"},
+        {"status": "processing"},
+        {"status": "completed", "outputs": ["https://cdn.example.test/image.png"]},
+    ])
+    calls = []
+
+    def fake_request(method, path, api_key, body=None):
+        calls.append((method, path, body, api_key))
+        return next(responses)
+
+    monkeypatch.setattr(generate_image, "_muapi_request", fake_request)
+    monkeypatch.setattr(generate_image, "_muapi_download", lambda url: b"image")
+    monkeypatch.setattr(generate_image.time, "sleep", lambda _: None)
+
+    image = generate_image.generate_muapi(
+        "a blue square", 1080, 1080, "ephemeral-key", "flux-dev"
+    )
+
+    assert image == b"image"
+    assert calls[2][0:3] == ("POST", "/api/v1/flux-dev", {
+        "prompt": "a blue square",
+        "width": 1088,
+        "height": 1088,
+        "num_images": 1,
+    })
+    assert [call[0] for call in calls[3:]] == ["GET", "GET"]
+
+
+def test_muapi_does_not_accept_a_local_reference_snapshot(monkeypatch):
+    monkeypatch.setattr(
+        generate_image,
+        "_muapi_find_model",
+        lambda *args: pytest.fail("catalog lookup must not occur for unsupported reference input"),
+    )
+    with pytest.raises(ValueError, match="does not declare reference-image support"):
+        generate_image.generate_muapi(
+            "prompt", 1024, 1024, "ephemeral-key", "flux-dev", "reference.png"
+        )
+
+
 def test_cli_requires_selection_before_credentials_or_network(monkeypatch, capsys):
     monkeypatch.delenv("ADS_IMAGE_PROVIDER", raising=False)
     monkeypatch.delenv("ADS_IMAGE_MODEL", raising=False)
