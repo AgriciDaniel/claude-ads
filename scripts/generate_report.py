@@ -15,6 +15,7 @@ Dependencies:
 """
 
 import argparse
+import html
 import json
 import logging
 import math
@@ -31,7 +32,7 @@ from url_utils import resolve_output_path, sanitize_error
 
 # Version stamp shown in PDF header/footer. Keep in sync with
 # .claude-plugin/plugin.json `version`.
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 try:
     from reportlab.lib import colors
@@ -107,12 +108,11 @@ SKIP_SECTIONS = {"executive summary", "critical issues", "quick wins"}
 # ---------------------------------------------------------------------------
 
 def _md_to_html(text: str) -> str:
-    """Convert markdown bold/italic to reportlab-compatible HTML tags."""
+    """Escape untrusted text, then add a constrained set of ReportLab tags."""
+    text = html.escape(str(text), quote=True)
     text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
     text = re.sub(r"\*(.+?)\*", r"<i>\1</i>", text)
     text = re.sub(r"`(.+?)`", r"<font face='Courier' size='9'>\1</font>", text)
-    # Escape angle brackets that aren't part of our tags
-    # (reportlab Paragraph treats < as HTML)
     return text
 
 
@@ -504,7 +504,7 @@ def build_pdf(data: dict, output_path: str, brand_name: str = ""):
 
     # --- Title Page Header ---
     title = brand_name or data.get("title", "Ad Account Audit Report")
-    elements.append(Paragraph(title, styles["RTitle"]))
+    elements.append(Paragraph(_md_to_html(title), styles["RTitle"]))
     elements.append(Spacer(1, 4))
     elements.append(Paragraph(
         f"Generated {datetime.now().strftime('%B %d, %Y')}  |  Powered by claude-ads v{__version__}",
@@ -599,7 +599,7 @@ def build_pdf(data: dict, output_path: str, brand_name: str = ""):
         elements.append(HRFlowable(width="100%", thickness=0.5,
                                    color=colors.HexColor("#e2e8f0")))
         elements.append(Spacer(1, 4))
-        elements.append(Paragraph(section["title"], styles["RSectionHead"]))
+        elements.append(Paragraph(_md_to_html(section["title"]), styles["RSectionHead"]))
 
         for item in items:
             itype = item.get("type", "")

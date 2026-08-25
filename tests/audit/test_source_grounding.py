@@ -232,8 +232,8 @@ def test_platform_grounding_claims_are_load_bearing_and_fresh(repo_root):
         claim = claims[claim_id]
         assert claim["load_bearing"] is True
         assert claim["verdict"] == "verified"
-        assert claim["last_verified"] == "2026-07-11"
-        assert claim["refresh_due"] == "2026-08-10"
+        assert claim["last_verified"] == "2026-08-25"
+        assert claim["refresh_due"] == "2026-09-24"
 
 
 def test_new_platform_foundation_claims_use_registered_official_sources(repo_root):

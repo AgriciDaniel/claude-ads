@@ -47,6 +47,7 @@ PACKAGE_FILES = {
     "requirements-dev.txt",
     "requirements.lock",
     "requirements-dev.lock",
+    "tests/scripts/test_generate_report.py",
     "uninstall.ps1",
     "uninstall.sh",
 }
@@ -1316,6 +1317,7 @@ def _check_grounding_and_capabilities(root: Path, as_of: date) -> dict[str, obje
     if len(sources) != len(sources_raw) or len(claims) != len(claims_raw):
         raise ReleaseError("source or claim ledger contains an invalid or duplicate ID")
     load_bearing = 0
+    load_bearing_source_ids: set[str] = set()
     for claim_id, claim in claims.items():
         source_ids = claim.get("source_ids")
         if not isinstance(source_ids, list) or not source_ids:
@@ -1329,11 +1331,17 @@ def _check_grounding_and_capabilities(root: Path, as_of: date) -> dict[str, obje
             if claim.get("verdict") != "verified":
                 raise ReleaseError(f"load-bearing claim is not verified: {claim_id}")
             try:
+                verified = date.fromisoformat(str(claim["last_verified"]))
                 due = date.fromisoformat(str(claim["refresh_due"]))
             except (KeyError, ValueError) as exc:
                 raise ReleaseError(f"load-bearing claim has invalid refresh date: {claim_id}") from exc
+            if verified > as_of or due < verified:
+                raise ReleaseError(
+                    f"load-bearing claim has an invalid verification window: {claim_id}"
+                )
             if due < as_of:
                 raise ReleaseError(f"load-bearing claim is stale: {claim_id}")
+            load_bearing_source_ids.update(source_ids)
     if load_bearing == 0:
         raise ReleaseError("no load-bearing claims are registered")
     for source_id, source in sources.items():
@@ -1342,6 +1350,20 @@ def _check_grounding_and_capabilities(root: Path, as_of: date) -> dict[str, obje
                 raise ReleaseError(f"source/claim reciprocity failed: {source_id} -> {claim_id}")
         if not source.get("license") or source.get("redistribution") == "prohibited":
             raise ReleaseError(f"source lacks releasable license metadata: {source_id}")
+        if source_id in load_bearing_source_ids:
+            try:
+                retrieved = date.fromisoformat(str(source["retrieved_at"]))
+                due = date.fromisoformat(str(source["refresh_due"]))
+            except (KeyError, ValueError) as exc:
+                raise ReleaseError(
+                    f"load-bearing source has invalid refresh date: {source_id}"
+                ) from exc
+            if retrieved > as_of or due < retrieved:
+                raise ReleaseError(
+                    f"load-bearing source has an invalid verification window: {source_id}"
+                )
+            if due < as_of:
+                raise ReleaseError(f"load-bearing source is stale: {source_id}")
 
     verified_capabilities = 0
     disabled_capabilities = 0
@@ -1423,6 +1445,49 @@ def _check_grounding_and_capabilities(root: Path, as_of: date) -> dict[str, obje
         "source_grounded_control_count": grounded_controls,
         "enabled_scoring_profile_count": enabled_profiles,
         "disabled_scoring_profile_count": disabled_profiles,
+    }
+
+
+def _check_vulnerability_exceptions(root: Path, as_of: date) -> dict[str, object]:
+    module = _load_local_module(
+        root, "scripts/audit_dependencies.py", "claude_ads_dependency_audit"
+    )
+    try:
+        records, scope = module.load_exceptions(root, as_of)
+    except module.DependencyAuditError as exc:
+        raise ReleaseError(f"vulnerability exception integrity failed: {exc}") from exc
+    document = _json_object(
+        root / "control-plane/manifests/vulnerability-exceptions.json",
+        "vulnerability exception ledger",
+    )
+    evidence_paths = sorted(
+        {
+            path
+            for record in document["exceptions"]
+            for path in record["evidence_paths"]
+        }
+    )
+    required_release_paths = {
+        "control-plane/manifests/vulnerability-exceptions.json",
+        "control-plane/schemas/vulnerability-exceptions.schema.json",
+        "scripts/audit_dependencies.py",
+        *evidence_paths,
+    }
+    excluded = sorted(
+        required_release_paths - set(package_files(sorted(required_release_paths)))
+    )
+    if excluded:
+        raise ReleaseError(
+            "vulnerability evidence is excluded from the release package: "
+            + ", ".join(excluded)
+        )
+    packages = sorted({record.package for record in records.values()})
+    return {
+        "disposition": "not_affected",
+        "exception_count": len(records),
+        "packages": packages,
+        "guarded_code_scope": scope,
+        "packaged_evidence_paths": evidence_paths,
     }
 
 
@@ -1710,26 +1775,204 @@ def _check_repository_review_ledger(root: Path) -> dict[str, object]:
     }
 
 
-def _check_ecosystem(root: Path) -> dict[str, object]:
+def _check_ecosystem(root: Path, as_of: date | None = None) -> dict[str, object]:
     document = _json_object(
         root / "control-plane/manifests/ecosystem-dispositions.json",
         "ecosystem disposition ledger",
     )
+    if set(document) != {
+        "schema_version",
+        "reviewed_at",
+        "public_snapshot",
+        "canonical_snapshot",
+        "entries",
+    }:
+        raise ReleaseError("ecosystem disposition ledger has unsupported or missing fields")
+    if document.get("schema_version") != "1.0.0":
+        raise ReleaseError("ecosystem disposition ledger schema version is unsupported")
+    try:
+        reviewed_at = date.fromisoformat(str(document["reviewed_at"]))
+    except ValueError as exc:
+        raise ReleaseError("ecosystem disposition review date is invalid") from exc
+    as_of = as_of or datetime.now(timezone.utc).date()
+    if reviewed_at > as_of or (as_of - reviewed_at).days > 30:
+        raise ReleaseError("ecosystem disposition review is stale or future-dated")
+
+    snapshot_fields = {
+        "repository",
+        "observed_at",
+        "source_url",
+        "issue_numbers",
+        "pull_request_numbers",
+        "pull_request_heads",
+    }
+
+    def validated_snapshot(
+        field: str,
+        expected_repository: str,
+        *,
+        require_issues: bool,
+    ) -> tuple[dict[str, object], list[int], list[int]]:
+        snapshot = document.get(field)
+        label = field.removesuffix("_snapshot")
+        expected_url = f"https://github.com/{expected_repository}"
+        if not isinstance(snapshot, dict) or set(snapshot) != snapshot_fields:
+            raise ReleaseError(
+                f"{label} ecosystem snapshot has unsupported or missing fields"
+            )
+        if (
+            snapshot.get("repository") != expected_repository
+            or snapshot.get("source_url") != expected_url
+            or snapshot.get("observed_at") != document["reviewed_at"]
+        ):
+            raise ReleaseError(
+                f"{label} ecosystem snapshot identity or date is inconsistent"
+            )
+
+        def numbers(name: str, *, required: bool) -> list[int]:
+            values = snapshot.get(name)
+            if (
+                not isinstance(values, list)
+                or (required and not values)
+                or any(type(value) is not int or value < 1 for value in values)
+                or values != sorted(set(values))
+            ):
+                raise ReleaseError(f"{label} ecosystem snapshot {name} is invalid")
+            return values
+
+        issues = numbers("issue_numbers", required=require_issues)
+        pulls = numbers("pull_request_numbers", required=True)
+        heads = snapshot.get("pull_request_heads")
+        if (
+            not isinstance(heads, dict)
+            or set(heads) != {str(number) for number in pulls}
+            or any(
+                not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha)
+                for sha in heads.values()
+            )
+        ):
+            raise ReleaseError(f"{label} pull-request head snapshot is invalid")
+        return snapshot, issues, pulls
+
+    public_snapshot, public_issues, public_pulls = validated_snapshot(
+        "public_snapshot", "AgriciDaniel/claude-ads", require_issues=True
+    )
+    canonical_snapshot, canonical_issues, canonical_pulls = validated_snapshot(
+        "canonical_snapshot", "AI-Marketing-Hub/claude-ads", require_issues=False
+    )
     entries = document.get("entries")
     if not isinstance(entries, list) or not entries:
         raise ReleaseError("ecosystem disposition ledger is empty")
+    required_fields = {
+        "id",
+        "repository",
+        "kind",
+        "number",
+        "title",
+        "url",
+        "state",
+        "decision",
+        "license_review",
+        "rationale",
+        "requirement_ids",
+    }
+    allowed_fields = required_fields | {"regression_tests"}
+    decisions = {
+        "adopt-reimplement",
+        "adopt-concept",
+        "already-addressed",
+        "defer",
+        "reject",
+        "superseded",
+    }
     ids: set[str] = set()
+    snapshots = {
+        public_snapshot["repository"]: (public_snapshot, public_issues, public_pulls),
+        canonical_snapshot["repository"]: (
+            canonical_snapshot,
+            canonical_issues,
+            canonical_pulls,
+        ),
+    }
+    observed_items: dict[str, set[tuple[str, int]]] = {
+        repository: set() for repository in snapshots
+    }
     for entry in entries:
-        if not isinstance(entry, dict) or not isinstance(entry.get("id"), str):
+        if (
+            not isinstance(entry, dict)
+            or not required_fields <= set(entry)
+            or set(entry) - allowed_fields
+            or not isinstance(entry.get("id"), str)
+        ):
             raise ReleaseError("ecosystem disposition entry is invalid")
         if entry["id"] in ids:
             raise ReleaseError(f"duplicate ecosystem disposition: {entry['id']}")
         ids.add(entry["id"])
-        if entry.get("license_review") == "pending" or entry.get("decision") in {None, "pending"}:
+        if (
+            entry.get("kind") not in {"issue", "pull-request"}
+            or type(entry.get("number")) is not int
+            or entry["number"] < 1
+            or entry.get("state") not in {"open", "closed", "merged"}
+            or entry.get("decision") not in decisions
+            or entry.get("license_review") not in {"same-project-mit", "metadata-only"}
+            or not isinstance(entry.get("title"), str)
+            or not entry["title"].strip()
+            or not isinstance(entry.get("rationale"), str)
+            or not entry["rationale"].strip()
+            or not isinstance(entry.get("requirement_ids"), list)
+            or not entry["requirement_ids"]
+            or not all(
+                isinstance(requirement_id, str)
+                and re.fullmatch(r"REQ-[A-Z]+-[0-9]{3}", requirement_id)
+                for requirement_id in entry["requirement_ids"]
+            )
+            or len(entry["requirement_ids"]) != len(set(entry["requirement_ids"]))
+        ):
             raise ReleaseError(f"ecosystem entry remains pending: {entry['id']}")
+        regression_tests = entry.get("regression_tests")
+        if regression_tests is not None and (
+            not isinstance(regression_tests, list)
+            or not regression_tests
+            or not all(isinstance(item, str) and item.strip() for item in regression_tests)
+            or len(regression_tests) != len(set(regression_tests))
+        ):
+            raise ReleaseError(f"ecosystem regression evidence is invalid: {entry['id']}")
+        repository = entry.get("repository")
+        if repository not in snapshots:
+            raise ReleaseError(f"ecosystem entry repository is not snapshotted: {entry['id']}")
+        item = (entry["kind"], entry["number"])
+        if item in observed_items[repository]:
+            raise ReleaseError(f"duplicate ecosystem tracker item: {repository}/{item}")
+        observed_items[repository].add(item)
+        snapshot = snapshots[repository][0]
+        item_path = "issues" if entry["kind"] == "issue" else "pull"
+        expected_url = f"{snapshot['source_url']}/{item_path}/{entry['number']}"
+        expected_license = (
+            "metadata-only" if entry["kind"] == "issue" else "same-project-mit"
+        )
+        if entry.get("url") != expected_url or entry.get("license_review") != expected_license:
+            raise ReleaseError(f"ecosystem entry URL or license is invalid: {entry['id']}")
+
+    for repository, (_, issues, pulls) in snapshots.items():
+        expected_items = {
+            *(("issue", number) for number in issues),
+            *(("pull-request", number) for number in pulls),
+        }
+        if observed_items[repository] != expected_items:
+            missing = sorted(expected_items - observed_items[repository])
+            extra = sorted(observed_items[repository] - expected_items)
+            raise ReleaseError(
+                f"{repository} ecosystem snapshot coverage mismatch; "
+                f"missing={missing}, extra={extra}"
+            )
     repository_evidence = _check_repository_review_ledger(root)
     return {
         "issue_and_pull_request_count": len(entries),
+        "public_issue_count": len(public_issues),
+        "public_pull_request_count": len(public_pulls),
+        "canonical_issue_count": len(canonical_issues),
+        "canonical_pull_request_count": len(canonical_pulls),
+        "public_reviewed_at": reviewed_at.isoformat(),
         **repository_evidence,
     }
 
@@ -1788,6 +2031,7 @@ def verify_github_run(root: Path, run_id: str, commit_sha: str) -> dict[str, obj
         "Installer tests (windows-latest, Python 3.11)",
         "Installer tests (windows-latest, Python 3.12)",
         "Reproducible package smoke test",
+        "validate",
     }
     conclusions = {
         job.get("name"): job.get("conclusion")
@@ -1855,7 +2099,14 @@ def evaluate_release_gate(
         "source-capability-integrity",
         lambda: _check_grounding_and_capabilities(root, datetime.now(timezone.utc).date()),
     )
-    check("ecosystem-dispositions", lambda: _check_ecosystem(root))
+    check(
+        "vulnerability-exception-integrity",
+        lambda: _check_vulnerability_exceptions(root, datetime.now(timezone.utc).date()),
+    )
+    check(
+        "ecosystem-dispositions",
+        lambda: _check_ecosystem(root, datetime.now(timezone.utc).date()),
+    )
 
     def model_evidence() -> dict[str, object]:
         if model_report is None or not model_report.is_file():

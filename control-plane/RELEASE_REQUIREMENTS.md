@@ -45,6 +45,11 @@ capability loses its test evidence, or required remote CI does not pass.
   logs, task packets, archives, and Git history.
 - Data classification, redaction, retention, encryption, and deletion behavior
   are documented and tested.
+- Dependency advisories are fixed or have expiring, machine-checked
+  `not_affected` evidence bound to the exact package version and unused code
+  path. New advisories, accepted-risk dispositions, import drift, or expired
+  evidence fail closed. Every referenced evidence path must remain in the
+  public release package.
 
 ## Evaluation gates
 

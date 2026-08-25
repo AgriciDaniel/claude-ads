@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-11",
+  "generated_at": "2026-08-25",
   "claims": [
     {
       "id": "CLM-0001",
@@ -10,8 +10,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-v181-tree"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "repository-maintainers"
     },
     {
@@ -22,8 +22,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-product-contract"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "product-owner"
     },
     {
@@ -34,8 +34,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-product-contract"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "security-owner"
     },
     {
@@ -65,13 +65,13 @@
     {
       "id": "CLM-0006",
       "statement": "The v2 generic CSV adapter normalizes the documented portable export shape for all twelve target platforms, with one sanitized fixture per platform and a parameterized contract test; it does not provide native live API access or writes.",
-      "scope": "portable CSV export ingestion at git commit df8ebb1",
+      "scope": "portable CSV export ingestion at git commit 8639529",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["claude-ads-v2-export-adapter"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "adapter-owner"
     },
     {
@@ -82,8 +82,8 @@
       "verdict": "verified",
       "source_ids": ["google-ads-api-official", "google-ads-conversion-goals-official", "google-ads-enhanced-conversions-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "google-evidence-owner"
     },
     {
@@ -94,8 +94,8 @@
       "verdict": "verified",
       "source_ids": ["meta-marketing-api-official", "meta-conversions-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "meta-evidence-owner"
     },
     {
@@ -106,8 +106,8 @@
       "verdict": "verified",
       "source_ids": ["linkedin-marketing-api-official", "linkedin-conversion-tracking-official", "linkedin-conversions-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "linkedin-evidence-owner"
     },
     {
@@ -118,20 +118,20 @@
       "verdict": "verified",
       "source_ids": ["tiktok-business-api-official", "tiktok-events-api-official", "tiktok-pixel-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "tiktok-evidence-owner"
     },
     {
       "id": "CLM-0011",
-      "statement": "Microsoft Advertising uses UET for website conversion tracking, provides a server-side Conversions API, and documents Google Ads import mappings and limitations that require explicit post-import validation.",
+      "statement": "Microsoft Advertising uses UET for website conversion tracking, offers a server-side Conversions API in pilot, and documents Google Ads import mappings and limitations that require explicit post-import validation.",
       "scope": "Microsoft runtime measurement and import controls; imported fields and pilots must be checked against current account evidence",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-advertising-api-official", "microsoft-uet-official", "microsoft-conversions-api-official", "microsoft-google-import-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "microsoft-evidence-owner"
     },
     {
@@ -142,8 +142,8 @@
       "verdict": "verified",
       "source_ids": ["youtube-google-ads-video-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "youtube-evidence-owner"
     },
     {
@@ -154,8 +154,8 @@
       "verdict": "verified",
       "source_ids": ["apple-ads-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "apple-evidence-owner"
     },
     {
@@ -166,8 +166,8 @@
       "verdict": "verified",
       "source_ids": ["amazon-ads-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "amazon-evidence-owner"
     },
     {
@@ -178,8 +178,8 @@
       "verdict": "verified",
       "source_ids": ["reddit-business-help"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "reddit-evidence-owner"
     },
     {
@@ -190,8 +190,8 @@
       "verdict": "verified",
       "source_ids": ["pinterest-conversions-api"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "pinterest-evidence-owner"
     },
     {
@@ -202,8 +202,8 @@
       "verdict": "verified",
       "source_ids": ["snap-marketing-api"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "snapchat-evidence-owner"
     },
     {
@@ -214,8 +214,8 @@
       "verdict": "verified",
       "source_ids": ["x-conversion-tracking"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "x-evidence-owner"
     },
     {
@@ -430,8 +430,8 @@
       "verdict": "verified",
       "source_ids": ["google-ads-campaign-fields-official", "youtube-google-ads-video-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -442,8 +442,8 @@
       "verdict": "verified",
       "source_ids": ["meta-insights-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -454,20 +454,20 @@
       "verdict": "verified",
       "source_ids": ["linkedin-ad-analytics-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
       "id": "CLM-0204",
-      "statement": "TikTok integrated AUCTION_AD reporting provides the daily advertiser, campaign, ad, spend, and selected conversion fields used by the native projection.",
+      "statement": "TikTok API for Business v1.3 basic reporting at the AUCTION_AD level provides daily advertiser, campaign, ad, spend, and selected conversion fields used by the native projection.",
       "scope": "tiktok-integrated-report-ad-daily-v1 only",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["tiktok-integrated-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -478,8 +478,8 @@
       "verdict": "verified",
       "source_ids": ["microsoft-ad-performance-report-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -490,8 +490,8 @@
       "verdict": "verified",
       "source_ids": ["apple-campaign-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -502,8 +502,8 @@
       "verdict": "verified",
       "source_ids": ["reddit-ads-reporting-v3-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -514,8 +514,8 @@
       "verdict": "verified",
       "source_ids": ["pinterest-ads-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     },
     {
@@ -526,8 +526,8 @@
       "verdict": "verified",
       "source_ids": ["snap-ads-measurement-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
     }
   ]

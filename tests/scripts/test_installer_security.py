@@ -164,6 +164,7 @@ def test_bash_installer_syntax_and_no_global_pip_escape_hatch():
     assert "System.IO.FileSystemAclExtensions]::GetAccessControl" in powershell
     assert "Get-Acl" not in powershell
     assert "Refusing to overwrite unowned file" in powershell
+    assert "Bash ownership manifest detected" in powershell
     assert "-band [IO.FileAttributes]::ReparsePoint" in powershell
     assert powershell.count("Copy-Item") == 1
 
@@ -265,6 +266,57 @@ def test_unsupported_python_fails_before_any_destination_mutation(tmp_path):
 
 
 @BASH_INSTALLER_ONLY
+def test_windows_bash_install_redirects_to_powershell_before_mutation(tmp_path):
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    fake_bin = _fake_python(
+        tmp_path, "cpython|3.12|windows|amd64|none|none|unsupported"
+    )
+    result = subprocess.run(
+        [
+            "bash",
+            str(ROOT / "install.sh"),
+            "--target=claude",
+            "--source=local",
+            f"--skill-dir={skills}",
+            f"--agent-dir={agents}",
+        ],
+        cwd=ROOT,
+        env={**os.environ, "PATH": f"{fake_bin}:{os.environ['PATH']}"},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "Use install.ps1" in result.stderr
+    assert not skills.exists()
+    assert not agents.exists()
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_rejects_powershell_manifest_before_mutation(tmp_path):
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    main_skill = skills / "ads" / "SKILL.md"
+    main_skill.parent.mkdir(parents=True)
+    main_skill.write_text("power-shell-owned\n", encoding="utf-8")
+    manifest = skills / ".claude-ads-claude.manifest.json"
+    manifest.write_text('{"version":1}\n', encoding="utf-8")
+
+    result = _run(
+        "install.sh",
+        "--target=claude",
+        "--source=local",
+        "--no-deps",
+        f"--skill-dir={skills}",
+        f"--agent-dir={agents}",
+    )
+
+    assert result.returncode != 0
+    assert "PowerShell ownership manifest detected" in result.stderr
+    assert main_skill.read_text(encoding="utf-8") == "power-shell-owned\n"
+    assert not agents.exists()
+
+
+@BASH_INSTALLER_ONLY
 def test_musl_linux_fails_before_any_destination_mutation(tmp_path):
     skills, agents = tmp_path / "skills", tmp_path / "agents"
     fake_bin = _fake_python(tmp_path, "cpython|3.12|linux|x86_64|musl|1.2.5|unsupported")
@@ -342,6 +394,26 @@ def test_powershell_installer_rejects_unowned_main_file_before_any_mutation(tmp_
     assert "Refusing to overwrite unowned file" in install.stdout + install.stderr
     assert main_skill.read_text(encoding="utf-8") == "user-owned\n"
     assert not (skills / "ads" / "references").exists()
+    assert not agents.exists()
+    assert not (skills / ".claude-ads-claude.manifest.json").exists()
+
+
+@POWERSHELL_ONLY
+def test_powershell_installer_rejects_bash_manifest_before_any_mutation(tmp_path):
+    skills = tmp_path / "skills"
+    agents = tmp_path / "agents"
+    main_skill = skills / "ads" / "SKILL.md"
+    main_skill.parent.mkdir(parents=True)
+    main_skill.write_text("bash-owned\n", encoding="utf-8")
+    (skills / ".claude-ads-claude.manifest").write_text(
+        "F|/bash-owned-placeholder\n", encoding="utf-8"
+    )
+
+    install = _powershell_install(skills, agents)
+
+    assert install.returncode != 0
+    assert "Bash ownership manifest detected" in install.stdout + install.stderr
+    assert main_skill.read_text(encoding="utf-8") == "bash-owned\n"
     assert not agents.exists()
     assert not (skills / ".claude-ads-claude.manifest.json").exists()
 

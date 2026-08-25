@@ -5,6 +5,50 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+* **Evidence and ecosystem review**: refreshed all 25 load-bearing claims from
+  current primary sources, corrected an unreachable repository evidence SHA,
+  and bound the release gate to exact-head snapshots covering 21 public issues,
+  35 public pull requests, and 13 canonical pull requests reviewed on
+  2026-08-25.
+* **CI supply chain**: pinned current major releases of checkout, Python setup,
+  and Dependabot metadata actions by verified commit SHA, and added the
+  aggregate `validate` job required by branch protection. The Dependabot
+  workflow is now read-only, leaving approval and merge to a human.
+
+### Fixed
+
+* **Landing-page audit integrity**: `analyze_landing.py` now exits nonzero and
+  withholds audit grades when browser validation, navigation, or page analysis
+  fails. JSON failures remain machine-readable without presenting missing
+  observations as failed landing-page controls.
+* **Cross-installer safety**: the Bash and PowerShell installers now reject each
+  other's ownership manifests before any mutation. Bash also redirects Windows
+  dependency installs to PowerShell, with focused recovery guidance and
+  regression coverage.
+* **Release verification**: load-bearing source dates now fail closed alongside
+  claim dates, public tracker coverage must exactly match the reviewed snapshot,
+  and target-lock tests no longer replace unrelated subprocess calls.
+* **Product metadata**: generated PDF reports use the 2.0.1 product version
+  while the Python core correctly retains its independent 2.0.0 version.
+* **Legacy report markup boundary**: user-controlled Markdown, section titles,
+  and brand names are escaped before the constrained ReportLab formatting tags
+  are introduced, preventing raw ReportLab markup from reaching the renderer.
+
+### Security
+
+* **Dependency VEX gate**: added 16 expiring `not_affected` dispositions for
+  current cryptography and Pillow advisories. Each is bound to exact lock
+  versions, upstream advisory IDs, evidence paths, and prohibited imports;
+  any new advisory, execution-path drift, accepted risk, or expiry fails CI.
+  The release retains every referenced evidence path. CI uses the current
+  pinned `pip-audit` 2.10.1 patch release.
+* **Code scanning**: added a least-privilege Python CodeQL workflow using the
+  `security-extended` query suite and exact action commit pins.
+
 ## [2.0.1] - 2026-07-13
 
 Documentation and metadata patch on top of v2.0.0 for the public mirror

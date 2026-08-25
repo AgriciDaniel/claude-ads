@@ -15,7 +15,7 @@ from ..contracts import ContractError, validate_contract
 from ..models import AccountSnapshot
 from .base import AdapterCapabilities, AdapterError, BaseAdapter, Capability
 from .csv_export import MAX_EXPORT_BYTES, MAX_EXPORT_COLUMNS, MAX_EXPORT_ROWS
-from .mappings_v1 import NativeExportProfile, NativeFieldMapping, get_native_profile
+from .mappings_v1 import NativeFieldMapping, get_native_profile
 
 
 class NativeExportError(AdapterError):

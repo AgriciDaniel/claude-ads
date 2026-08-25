@@ -190,12 +190,20 @@ function Main {
         throw "Skill and agent install roots must not overlap: $SkillBase ; $AgentDirResolved"
     }
     $SkillDirResolved = [IO.Path]::GetFullPath((Join-Path $SkillBase "ads"))
+    $BashManifestPath = [IO.Path]::GetFullPath((Join-Path $SkillBase ".claude-ads-$Target.manifest"))
     $ManifestPath = [IO.Path]::GetFullPath((Join-Path $SkillBase ".claude-ads-$Target.manifest.json"))
     $RepoUrl = "https://github.com/AgriciDaniel/claude-ads"
     $StringComparer = if ($PathComparison -eq [StringComparison]::OrdinalIgnoreCase) {
         [StringComparer]::OrdinalIgnoreCase
     } else {
         [StringComparer]::Ordinal
+    }
+
+    # Bash and PowerShell use different ownership-manifest contracts. Never
+    # let one installer infer overwrite authority from the other contract.
+    $BashManifestItem = Get-Item -LiteralPath $BashManifestPath -Force -ErrorAction SilentlyContinue
+    if ($null -ne $BashManifestItem) {
+        throw "Bash ownership manifest detected: $BashManifestPath. Continue with install.sh, or uninstall with uninstall.sh before switching installers."
     }
 
     function Get-RootPrefix([string]$Root) {

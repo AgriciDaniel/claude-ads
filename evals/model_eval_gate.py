@@ -12,7 +12,7 @@ the summary.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime
 import hashlib
 import json
 from pathlib import Path, PurePosixPath

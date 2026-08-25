@@ -239,6 +239,7 @@ main() {
 
     local SKILL_DIR="${SKILL_BASE}/ads"
     local MANIFEST_PATH="${SKILL_BASE}/.claude-ads-${TARGET}.manifest"
+    local POWERSHELL_MANIFEST_PATH="${MANIFEST_PATH}.json"
     local SOURCE_DIR=""
     local TEMP_DIR=""
     local MANIFEST_TMP=""
@@ -278,6 +279,14 @@ main() {
         }
     fi
 
+    # Bash and PowerShell use different ownership-manifest contracts. Never
+    # let one installer infer overwrite authority from the other contract.
+    if [ -e "$POWERSHELL_MANIFEST_PATH" ]; then
+        echo "✗ PowerShell ownership manifest detected: ${POWERSHELL_MANIFEST_PATH}" >&2
+        echo "  Continue with install.ps1, or uninstall with uninstall.ps1 before switching installers." >&2
+        return 1
+    fi
+
     # Fail before any destination mutation or dependency network access when
     # the requested managed runtime is outside the supported wheel-lock matrix.
     if [ "${ALLOW_PIP}" = "1" ] && [ "$INSTALL_DEPS" = "1" ]; then
@@ -299,6 +308,7 @@ print("|".join((sys.implementation.name, f"{sys.version_info.major}.{sys.version
             cpython\|3.12\|darwin\|x86_64\|*\|*\|supported) DEPENDENCY_TARGET_ID="runtime-macos-x86-cp312" ;;
             cpython\|3.11\|darwin\|arm64\|*\|*\|supported) DEPENDENCY_TARGET_ID="runtime-macos-arm-cp311" ;;
             cpython\|3.12\|darwin\|arm64\|*\|*\|supported) DEPENDENCY_TARGET_ID="runtime-macos-arm-cp312" ;;
+            *\|windows\|*) echo "✗ install.sh does not manage Windows Python dependencies. Use install.ps1 -Source local." >&2; return 1 ;;
             *\|linux\|*\|musl\|*\|unsupported) echo "✗ Managed dependencies require glibc >=2.17; musl Linux is unsupported. Re-run with --no-deps." >&2; return 1 ;;
             *) echo "✗ No verified dependency lock target for ${PYTHON_TARGET}. Re-run with --no-deps; moving-range fallback is disabled." >&2; return 1 ;;
         esac
