@@ -829,6 +829,15 @@ def build_plan(contract_path: Path, root: Path) -> dict[str, Any]:
     contract = _load_contract(contract_path)
     _load_schemas(root, contract)
     suite = _load_suite(root, contract)
+    candidate_commit, candidate_tree = _git_identity(root, "HEAD")
+    subjects = {
+        "candidate": {
+            **contract["subjects"]["candidate"],
+            "git_commit": candidate_commit,
+            "git_tree": candidate_tree,
+        },
+        "retained_v1": contract["subjects"]["retained_v1"],
+    }
     return {
         "schema_version": "2.0.0",
         "artifact_class": "external_model_execution_plan",
@@ -837,7 +846,7 @@ def build_plan(contract_path: Path, root: Path) -> dict[str, Any]:
         "schemas": contract["schemas"],
         "suite": contract["suite"],
         "result_path": contract["result_path"],
-        "subjects": contract["subjects"],
+        "subjects": subjects,
         "runtime_requirements": contract["runtime"],
         "evaluation_requirements": contract["evaluation"],
         "authentication_requirements": contract["authentication_policy"],
