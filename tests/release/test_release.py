@@ -408,21 +408,45 @@ def test_lock_target_hash_and_marker_parity_fail_closed(tmp_path: Path) -> None:
     assert parsed["colorama"]["marker"] == 'sys_platform == "win32"'
 
 
-def test_ci_dependency_audit_tooling_is_isolated_and_hash_locked() -> None:
+def test_ci_only_tooling_is_isolated_and_hash_locked() -> None:
     root = RELEASE_SCRIPT.parents[1]
-    lock_path = root / ".github/requirements-pip-audit.lock"
-    parsed = release._parse_hash_lock(lock_path)
+    audit_lock = release._parse_hash_lock(
+        root / ".github/requirements-pip-audit.lock"
+    )
+    schema_lock = release._parse_hash_lock(
+        root / ".github/requirements-schema-tests.lock"
+    )
+    schema_source = (
+        root / ".github/requirements-schema-tests.in"
+    ).read_text(encoding="utf-8")
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 
-    assert len(parsed) == 28
-    assert parsed["pip-audit"]["version"] == "2.10.1"
-    assert all(entry["hashes"] for entry in parsed.values())
+    assert len(audit_lock) == 28
+    assert audit_lock["pip-audit"]["version"] == "2.10.1"
+    assert all(entry["hashes"] for entry in audit_lock.values())
+    assert set(schema_lock) == {
+        "attrs",
+        "jsonschema",
+        "jsonschema-specifications",
+        "referencing",
+        "rpds-py",
+        "typing-extensions",
+    }
+    assert schema_lock["jsonschema"]["version"] == "4.26.0"
+    assert all(entry["hashes"] for entry in schema_lock.values())
+    assert [
+        line for line in schema_source.splitlines() if line and not line.startswith("#")
+    ] == ["jsonschema==4.26.0"]
     assert "python -m pip install pip-audit==" not in workflow
     assert "python -m venv .pip-audit-venv" in workflow
     assert (
         ".pip-audit-venv/bin/python -m pip install --require-hashes "
         "--only-binary=:all: -r .github/requirements-pip-audit.lock"
     ) in workflow
+    assert workflow.count(
+        "python -m pip install --require-hashes --only-binary=:all: "
+        "-r .github/requirements-schema-tests.lock"
+    ) == 2
 
 
 def test_notice_inventory_has_no_dangling_references_and_records_bundled_terms() -> None:

@@ -86,6 +86,7 @@ jobs:
         run: |
           python -m pip install --no-deps -e .
           python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+          python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-schema-tests.lock
 
       - name: Run core tests
         run: python -m pytest tests/core tests/release -v --tb=short
@@ -109,6 +110,7 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip install --require-hashes --only-binary=:all: -r requirements.lock
           python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+          python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-schema-tests.lock
           python -m pip check
 
       - name: Run full test suite

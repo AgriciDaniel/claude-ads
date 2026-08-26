@@ -360,6 +360,9 @@ def main() -> int:
         reports = {
             "runtime": _run_pip_audit(root, "requirements.lock"),
             "development": _run_pip_audit(root, "requirements-dev.lock"),
+            "schema-tests": _run_pip_audit(
+                root, ".github/requirements-schema-tests.lock"
+            ),
         }
         summary = evaluate_reports(reports, records)
         summary["guarded_code_scope"] = scope

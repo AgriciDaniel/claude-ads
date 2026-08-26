@@ -34,7 +34,11 @@ def _reports(records):
             item for item in runtime["dependencies"] if item["name"] == "cryptography"
         ]
     }
-    return {"runtime": runtime, "development": development}
+    return {
+        "runtime": runtime,
+        "development": development,
+        "schema-tests": {"dependencies": []},
+    }
 
 
 def test_not_affected_evidence_matches_locks_and_code_paths() -> None:
@@ -44,7 +48,7 @@ def test_not_affected_evidence_matches_locks_and_code_paths() -> None:
     summary = audit.evaluate_reports(_reports(records), records)
     assert summary == {
         "status": "pass",
-        "profiles": ["development", "runtime"],
+        "profiles": ["development", "runtime", "schema-tests"],
         "not_affected_advisory_count": 16,
         "vulnerable_package_count": 2,
         "unhandled_advisory_count": 0,
