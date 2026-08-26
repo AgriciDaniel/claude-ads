@@ -58,6 +58,8 @@ SENSITIVE_FILENAMES = {
     "service-account.json",
     "service_account.json",
 }
+SENSITIVE_FILENAME_PREFIXES = ("credentials", "secrets", "config.local.")
+SENSITIVE_ARTIFACT_SUFFIXES = {".db", ".log", ".sqlite", ".sqlite3"}
 TEXT_SUFFIXES = {
     ".cff",
     ".css",
@@ -306,10 +308,15 @@ def audit_repository(root: Path) -> list[str]:
         if collision != relative:
             errors.append(f"case-insensitive path collision: {collision!r} and {relative!r}")
 
-        filename = PurePosixPath(relative).name.casefold()
+        pure = PurePosixPath(relative)
+        filename = pure.name.casefold()
         if filename in SENSITIVE_FILENAMES or filename.startswith(".env."):
             errors.append(f"sensitive filename must not be tracked: {relative}")
-        if PurePosixPath(relative).suffix.casefold() in {".key", ".p12", ".pfx", ".pem"}:
+        if filename.startswith(SENSITIVE_FILENAME_PREFIXES):
+            errors.append(f"sensitive filename must not be tracked: {relative}")
+        if pure.suffix.casefold() in SENSITIVE_ARTIFACT_SUFFIXES:
+            errors.append(f"sensitive artifact must not be tracked: {relative}")
+        if pure.suffix.casefold() in {".key", ".p12", ".pfx", ".pem"}:
             errors.append(f"credential-like file must not be tracked: {relative}")
 
         path = root / relative
@@ -320,23 +327,23 @@ def audit_repository(root: Path) -> list[str]:
             errors.append(f"tracked path is not a regular file: {relative}")
             continue
 
+        raw = path.read_bytes()
+        scan_text = raw.decode("utf-8", errors="ignore")
         text = _read_text(path)
-        if text is None:
-            continue
-        if relative.endswith(".json"):
+        if text is not None and relative.endswith(".json"):
             try:
                 json.loads(text)
             except json.JSONDecodeError as exc:
                 errors.append(f"invalid JSON in {relative}: {exc}")
-        if relative.endswith((".yml", ".yaml", ".cff")):
+        if text is not None and relative.endswith((".yml", ".yaml", ".cff")):
             try:
                 _parse_yaml(text, relative)
             except ReleaseError as exc:
                 errors.append(str(exc))
 
-        if relative == "ads/SKILL.md" or (
+        if text is not None and (relative == "ads/SKILL.md" or (
             relative.startswith("skills/") and relative.endswith("/SKILL.md")
-        ):
+        )):
             try:
                 frontmatter = _frontmatter(text, relative)
             except ReleaseError as exc:
@@ -357,10 +364,10 @@ def audit_repository(root: Path) -> list[str]:
                         errors.append(f"duplicate skill name {name!r}: {previous} and {relative}")
 
         for label, pattern in SECRET_PATTERNS.items():
-            if pattern.search(text):
+            if pattern.search(scan_text):
                 errors.append(f"{relative}: possible {label}")
         for label, pattern in PRIVATE_PATH_PATTERNS.items():
-            if pattern.search(text):
+            if pattern.search(scan_text):
                 errors.append(f"{relative}: contains {label}")
 
     errors.extend(_audit_manifest_consistency(root, set(tracked)))
@@ -1788,7 +1795,7 @@ def _check_ecosystem(root: Path, as_of: date | None = None) -> dict[str, object]
         "entries",
     }:
         raise ReleaseError("ecosystem disposition ledger has unsupported or missing fields")
-    if document.get("schema_version") != "1.0.0":
+    if document.get("schema_version") != "2.0.0":
         raise ReleaseError("ecosystem disposition ledger schema version is unsupported")
     try:
         reviewed_at = date.fromisoformat(str(document["reviewed_at"]))
@@ -2018,6 +2025,7 @@ def verify_github_run(root: Path, run_id: str, commit_sha: str) -> dict[str, obj
     if not isinstance(jobs, list):
         raise ReleaseError("GitHub Actions jobs evidence is missing")
     required = {
+        "Live ecosystem reconciliation",
         "Repository audit",
         "Core tests (Python 3.11)",
         "Core tests (Python 3.12)",
@@ -2104,7 +2112,7 @@ def evaluate_release_gate(
         lambda: _check_vulnerability_exceptions(root, datetime.now(timezone.utc).date()),
     )
     check(
-        "ecosystem-dispositions",
+        "ecosystem-ledger-integrity",
         lambda: _check_ecosystem(root, datetime.now(timezone.utc).date()),
     )
 
@@ -2148,7 +2156,7 @@ def evaluate_release_gate(
     )
     satisfied = all(item["status"] == "pass" for item in checks)
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "2.0.0",
         "evidence_class": "release-gate-assessment",
         "evaluated_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace(
             "+00:00", "Z"

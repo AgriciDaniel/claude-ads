@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* **Evidence and ecosystem review**: refreshed all 25 load-bearing claims from
-  current primary sources, corrected an unreachable repository evidence SHA,
-  and bound the release gate to exact-head snapshots covering 21 public issues,
-  35 public pull requests, and 13 canonical pull requests reviewed on
-  2026-08-25.
+* **Evidence and ecosystem review**: reconciled the load-bearing claim set
+  against current primary sources, corrected an unreachable repository evidence
+  SHA, qualified Google conversion-goal bidding exceptions, and refreshed the
+  supported Meta architecture claims through August 2026. An unsupported numeric
+  consent-mode threshold was removed after a fresh official-source check. Frozen
+  review ledgers now have a remote gate that reconciles current tracker state
+  and excludes only the exact review candidate.
+* **Control contract migration**: versioned the ecosystem-disposition and
+  release-gate report contracts at 2.0.0, retained the 1.0.0 schemas for stored
+  evidence compatibility, and documented the migration boundary.
 * **CI supply chain**: pinned current major releases of checkout, Python setup,
   and Dependabot metadata actions by verified commit SHA, and added the
   aggregate `validate` job required by branch protection. The Dependabot
@@ -31,7 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   regression coverage.
 * **Release verification**: load-bearing source dates now fail closed alongside
   claim dates, public tracker coverage must exactly match the reviewed snapshot,
-  and target-lock tests no longer replace unrelated subprocess calls.
+  the remote CI gate reconciles current issue and pull-request metadata and
+  exact heads, and target-lock tests no longer replace unrelated subprocess calls.
+* **Image provider validation**: generated images must be complete, bounded PNG
+  responses with matching output extensions before any provider result can be
+  written or reported as successful.
+* **Platform edge cases**: Meta planning now classifies account, Pixel, and
+  conversion cold starts independently. Google and Microsoft recommendations
+  now require verified operation capability before suggesting a setting change,
+  and the public marketplace command uses the normalized lowercase repository
+  identifier.
 * **Product metadata**: generated PDF reports use the 2.0.1 product version
   while the Python core correctly retains its independent 2.0.0 version.
 * **Legacy report markup boundary**: user-controlled Markdown, section titles,
@@ -44,10 +58,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   current cryptography and Pillow advisories. Each is bound to exact lock
   versions, upstream advisory IDs, evidence paths, and prohibited imports;
   any new advisory, execution-path drift, accepted risk, or expiry fails CI.
-  The release retains every referenced evidence path. CI uses the current
-  pinned `pip-audit` 2.10.1 patch release.
+  The release retains every referenced evidence path. CI installs the current
+  pinned `pip-audit` 2.10.1 patch release and its full dependency closure from
+  a CPython 3.12 Linux hash lock in an isolated environment.
 * **Code scanning**: added a least-privilege Python CodeQL workflow using the
   `security-extended` query suite and exact action commit pins.
+* **Sensitive artifact defense**: expanded ignore and release-audit coverage for
+  logs, local databases, credential catch-alls, local configuration, and token
+  patterns embedded in binary files.
 
 ## [2.0.1] - 2026-07-13
 

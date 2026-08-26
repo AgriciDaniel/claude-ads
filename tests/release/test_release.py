@@ -12,6 +12,7 @@ import tomllib
 import zipfile
 
 import pytest
+from jsonschema import Draft202012Validator
 
 RELEASE_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "release.py"
 SPEC = importlib.util.spec_from_file_location("claude_ads_release", RELEASE_SCRIPT)
@@ -200,6 +201,65 @@ def test_audit_checks_frontmatter_and_sensitive_content(tmp_path: Path) -> None:
     assert any("personal tilde path" in error for error in errors)
 
 
+def test_audit_rejects_sensitive_artifacts_and_binary_tokens(tmp_path: Path) -> None:
+    root = _repository(tmp_path)
+    database = root / "assets/cache.sqlite3"
+    database.parent.mkdir(parents=True, exist_ok=True)
+    database.write_bytes(b"SQLite format 3\x00")
+    _git(root, "add", "-f", "assets/cache.sqlite3")
+    assert any("sensitive artifact" in error for error in audit_repository(root))
+
+    binary_root = tmp_path / "binary"
+    binary_root.mkdir()
+    root = _repository(binary_root)
+    binary = root / "assets/provider-response.bin"
+    binary.parent.mkdir(parents=True, exist_ok=True)
+    binary.write_bytes(b"\x00\x01gh" + b"p_" + b"A" * 24 + b"\x00")
+    _git(root, "add", "assets/provider-response.bin")
+    assert any("possible GitHub token" in error for error in audit_repository(root))
+
+
+def test_sensitive_artifact_ignore_patterns_are_present() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    patterns = {
+        line.strip()
+        for line in (root / ".gitignore").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+    assert {
+        "*.log",
+        "*.db",
+        "*.sqlite",
+        "*.sqlite3",
+        "credentials*",
+        "secrets*",
+        "config.local.*",
+    } <= patterns
+
+
+def test_audit_rejects_case_insensitive_path_collisions(tmp_path: Path) -> None:
+    root = _repository(tmp_path)
+    _write(
+        root,
+        "skills/Ads-Google/SKILL.md",
+        "---\nname: Ads-Google\ndescription: collision fixture.\n---\n",
+    )
+    _git(root, "add", "skills/Ads-Google/SKILL.md")
+    errors = audit_repository(root)
+    assert any("case-insensitive path collision" in error for error in errors)
+
+
+def test_marketplace_install_identifier_is_normalized() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    marketplace = json.loads(
+        (root / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    )
+    assert "/plugin marketplace add agricidaniel/claude-ads" in readme
+    assert "/plugin marketplace add AgriciDaniel/claude-ads" not in readme
+    assert f"/plugin install claude-ads@{marketplace['name']}" in readme
+
+
 def test_package_is_deterministic_public_safe_and_verifiable(tmp_path: Path) -> None:
     root = _repository(tmp_path)
     first = build_release(root, tmp_path / "dist-a")
@@ -346,6 +406,23 @@ def test_lock_target_hash_and_marker_parity_fail_closed(tmp_path: Path) -> None:
 
     parsed = release._parse_hash_lock(RELEASE_SCRIPT.parents[1] / "requirements-dev.lock")
     assert parsed["colorama"]["marker"] == 'sys_platform == "win32"'
+
+
+def test_ci_dependency_audit_tooling_is_isolated_and_hash_locked() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    lock_path = root / ".github/requirements-pip-audit.lock"
+    parsed = release._parse_hash_lock(lock_path)
+    workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert len(parsed) == 28
+    assert parsed["pip-audit"]["version"] == "2.10.1"
+    assert all(entry["hashes"] for entry in parsed.values())
+    assert "python -m pip install pip-audit==" not in workflow
+    assert "python -m venv .pip-audit-venv" in workflow
+    assert (
+        ".pip-audit-venv/bin/python -m pip install --require-hashes "
+        "--only-binary=:all: -r .github/requirements-pip-audit.lock"
+    ) in workflow
 
 
 def test_notice_inventory_has_no_dangling_references_and_records_bundled_terms() -> None:
@@ -563,6 +640,7 @@ def test_release_grounding_gate_rejects_stale_load_bearing_source(
         for item in source_doc["sources"]
         if item["id"] == "google-ads-conversion-goals-official"
     )
+    source["retrieved_at"] = "2026-08-25"
     source["refresh_due"] = "2026-08-25"
     original_json_object = release._json_object
 
@@ -613,7 +691,7 @@ def test_ecosystem_gate_binds_public_snapshot_and_expires(
     assert "dependency-review" not in candidate.read_text(encoding="utf-8")
 
     with pytest.raises(ReleaseError, match="stale or future-dated"):
-        check_ecosystem(tmp_path, release.date(2026, 9, 25))
+        check_ecosystem(tmp_path, release.date(2026, 9, 26))
 
     document = json.loads(candidate.read_text(encoding="utf-8"))
     document["public_snapshot"]["pull_request_numbers"].remove(62)
@@ -627,6 +705,59 @@ def test_ecosystem_gate_binds_public_snapshot_and_expires(
     candidate.write_text(json.dumps(document), encoding="utf-8")
     with pytest.raises(ReleaseError, match="head snapshot"):
         check_ecosystem(tmp_path, release.date(2026, 8, 25))
+
+
+def test_breaking_control_contracts_have_v1_compatibility_and_v2_instances() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    ecosystem_v1_schema = json.loads(
+        (root / "control-plane/schemas/ecosystem-dispositions.v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    ecosystem_v2_schema = json.loads(
+        (root / "control-plane/schemas/ecosystem-dispositions.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    ecosystem_v2 = json.loads(
+        (root / "control-plane/manifests/ecosystem-dispositions.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    ecosystem_v1 = {
+        "schema_version": "1.0.0",
+        "reviewed_at": "2026-07-11",
+        "entries": [],
+    }
+
+    assert not list(Draft202012Validator(ecosystem_v1_schema).iter_errors(ecosystem_v1))
+    assert list(Draft202012Validator(ecosystem_v2_schema).iter_errors(ecosystem_v1))
+    assert not list(Draft202012Validator(ecosystem_v2_schema).iter_errors(ecosystem_v2))
+
+
+def test_release_gate_output_conforms_to_v2_schema() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    schema = json.loads(
+        (root / "control-plane/schemas/release-gate-report.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    report = evaluate_release_gate(
+        root,
+        model_report=None,
+        review_evidence_dir=None,
+        github_run_id=None,
+    )
+
+    errors = list(Draft202012Validator(schema).iter_errors(report))
+    assert errors == []
+    assert report["schema_version"] == "2.0.0"
+    assert len(report["checks"]) == 8
+    assert len({item["id"] for item in report["checks"]}) == 8
+    assert {item["id"] for item in report["checks"]} >= {
+        "vulnerability-exception-integrity",
+        "ecosystem-ledger-integrity",
+    }
 
 
 def test_release_gate_fails_closed_without_external_model_review_and_ci_evidence() -> None:
@@ -688,6 +819,7 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
         ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
     ).stdout.strip()
     required_jobs = [
+        "Live ecosystem reconciliation",
         "Repository audit",
         "Core tests (Python 3.11)",
         "Core tests (Python 3.12)",

@@ -94,7 +94,7 @@ SHA-256 checksum. Never pipe a remote installer directly to a shell.
 For Claude Code, the native plugin flow is:
 
 ```text
-/plugin marketplace add AgriciDaniel/claude-ads
+/plugin marketplace add agricidaniel/claude-ads
 /plugin install claude-ads@ai-marketing-hub-claude-ads
 ```
 

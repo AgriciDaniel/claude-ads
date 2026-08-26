@@ -79,6 +79,7 @@ RETRY_BACKOFF = [1, 2, 4, 8]  # seconds
 
 MAX_BATCH_SIZE = 50
 MAX_DIMENSION = 8192
+MAX_GENERATED_IMAGE_BYTES = 25 * 1024 * 1024
 
 
 def _windows_acl_api():
@@ -874,30 +875,71 @@ def _write_private(path: Path, data: bytes) -> None:
 
 
 def _actual_dimensions(image_bytes: bytes) -> tuple[int, int] | None:
-    """
-    Extract actual width/height from PNG or JPEG header without PIL.
-    Returns (width, height) or None if format is unrecognised.
-    """
-    if len(image_bytes) < 24:
+    """Return dimensions only for a complete, bounded, supported PNG raster."""
+    if len(image_bytes) > MAX_GENERATED_IMAGE_BYTES or not _validate_png(image_bytes):
         return None
-    # PNG: 8-byte signature + 4-byte IHDR length + 4-byte "IHDR" + 4-byte W + 4-byte H
-    if image_bytes[:8] == b'\x89PNG\r\n\x1a\n':
-        w = struct.unpack('>I', image_bytes[16:20])[0]
-        h = struct.unpack('>I', image_bytes[20:24])[0]
-        return w, h
-    # JPEG: scan for SOF0 (0xFF 0xC0) or SOF2 (0xFF 0xC2) marker
-    i = 2  # skip FF D8 SOI
-    while i < len(image_bytes) - 8:
-        if image_bytes[i] != 0xFF:
-            break
-        marker = image_bytes[i + 1]
-        if marker in (0xC0, 0xC1, 0xC2, 0xC3):  # SOFn markers
-            h = struct.unpack('>H', image_bytes[i + 5:i + 7])[0]
-            w = struct.unpack('>H', image_bytes[i + 7:i + 9])[0]
-            return w, h
-        seg_len = struct.unpack('>H', image_bytes[i + 2:i + 4])[0]
-        i += 2 + seg_len
-    return None
+    return struct.unpack(">II", image_bytes[16:24])
+
+
+def _require_generated_png(image_bytes: bytes) -> tuple[int, int]:
+    """Fail closed unless provider output is a bounded, fully validated PNG."""
+    if not isinstance(image_bytes, bytes):
+        raise RuntimeError("Image provider returned a non-bytes payload")
+    if not image_bytes:
+        raise RuntimeError("Image provider returned an empty payload")
+    if len(image_bytes) > MAX_GENERATED_IMAGE_BYTES:
+        raise RuntimeError("Image provider output exceeds the 25 MiB limit")
+    dimensions = _actual_dimensions(image_bytes)
+    if dimensions is None:
+        raise RuntimeError("Image provider output is not a valid supported PNG image")
+    return dimensions
+
+
+def _require_png_output_path(path: str | Path) -> None:
+    """Keep the declared output extension consistent with the validated bytes."""
+    if Path(path).suffix.casefold() != ".png":
+        raise ValueError("Generated image output path must use the .png extension")
+
+
+def _bounded_png_response(response: Any, operation: str) -> bytes:
+    """Read one streamed provider response within a hard limit and always close it."""
+    try:
+        status_code = getattr(response, "status_code", None)
+        if not isinstance(status_code, int) or not 200 <= status_code < 300:
+            raise RuntimeError(f"{operation} failed with HTTP {status_code}")
+
+        headers = getattr(response, "headers", {})
+        content_type = str(headers.get("content-type", "")).split(";", 1)[0].strip().lower()
+        if content_type and content_type != "image/png":
+            raise RuntimeError(f"{operation} returned unsupported content type {content_type}")
+        content_length = headers.get("content-length")
+        if content_length is not None:
+            try:
+                declared_size = int(content_length)
+            except (TypeError, ValueError) as exc:
+                raise RuntimeError(f"{operation} returned an invalid Content-Length") from exc
+            if declared_size < 0 or declared_size > MAX_GENERATED_IMAGE_BYTES:
+                raise RuntimeError(f"{operation} output exceeds the 25 MiB limit")
+
+        iterator = getattr(response, "iter_content", None)
+        if not callable(iterator):
+            raise RuntimeError(f"{operation} response is not stream-readable")
+        chunks: list[bytes] = []
+        total = 0
+        for chunk in iterator(chunk_size=64 * 1024):
+            if not chunk:
+                continue
+            if not isinstance(chunk, bytes):
+                raise RuntimeError(f"{operation} returned a non-bytes response chunk")
+            total += len(chunk)
+            if total > MAX_GENERATED_IMAGE_BYTES:
+                raise RuntimeError(f"{operation} output exceeds the 25 MiB limit")
+            chunks.append(chunk)
+        return b"".join(chunks)
+    finally:
+        close = getattr(response, "close", None)
+        if callable(close):
+            close()
 
 
 def _get_api_key(provider: str) -> str:
@@ -1013,6 +1055,11 @@ def generate_gemini(prompt: str, width: int, height: int, api_key: str, model: s
             )
             for part in response.candidates[0].content.parts:
                 if hasattr(part, "inline_data") and part.inline_data:
+                    mime_type = getattr(part.inline_data, "mime_type", None)
+                    if mime_type and mime_type != "image/png":
+                        raise RuntimeError(
+                            f"Gemini returned unsupported image content type {mime_type}"
+                        )
                     return part.inline_data.data  # already bytes in google-genai >= 1.16.0
             raise RuntimeError("No image data in Gemini response")
 
@@ -1056,7 +1103,10 @@ def generate_openai(prompt: str, width: int, height: int, api_key: str, model: s
         size=size,
         response_format="b64_json",
     )
-    return base64.b64decode(response.data[0].b64_json)
+    try:
+        return base64.b64decode(response.data[0].b64_json, validate=True)
+    except (ValueError, TypeError) as exc:
+        raise RuntimeError("OpenAI returned invalid base64 image data") from exc
 
 
 def generate_stability(prompt: str, width: int, height: int, api_key: str, model: str) -> bytes:
@@ -1085,11 +1135,10 @@ def generate_stability(prompt: str, width: int, height: int, api_key: str, model
         headers=headers,
         files={"none": ""},
         data=data,
+        stream=True,
         timeout=120,
     )
-    if resp.status_code == 200:
-        return resp.content
-    raise RuntimeError(f"Stability API error {resp.status_code}: {resp.text[:200]}")
+    return _bounded_png_response(resp, "Stability API image generation")
 
 
 def _nearest_stability_ratio(width: int, height: int) -> str:
@@ -1143,9 +1192,8 @@ def generate_replicate(prompt: str, width: int, height: int, api_key: str, model
         raise RuntimeError(f"Replicate URL failed SSRF validation: {ve}") from ve
     # allow_redirects=False — the SSRF check above only validated the original
     # URL. A redirect target could be a private IP; refuse to follow at all.
-    resp = guarded_request(requests, "GET", url, timeout=120)
-    resp.raise_for_status()
-    return resp.content
+    resp = guarded_request(requests, "GET", url, stream=True, timeout=120)
+    return _bounded_png_response(resp, "Replicate image download")
 
 
 def generate_image(
@@ -1191,11 +1239,9 @@ def generate_image(
         print(f"Error: Unknown provider '{provider}'", file=sys.stderr)
         sys.exit(1)
 
-    # Read actual dimensions from image header. Handles ratio remapping
-    # (e.g. 1.91:1 request → Gemini generates 16:9 natively)
-    actual = _actual_dimensions(image_bytes)
-    if actual:
-        width, height = actual
+    # Validate the complete raster before it can become a trusted artifact.
+    # This also reports native dimensions after provider ratio remapping.
+    width, height = _require_generated_png(image_bytes)
 
     return image_bytes, width, height
 
@@ -1277,6 +1323,7 @@ def run_batch(
 
         try:
             print(f"[{i+1}/{len(jobs)}] Generating {output_name}...", file=sys.stderr)
+            _require_png_output_path(output_name)
             with _private_reference_snapshot(reference_image, reference_root) as (
                 reference_snapshot,
                 reference_sha256,
@@ -1418,6 +1465,12 @@ use --provider/--model or ADS_IMAGE_PROVIDER/ADS_IMAGE_MODEL.
     if not output_path:
         safe_ratio = ratio.replace(":", "-").replace(".", "_")
         output_path = f"ad_{safe_ratio}.png"
+
+    try:
+        _require_png_output_path(output_path)
+    except ValueError as exc:
+        print(f"Error: {_sanitize_error(exc)}", file=sys.stderr)
+        sys.exit(1)
 
     try:
         if args.reference_image and not (

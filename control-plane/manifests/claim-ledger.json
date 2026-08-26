@@ -43,12 +43,13 @@
       "statement": "The v2 instruction architecture uses original clean-room implementations of explicit checklists, effort calibration, examples, repeated safety constraints, instruction precedence, and artifact-backed verification.",
       "scope": "instruction design provenance",
       "classification": "practitioner",
-      "verdict": "verified",
+      "verdict": "demoted",
       "source_ids": ["fable-private-cleanroom"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
-      "owner": "prompt-architecture-owner"
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
+      "owner": "prompt-architecture-owner",
+      "notes": "The private source was unavailable in the current workspace during the 2026-08-25 refresh. This non-load-bearing provenance claim is not treated as current evidence until that source is re-reviewed."
     },
     {
       "id": "CLM-0005",
@@ -76,8 +77,8 @@
     },
     {
       "id": "CLM-0007",
-      "statement": "Google Ads distinguishes primary conversion actions used for bidding from secondary observation actions, and enhanced conversions supplement existing measurement with hashed first-party data subject to applicable policy and consent requirements.",
-      "scope": "Google Ads runtime measurement controls; feature eligibility and diagnostics remain account-specific",
+      "statement": "Google Ads treats a primary conversion action as biddable only when a campaign uses the goal containing that action. Secondary actions are observation-only except that a secondary action included in a custom goal is used for bidding when that custom goal is selected. Enhanced conversions supplement existing measurement with hashed first-party data subject to applicable policy and consent requirements.",
+      "scope": "Google Ads standard-goal and custom-goal bidding controls; feature eligibility and diagnostics remain account-specific",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-ads-api-official", "google-ads-conversion-goals-official", "google-ads-enhanced-conversions-official"],
@@ -137,7 +138,7 @@
     {
       "id": "CLM-0012",
       "statement": "The Google Ads API supports fetching and reporting on existing Video campaigns and their criteria, but does not support creating new Video campaigns or updating existing ones.",
-      "scope": "Google Ads API Video campaign surface retrieved 2026-07-11; Demand Gen and Google Ads scripts are separate surfaces",
+      "scope": "Google Ads API Video campaign surface verified 2026-08-25; Demand Gen and Google Ads scripts are separate surfaces",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["youtube-google-ads-video-official"],
@@ -221,61 +222,61 @@
     {
       "id": "CLM-0100",
       "statement": "Google responsive search ads accept up to 15 headlines and four descriptions, and headline fields support up to 30 characters.",
-      "scope": "Google Ads RSA documentation retrieved 2026-07-11",
+      "scope": "Google Ads RSA documentation retrieved 2026-08-25",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-rsa-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0101",
       "statement": "Microsoft responsive search ads accept up to 15 headlines and four descriptions.",
-      "scope": "Microsoft Advertising RSA documentation retrieved 2026-07-11",
+      "scope": "Microsoft Advertising v13 RSA schema retrieved 2026-08-25",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-ad-types-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0102",
       "statement": "Google identifies Target CPA, Target ROAS, Maximize conversions, and Maximize conversion value as Smart Bidding strategies that optimize at auction time.",
-      "scope": "Google Ads; labels and eligibility vary by campaign type",
+      "scope": "Google Ads; labels and eligibility vary by campaign type, including the June 2026 label transition documented by Google",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-smart-bidding-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0103",
       "statement": "Google advises setting Target ROAS from business goals and historical performance and evaluating target changes over conversion cycles; an overly high target may restrict traffic.",
-      "scope": "Google Target ROAS guidance, not a guaranteed outcome",
+      "scope": "Google Target ROAS guidance, including the August 2026 bidding-system note; not a guaranteed outcome",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-target-roas-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0104",
-      "statement": "Google's consent-mode modeling quality checks include correct Consent Mode or IAB TCF implementation and 700 ad clicks per day over seven days per country/domain grouping.",
-      "scope": "Eligibility for Google consent-mode modeling only",
+      "statement": "Google's consent-mode modeling quality checks include correct Consent Mode or IAB TCF implementation and 700 ad clicks per day over seven days per country/domain grouping. Its separate impact-results page says additional volume and modeling thresholds apply without publishing another numeric click threshold. The active setup and current diagnostics remain controlling evidence.",
+      "scope": "Google consent-mode modeling eligibility and impact-results surfaces; no unpublished threshold is inferred",
       "classification": "evidence-based",
       "verdict": "verified",
-      "source_ids": ["google-consent-modeling-official"],
+      "source_ids": ["google-consent-modeling-official", "google-consent-modeling-improvement-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-26",
+      "refresh_due": "2026-09-25",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -286,8 +287,8 @@
       "verdict": "verified",
       "source_ids": ["tiktok-events-api-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -298,8 +299,8 @@
       "verdict": "verified",
       "source_ids": ["eu-ai-act-article-50-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -310,8 +311,8 @@
       "verdict": "verified",
       "source_ids": ["eu-dsa-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -322,8 +323,8 @@
       "verdict": "verified",
       "source_ids": ["cppa-regulations-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -334,8 +335,8 @@
       "verdict": "verified",
       "source_ids": ["hhs-tracking-guidance-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -346,20 +347,20 @@
       "verdict": "verified",
       "source_ids": ["ftc-endorsement-guides-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0111",
       "statement": "The current first-party Google Ads MCP README exposes read-oriented account search, resource metadata, accessible-customer, and discovery resources.",
-      "scope": "Repository README at retrieval date; no installed capability implied",
+      "scope": "Repository README at ba47210245f2925a130a2770a4d272d5dd0c91cd; no installed capability implied",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -370,8 +371,8 @@
       "verdict": "verified",
       "source_ids": ["amazon-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -382,20 +383,20 @@
       "verdict": "verified",
       "source_ids": ["tiktok-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0114",
-      "statement": "Microsoft's Advertising MCP page advertises live campaign-data workflows and presents a waitlist.",
-      "scope": "Provider page; availability must be verified per account",
+      "statement": "Microsoft's current Advertising MCP page documents setup and read-oriented live campaign-data querying and audit workflows.",
+      "scope": "Provider page; availability and configured access must be verified per environment and account",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -406,20 +407,20 @@
       "verdict": "verified",
       "source_ids": ["meta-andromeda-engineering-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0116",
-      "statement": "Meta describes GEM as an ads ranking model using sequence-learning improvements and Meta Lattice as consolidating ranking across additional Facebook surfaces.",
-      "scope": "Meta-authored architecture description; performance claims excluded",
+      "statement": "Meta describes GEM as the central ads recommendation foundation model, documents a multi-stage sequence architecture within GEM, and describes Meta Lattice as consolidating ranking across additional Facebook surfaces.",
+      "scope": "Meta-authored architecture descriptions through August 2026; performance claims excluded",
       "classification": "evidence-based",
       "verdict": "verified",
-      "source_ids": ["meta-ai-ads-ranking-official"],
+      "source_ids": ["meta-ai-ads-ranking-official", "meta-gem-training-official", "meta-sequence-ranking-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-26",
+      "refresh_due": "2026-09-25",
       "owner": "cross-platform-reference-owner"
     },
     {

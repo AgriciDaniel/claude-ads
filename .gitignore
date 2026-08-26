@@ -29,6 +29,17 @@ credentials.json
 service-account.json
 client_secret*.json
 
+# Logs and local databases can contain tokens or client data
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Local credential and configuration catch-alls
+credentials*
+secrets*
+config.local.*
+
 # Python
 __pycache__/
 *.pyc

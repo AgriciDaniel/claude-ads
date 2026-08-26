@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v1:ecosystem-dispositions.v1.json",
+  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v2:ecosystem-dispositions.v2.json",
   "title": "Claude Ads ecosystem disposition ledger",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "reviewed_at", "public_snapshot", "canonical_snapshot", "entries"],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "2.0.0"},
     "reviewed_at": {"type": "string", "format": "date"},
     "public_snapshot": {
       "type": "object",

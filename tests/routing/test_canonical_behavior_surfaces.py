@@ -198,3 +198,32 @@ def test_attribution_research_setup_and_uninstall_surfaces_are_fail_closed(repo_
         "`ads-weather` must remain untouched",
     ):
         assert phrase in validate
+
+
+def test_meta_cold_starts_are_independent_and_fail_closed(repo_root: Path):
+    meta = _lower(repo_root, "skills/ads-meta/SKILL.md")
+    for phrase in (
+        "account_cold_start",
+        "pixel_cold_start",
+        "conversion_cold_start",
+        "a new account does not prove a new pixel",
+        "raw events do not prove conversion maturity",
+        "preserve `unknown` when the evidence is absent",
+        "staged reversible tests",
+        "never label creative bad merely because the pixel is new",
+    ):
+        assert phrase in meta
+
+
+def test_google_and_microsoft_verify_mutation_capability(repo_root: Path):
+    for relative in ("skills/ads-google/SKILL.md", "skills/ads-microsoft/SKILL.md"):
+        skill = _lower(repo_root, relative)
+        for phrase in (
+            "product labels such as `smart conversions` as untrusted account data",
+            "do not infer the platform, feature identity, or mutability",
+            "verify the current operation capability",
+            "if the operation is immutable, unavailable, or unverified",
+            "do not recommend the mutation",
+            "reversible alternative",
+        ):
+            assert phrase in skill
