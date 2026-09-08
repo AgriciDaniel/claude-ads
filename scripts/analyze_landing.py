@@ -296,6 +296,8 @@ def analyze_landing(
 
 def grade_landing(result: dict) -> dict:
     """Grade landing page quality based on ad audit criteria."""
+    if result.get("error"):
+        return {}
     grades = {}
 
     # G59: Mobile speed (LCP)
@@ -370,6 +372,13 @@ def main():
     )
     grades = grade_landing(result)
 
+    if result["error"]:
+        if args.json:
+            print(json.dumps({**result, "grades": grades}, indent=2))
+        else:
+            print(f"Error: {result['error']}", file=sys.stderr)
+        raise SystemExit(1)
+
     if args.json:
         output = {**result, "grades": grades}
         print(json.dumps(output, indent=2))
@@ -403,9 +412,6 @@ def main():
         print(f"\nAudit Grades:")
         for check, grade in grades.items():
             print(f"  [{grade}] {check}")
-
-        if result["error"]:
-            print(f"\nError: {result['error']}")
 
 
 if __name__ == "__main__":
