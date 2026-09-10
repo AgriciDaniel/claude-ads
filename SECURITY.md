@@ -29,6 +29,7 @@ Only the latest version receives security updates.
   OS/container egress sandbox supplies a short-lived Ed25519-signed attestation
   bound to the current environment. Screenshot capture writes a digest-bound
   receipt naming the attestation, issuer, trust key, environment, and artifact.
+- PDF report text, including the health score caption, passes through one escaping helper before ReportLab markup parsing, so report values cannot inject markup
 - Error messages are scrubbed via `sanitize_error()` before reaching stdout, JSON output, or audit reports — strips `key=`, `token=`, `secret=`, `password=`, and bare `Bearer <token>` substrings
 - GitHub Actions are pinned to full commit SHAs. The Dependabot workflow is
   read-only and cannot approve or merge its own pull request. A human owns the

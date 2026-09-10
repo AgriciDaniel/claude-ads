@@ -418,6 +418,16 @@ def _make_styles():
     return styles
 
 
+def _health_caption(score, grade) -> str:
+    """Build the Fig 1 caption with every report-supplied value escaped.
+
+    ``score`` and ``grade`` come from the parsed report dictionary, which any
+    caller of ``build_pdf`` controls, so both go through ``_md_to_html`` before
+    they reach a ReportLab Paragraph.
+    """
+    return f"Fig 1: Health Score {_md_to_html(score)}/100 (Grade {_md_to_html(grade)})"
+
+
 def _wrap_cell(text, style):
     """Wrap cell text in a Paragraph to prevent overflow and render markdown."""
     if not isinstance(text, str):
@@ -535,17 +545,18 @@ def build_pdf(data: dict, output_path: str, brand_name: str = ""):
         ]))
         elements.append(chart_table)
         elements.append(Paragraph(
-            f"Fig 1: Health Score {score}/100 (Grade {grade})"
-            f"  |  Fig 2: Platform Score Comparison",
+            f"{_health_caption(score, grade)}  |  Fig 2: Platform Score Comparison",
             styles["RCaption"],
         ))
     elif gauge_path:
         temp_files.append(gauge_path)
         elements.append(Image(gauge_path, width=2.5 * inch, height=2.5 * inch))
-        elements.append(Paragraph(
-            f"Fig 1: Health Score {score}/100 (Grade {grade})", styles["RCaption"]))
+        elements.append(Paragraph(_health_caption(score, grade), styles["RCaption"]))
     elif score is not None:
         grade_color = colors.HexColor(GRADE_COLORS.get(grade, "#64748b"))
+        # Plain string cells are drawn literally by ReportLab (no markup
+        # parsing). Escape via _md_to_html before converting any of these
+        # cells to a Paragraph.
         score_tbl = Table(
             [["Ads Health Score", f"{score}/100", f"Grade: {grade}"]],
             colWidths=[3 * inch, 2 * inch, 2 * inch],
