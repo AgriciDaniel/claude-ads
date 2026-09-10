@@ -20,6 +20,9 @@ The registered sources below cover only the measurement, API, and import foundat
 - `google-ads-api-official`: [Google Ads API documentation](https://developers.google.com/google-ads/api/docs/start)
 - `google-ads-conversion-goals-official`: [Google Ads conversion goals](https://support.google.com/google-ads/answer/10995103)
 - `google-ads-enhanced-conversions-official`: [Google Ads enhanced conversions](https://support.google.com/google-ads/answer/9888656)
+- `google-ads-dsa-ad-rank-official`: [About Dynamic Search Ads, Ad Rank, and performance](https://support.google.com/google-ads/answer/7018712)
+- `google-ads-keyword-prioritization-official`: [About ad group and asset group prioritization within a Google Ads account](https://support.google.com/google-ads/answer/2756257)
+- `google-ads-dsa-targets-official`: [About targets for Dynamic Search Ads](https://support.google.com/google-ads/answer/7334472)
 
 ## Control registry
 
@@ -120,6 +123,8 @@ The registered sources below cover only the measurement, API, and import foundat
 | G93 | Demand Gen feature stack | Unscored source-refresh discovery: verify current official availability, account eligibility, and governance need; non-adoption is never a failure. |
 | G94 | Ads Advisor safety features | Unscored source-refresh discovery: verify current official availability, account eligibility, and governance need; non-adoption is never a failure. |
 | G95 | DSA migration-readiness evidence | Unscored source-refresh discovery: verify current official availability, account eligibility, and governance need; non-adoption is never a failure. |
+| G96 | Same-campaign Search plus DSA overlap | Conditional evidence control: establish applicability from current account evidence (an enabled Dynamic Search Ads ad group and enabled keyword-targeted ad groups in the same campaign, the dynamic ad target scope such as all webpages versus supplied URLs, and the search terms each ad group served), then evaluate whether the DSA ad group is serving terms the campaign's keywords also cover and whether the owner intends that routing; verify the current official keyword-versus-DSA selection rule (`google-ads-dsa-ad-rank-official`, `google-ads-keyword-prioritization-official`) at run time and do not describe the overlap as auction self-competition or Ad Rank dilution unless current evidence supports it; otherwise return `unknown` or `not_applicable`. |
+| G97 | Cross-campaign keyword duplication | Conditional evidence control: establish applicability from current account evidence (identical keyword text and match type enabled in more than one campaign of the same account, including shared-budget, near-dormant, and geo-split campaigns), then evaluate which campaign actually triggers from search-term and impression evidence and whether the duplication is intentional; verify the current official in-account keyword prioritization rule (`google-ads-keyword-prioritization-official`) at run time and do not report duplication as self-bidding or inflated cost unless current evidence supports it; otherwise return `unknown` or `not_applicable`. |
 
 ## Recommendation boundary
 

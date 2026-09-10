@@ -220,8 +220,8 @@
       "locator": "https://learn.microsoft.com/en-us/advertising/guides/uet-conversion-api-integration?view=bingads-13",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "retrieved_at": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "confidence": "high",
       "license": "Microsoft documentation terms; citation only",
       "redistribution": "metadata-only",
@@ -883,6 +883,45 @@
       "license": "Snap developer documentation terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": ["CLM-0209"]
+    },
+    {
+      "id": "google-ads-keyword-prioritization-official",
+      "title": "About ad group and asset group prioritization within a Google Ads account",
+      "locator": "https://support.google.com/google-ads/answer/2756257",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "confidence": "high",
+      "license": "Google Help content terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0210", "CLM-0211"]
+    },
+    {
+      "id": "google-ads-dsa-ad-rank-official",
+      "title": "About Dynamic Search Ads, Ad Rank, and performance",
+      "locator": "https://support.google.com/google-ads/answer/7018712",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "confidence": "high",
+      "license": "Google Help content terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0211"]
+    },
+    {
+      "id": "google-ads-dsa-targets-official",
+      "title": "About targets for Dynamic Search Ads",
+      "locator": "https://support.google.com/google-ads/answer/7334472",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "confidence": "high",
+      "license": "Google Help content terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0212"]
     }
   ]
 }

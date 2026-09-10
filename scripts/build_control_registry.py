@@ -17,6 +17,8 @@ ROW = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$")
 CLAIM_SUPPORT: dict[tuple[str, str], tuple[tuple[str, ...], tuple[str, ...]]] = {
     ("google", "G42"): (("CLM-0007",), ("google-ads-conversion-goals-official",)),
     ("google", "G43"): (("CLM-0007",), ("google-ads-enhanced-conversions-official",)),
+    ("google", "G96"): (("CLM-0211",), ("google-ads-dsa-ad-rank-official", "google-ads-keyword-prioritization-official")),
+    ("google", "G97"): (("CLM-0210",), ("google-ads-keyword-prioritization-official",)),
     ("meta", "M01"): (("CLM-0008",), ("meta-conversions-api-official",)),
     ("meta", "M02"): (("CLM-0008",), ("meta-conversions-api-official",)),
     ("meta", "M03"): (("CLM-0008",), ("meta-conversions-api-official",)),

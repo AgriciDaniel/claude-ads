@@ -125,14 +125,14 @@
     },
     {
       "id": "CLM-0011",
-      "statement": "Microsoft Advertising uses UET for website conversion tracking, offers a server-side Conversions API in pilot, and documents Google Ads import mappings and limitations that require explicit post-import validation.",
-      "scope": "Microsoft runtime measurement and import controls; imported fields and pilots must be checked against current account evidence",
+      "statement": "Microsoft Advertising uses UET for website conversion tracking, offers a documented server-side Conversions API (CAPI) with a public endpoint, payload schema, partner integrations, and UET deduplication through a shared event ID, and documents Google Ads import mappings and limitations that require explicit post-import validation.",
+      "scope": "Microsoft runtime measurement and import controls; imported fields and CAPI availability must be checked against current account evidence",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-advertising-api-official", "microsoft-uet-official", "microsoft-conversions-api-official", "microsoft-google-import-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "microsoft-evidence-owner"
     },
     {
@@ -530,6 +530,42 @@
       "last_verified": "2026-08-25",
       "refresh_due": "2026-09-24",
       "owner": "native-export-owner"
+    },
+    {
+      "id": "CLM-0210",
+      "statement": "In a Google Ads account, when several keywords targeting the same domain are eligible for the same search term they do not compete with each other in the auction and only one of them triggers an ad. Exact match keywords identical to the term are prioritized first, then phrase and broad match keywords or search themes identical to the term; among equal-priority candidates the ad with the highest Ad Rank is chosen. A keyword in a budget-restricted campaign will not always be able to trigger an ad even when it otherwise could.",
+      "scope": "Google Ads in-account keyword, DSA, and search-theme selection; auction outcomes and account-specific costs remain unobserved",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-keyword-prioritization-official"],
+      "load_bearing": true,
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "owner": "google-evidence-owner"
+    },
+    {
+      "id": "CLM-0211",
+      "statement": "Dynamic Search Ads are ranked the same way as keyword-based ads. When a person searches for the exact keyword targeted in another campaign of the same account or a linked account, the keyword campaign's ad may show instead of the Dynamic Search Ad; the Dynamic Search Ad may show instead when the search term is a broad or phrase match to a keyword and the Dynamic Search Ad has the higher Ad Rank. DSA ad groups without keywords are selected on highest Ad Rank compared with other ads in the account.",
+      "scope": "Google Ads in-account keyword, DSA, and search-theme selection; auction outcomes and account-specific costs remain unobserved",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-dsa-ad-rank-official", "google-ads-keyword-prioritization-official"],
+      "load_bearing": true,
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "owner": "google-evidence-owner"
+    },
+    {
+      "id": "CLM-0212",
+      "statement": "Dynamic Search Ads targeting matches searches to pages on the advertiser's site through dynamic ad targets, whose options include an all-webpages target covering every crawled page on the domain as well as narrower URL, page feed, title, content, and category targets.",
+      "scope": "Google Ads DSA applicability evidence only; page coverage is account-configured",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-dsa-targets-official"],
+      "load_bearing": false,
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "owner": "google-evidence-owner"
     }
   ]
 }
