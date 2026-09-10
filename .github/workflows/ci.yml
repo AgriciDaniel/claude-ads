@@ -9,18 +9,50 @@ on:
 
 permissions:
   contents: read
+  issues: read
+  pull-requests: read
 
 jobs:
+  ecosystem-live:
+    name: Live ecosystem reconciliation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Reconcile current issues and pull requests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          args=()
+          if [ "$GITHUB_REPOSITORY" = "AgriciDaniel/claude-ads" ]; then
+            args+=(--public-only)
+          fi
+          # Push and pull_request runs report drift and unreviewed items as
+          # warnings. Manual dispatch runs strict reconciliation, which is the
+          # run that release verification accepts.
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            args+=(--strict)
+          fi
+          python scripts/audit_ecosystem_live.py "${args[@]}"
+
   repository-audit:
     name: Repository audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
 
@@ -48,10 +80,10 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -60,6 +92,7 @@ jobs:
         run: |
           python -m pip install --no-deps -e .
           python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+          python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-schema-tests.lock
 
       - name: Run core tests
         run: python -m pytest tests/core tests/release -v --tb=short
@@ -70,10 +103,10 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
           cache: pip
@@ -83,6 +116,7 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip install --require-hashes --only-binary=:all: -r requirements.lock
           python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+          python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-schema-tests.lock
           python -m pip check
 
       - name: Run full test suite
@@ -90,9 +124,9 @@ jobs:
 
       - name: Audit dependencies for known vulnerabilities
         run: |
-          python -m pip install pip-audit==2.10.0
-          python -m pip_audit -r requirements.lock --strict
-          python -m pip_audit -r requirements-dev.lock --strict
+          python -m venv .pip-audit-venv
+          .pip-audit-venv/bin/python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-pip-audit.lock
+          .pip-audit-venv/bin/python scripts/audit_dependencies.py
 
   installer-matrix:
     name: Installer tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
@@ -105,10 +139,10 @@ jobs:
         python-version: ["3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -202,13 +236,13 @@ jobs:
     name: Reproducible package smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [repository-audit, core-tests, full-tests, installer-matrix]
+    needs: [ecosystem-live, repository-audit, core-tests, full-tests, installer-matrix]
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: "3.12"
 
@@ -226,3 +260,34 @@ jobs:
           cmp /tmp/claude-ads-first/release-manifest.json /tmp/claude-ads-second/release-manifest.json
           cmp /tmp/claude-ads-first/sbom.cdx.json /tmp/claude-ads-second/sbom.cdx.json
           cmp /tmp/claude-ads-first/SHA256SUMS /tmp/claude-ads-second/SHA256SUMS
+
+  validate:
+    name: validate
+    if: always()
+    needs: [ecosystem-live, repository-audit, core-tests, full-tests, installer-matrix, package-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Require every CI gate
+        env:
+          REPOSITORY_AUDIT_RESULT: ${{ needs.repository-audit.result }}
+          ECOSYSTEM_LIVE_RESULT: ${{ needs.ecosystem-live.result }}
+          CORE_TESTS_RESULT: ${{ needs.core-tests.result }}
+          FULL_TESTS_RESULT: ${{ needs.full-tests.result }}
+          INSTALLER_MATRIX_RESULT: ${{ needs.installer-matrix.result }}
+          PACKAGE_SMOKE_RESULT: ${{ needs.package-smoke.result }}
+        run: |
+          for result in \
+            "$ECOSYSTEM_LIVE_RESULT" \
+            "$REPOSITORY_AUDIT_RESULT" \
+            "$CORE_TESTS_RESULT" \
+            "$FULL_TESTS_RESULT" \
+            "$INSTALLER_MATRIX_RESULT" \
+            "$PACKAGE_SMOKE_RESULT"
+          do
+            if [ "$result" != "success" ]; then
+              echo "Required CI gate did not succeed: $result" >&2
+              exit 1
+            fi
+          done

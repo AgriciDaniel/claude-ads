@@ -190,12 +190,20 @@ function Main {
         throw "Skill and agent install roots must not overlap: $SkillBase ; $AgentDirResolved"
     }
     $SkillDirResolved = [IO.Path]::GetFullPath((Join-Path $SkillBase "ads"))
+    $BashManifestPath = [IO.Path]::GetFullPath((Join-Path $SkillBase ".claude-ads-$Target.manifest"))
     $ManifestPath = [IO.Path]::GetFullPath((Join-Path $SkillBase ".claude-ads-$Target.manifest.json"))
     $RepoUrl = "https://github.com/AgriciDaniel/claude-ads"
     $StringComparer = if ($PathComparison -eq [StringComparison]::OrdinalIgnoreCase) {
         [StringComparer]::OrdinalIgnoreCase
     } else {
         [StringComparer]::Ordinal
+    }
+
+    # Bash and PowerShell use different ownership-manifest contracts. Never
+    # let one installer infer overwrite authority from the other contract.
+    $BashManifestItem = Get-Item -LiteralPath $BashManifestPath -Force -ErrorAction SilentlyContinue
+    if ($null -ne $BashManifestItem) {
+        throw "Bash ownership manifest detected: $BashManifestPath. Continue with install.sh, or uninstall with uninstall.sh before switching installers."
     }
 
     function Get-RootPrefix([string]$Root) {
@@ -547,6 +555,42 @@ function Main {
         $PriorFiles = $Prior.Files
         $PriorDirectories = $Prior.Directories
         $PriorRecursiveDirs = $Prior.RecursiveDirectories
+
+        # Installs older than v2.0.0 wrote no ownership manifest. Detect that
+        # layout once, before any destination mutation, instead of failing
+        # with one generic unowned-file error per file. A Bash manifest was
+        # already rejected above, so no PowerShell manifest here means nothing
+        # on disk records what this installer may overwrite.
+        $ExistingManifest = Get-Item -LiteralPath $ManifestPath -Force -ErrorAction SilentlyContinue
+        if ($null -eq $ExistingManifest) {
+            $LegacyPaths = [System.Collections.Generic.List[string]]::new()
+            $MainSkillPath = Join-Path $SkillDirResolved "SKILL.md"
+            if (Test-Path -LiteralPath $MainSkillPath) { $LegacyPaths.Add($MainSkillPath) }
+            foreach ($PlannedFile in $FilePlan) {
+                if ($PlannedFile.Destination.StartsWith($AgentRootPrefix, $PathComparison) -and
+                    (Test-Path -LiteralPath $PlannedFile.Destination)) {
+                    $LegacyPaths.Add($PlannedFile.Destination)
+                }
+            }
+            if ($LegacyPaths.Count -gt 0) {
+                $OwnedPaths = [System.Collections.Generic.List[string]]::new()
+                $OwnedPaths.Add($SkillDirResolved)
+                Get-ChildItem (Join-Path $SourceDir "skills") -Directory | Sort-Object Name | ForEach-Object {
+                    $OwnedPaths.Add((Join-Path $SkillBase $_.Name))
+                }
+                Get-ChildItem (Join-Path $SourceDir "agents\*.md") -File | Sort-Object Name | ForEach-Object {
+                    $OwnedPaths.Add((Join-Path $AgentDirResolved $_.Name))
+                }
+                $OwnedPaths.Add($ManifestPath)
+                $Lines = @("Existing Claude Ads files without an ownership manifest detected:")
+                $Lines += @($LegacyPaths | ForEach-Object { "    $_" })
+                $Lines += "  Installs older than v2.0.0 wrote no ownership manifest, so this installer cannot verify what it may overwrite."
+                $Lines += "  Remove the old install manually, then re-run. Paths this installer would own for target ${Target}:"
+                $Lines += @($OwnedPaths | ForEach-Object { "    $_" })
+                throw ($Lines -join [Environment]::NewLine)
+            }
+        }
+
         [void](Assert-SafeConfiguredRoot $SkillBase)
         [void](Assert-SafeConfiguredRoot $AgentDirResolved)
         foreach ($Directory in $PlannedDirs) {

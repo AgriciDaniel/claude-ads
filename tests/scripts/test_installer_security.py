@@ -22,6 +22,14 @@ WINDOWS_POWERSHELL = shutil.which("powershell.exe") if os.name == "nt" else None
 WINDOWS_POWERSHELL_ONLY = pytest.mark.skipif(
     WINDOWS_POWERSHELL is None, reason="Windows PowerShell 5.1 is not installed"
 )
+LEGACY_INSTALL_MESSAGE = "Existing Claude Ads files without an ownership manifest detected"
+EMPTY_POWERSHELL_MANIFEST = {
+    "version": 1,
+    "target": "claude",
+    "files": [],
+    "directories": [],
+    "recursive_directories": [],
+}
 
 
 def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -144,8 +152,10 @@ def test_bash_installer_syntax_and_no_global_pip_escape_hatch():
     assert "write_install_receipt.py" in installer
     assert "managed-runtime-receipt.json" in installer
     assert "banana-claude" not in installer
+    assert LEGACY_INSTALL_MESSAGE in installer
 
     powershell = (ROOT / "install.ps1").read_text(encoding="utf-8")
+    assert LEGACY_INSTALL_MESSAGE in powershell
     assert "--require-hashes --only-binary=:all:" in powershell
     assert "-m pip check" in powershell
     assert "requirements.lock" in powershell
@@ -164,6 +174,7 @@ def test_bash_installer_syntax_and_no_global_pip_escape_hatch():
     assert "System.IO.FileSystemAclExtensions]::GetAccessControl" in powershell
     assert "Get-Acl" not in powershell
     assert "Refusing to overwrite unowned file" in powershell
+    assert "Bash ownership manifest detected" in powershell
     assert "-band [IO.FileAttributes]::ReparsePoint" in powershell
     assert powershell.count("Copy-Item") == 1
 
@@ -265,6 +276,123 @@ def test_unsupported_python_fails_before_any_destination_mutation(tmp_path):
 
 
 @BASH_INSTALLER_ONLY
+def test_windows_bash_install_redirects_to_powershell_before_mutation(tmp_path):
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    fake_bin = _fake_python(
+        tmp_path, "cpython|3.12|windows|amd64|none|none|unsupported"
+    )
+    result = subprocess.run(
+        [
+            "bash",
+            str(ROOT / "install.sh"),
+            "--target=claude",
+            "--source=local",
+            f"--skill-dir={skills}",
+            f"--agent-dir={agents}",
+        ],
+        cwd=ROOT,
+        env={**os.environ, "PATH": f"{fake_bin}:{os.environ['PATH']}"},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "Use install.ps1" in result.stderr
+    assert not skills.exists()
+    assert not agents.exists()
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_rejects_powershell_manifest_before_mutation(tmp_path):
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    main_skill = skills / "ads" / "SKILL.md"
+    main_skill.parent.mkdir(parents=True)
+    main_skill.write_text("power-shell-owned\n", encoding="utf-8")
+    manifest = skills / ".claude-ads-claude.manifest.json"
+    manifest.write_text('{"version":1}\n', encoding="utf-8")
+
+    result = _run(
+        "install.sh",
+        "--target=claude",
+        "--source=local",
+        "--no-deps",
+        f"--skill-dir={skills}",
+        f"--agent-dir={agents}",
+    )
+
+    assert result.returncode != 0
+    assert "PowerShell ownership manifest detected" in result.stderr
+    assert main_skill.read_text(encoding="utf-8") == "power-shell-owned\n"
+    assert not agents.exists()
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_reports_legacy_install_once_before_mutation(tmp_path):
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    # v1.x installers copied files without writing any ownership manifest.
+    main_skill = skills / "ads" / "SKILL.md"
+    main_skill.parent.mkdir(parents=True)
+    main_skill.write_text("legacy v1 skill\n", encoding="utf-8")
+    sub_skill = skills / "ads-google" / "SKILL.md"
+    sub_skill.parent.mkdir(parents=True)
+    sub_skill.write_text("legacy v1 sub-skill\n", encoding="utf-8")
+    agent_name = sorted((ROOT / "agents").glob("*.md"))[0].name
+    agent_file = agents / agent_name
+    agent_file.parent.mkdir(parents=True)
+    agent_file.write_text("legacy v1 agent\n", encoding="utf-8")
+
+    result = _run(
+        "install.sh",
+        "--target=claude",
+        "--source=local",
+        "--no-deps",
+        f"--skill-dir={skills}",
+        f"--agent-dir={agents}",
+    )
+
+    assert result.returncode == 1
+    assert result.stderr.count("✗") == 1
+    assert LEGACY_INSTALL_MESSAGE in result.stderr
+    assert "Refusing to overwrite unowned file" not in result.stderr
+    assert "older than v2.0.0" in result.stderr
+    assert str(main_skill) in result.stderr
+    assert str(agent_file) in result.stderr
+    assert f"{skills / 'ads-google'}/" in result.stderr
+    assert str(skills / ".claude-ads-claude.manifest") in result.stderr
+    assert main_skill.read_text(encoding="utf-8") == "legacy v1 skill\n"
+    assert sub_skill.read_text(encoding="utf-8") == "legacy v1 sub-skill\n"
+    assert agent_file.read_text(encoding="utf-8") == "legacy v1 agent\n"
+    assert not (skills / "ads" / "references").exists()
+    assert not (skills / ".claude-ads-claude.manifest").exists()
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_upgrades_managed_install_in_place(tmp_path):
+    skills, agents = _install(tmp_path)
+    installed_main = skills / "ads" / "SKILL.md"
+    expected_main = (ROOT / "ads" / "SKILL.md").read_text(encoding="utf-8")
+    installed_main.write_text("stale owned content\n", encoding="utf-8")
+    installed_agent = sorted(agents.glob("*.md"))[0]
+    expected_agent = (ROOT / "agents" / installed_agent.name).read_text(encoding="utf-8")
+    installed_agent.write_text("stale owned agent\n", encoding="utf-8")
+
+    repeat = _run(
+        "install.sh",
+        "--target=claude",
+        "--source=local",
+        "--no-deps",
+        f"--skill-dir={skills}",
+        f"--agent-dir={agents}",
+    )
+
+    assert repeat.returncode == 0, repeat.stdout + repeat.stderr
+    assert LEGACY_INSTALL_MESSAGE not in repeat.stderr
+    assert installed_main.read_text(encoding="utf-8") == expected_main
+    assert installed_agent.read_text(encoding="utf-8") == expected_agent
+    assert (skills / ".claude-ads-claude.manifest").is_file()
+
+
+@BASH_INSTALLER_ONLY
 def test_musl_linux_fails_before_any_destination_mutation(tmp_path):
     skills, agents = tmp_path / "skills", tmp_path / "agents"
     fake_bin = _fake_python(tmp_path, "cpython|3.12|linux|x86_64|musl|1.2.5|unsupported")
@@ -335,6 +463,10 @@ def test_powershell_installer_rejects_unowned_main_file_before_any_mutation(tmp_
     main_skill = skills / "ads" / "SKILL.md"
     main_skill.parent.mkdir(parents=True)
     main_skill.write_text("user-owned\n", encoding="utf-8")
+    # A valid manifest that owns nothing keeps this on the per-file guard
+    # rather than the legacy-install preflight.
+    manifest_path = skills / ".claude-ads-claude.manifest.json"
+    manifest_path.write_text(json.dumps(EMPTY_POWERSHELL_MANIFEST), encoding="utf-8")
 
     install = _powershell_install(skills, agents)
 
@@ -342,6 +474,54 @@ def test_powershell_installer_rejects_unowned_main_file_before_any_mutation(tmp_
     assert "Refusing to overwrite unowned file" in install.stdout + install.stderr
     assert main_skill.read_text(encoding="utf-8") == "user-owned\n"
     assert not (skills / "ads" / "references").exists()
+    assert not agents.exists()
+    assert json.loads(manifest_path.read_text(encoding="utf-8")) == EMPTY_POWERSHELL_MANIFEST
+
+
+@POWERSHELL_ONLY
+def test_powershell_installer_reports_legacy_install_once_before_mutation(tmp_path):
+    skills = tmp_path / "skills"
+    agents = tmp_path / "agents"
+    main_skill = skills / "ads" / "SKILL.md"
+    main_skill.parent.mkdir(parents=True)
+    main_skill.write_text("legacy v1 skill\n", encoding="utf-8")
+    agent_name = sorted((ROOT / "agents").glob("*.md"))[0].name
+    agent_file = agents / agent_name
+    agent_file.parent.mkdir(parents=True)
+    agent_file.write_text("legacy v1 agent\n", encoding="utf-8")
+
+    install = _powershell_install(skills, agents)
+
+    output = install.stdout + install.stderr
+    assert install.returncode != 0
+    assert output.count(LEGACY_INSTALL_MESSAGE) == 1
+    assert "Refusing to overwrite unowned file" not in output
+    assert "older than v2.0.0" in output
+    assert str(main_skill.resolve()) in output
+    assert str(agent_file.resolve()) in output
+    assert str((skills / ".claude-ads-claude.manifest.json").resolve()) in output
+    assert main_skill.read_text(encoding="utf-8") == "legacy v1 skill\n"
+    assert agent_file.read_text(encoding="utf-8") == "legacy v1 agent\n"
+    assert not (skills / "ads" / "references").exists()
+    assert not (skills / ".claude-ads-claude.manifest.json").exists()
+
+
+@POWERSHELL_ONLY
+def test_powershell_installer_rejects_bash_manifest_before_any_mutation(tmp_path):
+    skills = tmp_path / "skills"
+    agents = tmp_path / "agents"
+    main_skill = skills / "ads" / "SKILL.md"
+    main_skill.parent.mkdir(parents=True)
+    main_skill.write_text("bash-owned\n", encoding="utf-8")
+    (skills / ".claude-ads-claude.manifest").write_text(
+        "F|/bash-owned-placeholder\n", encoding="utf-8"
+    )
+
+    install = _powershell_install(skills, agents)
+
+    assert install.returncode != 0
+    assert "Bash ownership manifest detected" in install.stdout + install.stderr
+    assert main_skill.read_text(encoding="utf-8") == "bash-owned\n"
     assert not agents.exists()
     assert not (skills / ".claude-ads-claude.manifest.json").exists()
 
@@ -354,13 +534,19 @@ def test_powershell_installer_preflights_late_agent_collision_before_skill_mutat
     agent_file = agents / agent_name
     agent_file.parent.mkdir(parents=True)
     agent_file.write_text("user-owned agent\n", encoding="utf-8")
+    # A valid manifest that owns nothing keeps this on the per-file guard
+    # rather than the legacy-install preflight.
+    skills.mkdir()
+    manifest_path = skills / ".claude-ads-claude.manifest.json"
+    manifest_path.write_text(json.dumps(EMPTY_POWERSHELL_MANIFEST), encoding="utf-8")
 
     install = _powershell_install(skills, agents)
 
     assert install.returncode != 0
     assert "Refusing to overwrite unowned file" in install.stdout + install.stderr
     assert agent_file.read_text(encoding="utf-8") == "user-owned agent\n"
-    assert not skills.exists()
+    assert not (skills / "ads").exists()
+    assert json.loads(manifest_path.read_text(encoding="utf-8")) == EMPTY_POWERSHELL_MANIFEST
 
 
 @POWERSHELL_ONLY

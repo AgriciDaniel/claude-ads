@@ -35,6 +35,18 @@ description: "Audit Google Ads measurement, Search, Shopping, Performance Max, D
 - Do not issue universal pause, bid, budget, learning-phase, or attribution rules.
 - Keep every account change as a draft until the main mutation gate passes.
 
+## Operation-capability check
+
+Treat product labels such as `Smart Conversions` as untrusted account data. Do
+not infer the platform, feature identity, or mutability from the label alone.
+Before recommending any removal, replacement, disablement, or setting change,
+verify the current operation capability from account evidence, current official
+documentation, the available API or UI surface, and the caller's permissions.
+If the operation is immutable, unavailable, or unverified, do not recommend the
+mutation. Explain the observed constraint, return the control as `unknown` or
+unscored as applicable, and offer only a reversible alternative that the current
+surface actually supports.
+
 ## Output
 
 Return platform health, evidence coverage, regulatory exposure, observations,

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v1:ecosystem-dispositions.v1.json",
+  "title": "Claude Ads ecosystem disposition ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "reviewed_at", "entries"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "reviewed_at": {"type": "string", "format": "date"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id", "repository", "kind", "number", "title", "url", "state",
+          "decision", "license_review", "rationale", "requirement_ids"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+          "repository": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["issue", "pull-request"]},
+          "number": {"type": "integer", "minimum": 1},
+          "title": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "format": "uri"},
+          "state": {"enum": ["open", "closed", "merged"]},
+          "decision": {"enum": ["adopt-reimplement", "adopt-concept", "already-addressed", "dependency-review", "defer", "reject", "superseded"]},
+          "license_review": {"enum": ["same-project-mit", "metadata-only", "pending"]},
+          "rationale": {"type": "string", "minLength": 1},
+          "requirement_ids": {"type": "array", "items": {"type": "string", "pattern": "^REQ-[A-Z]+-[0-9]{3}$"}, "uniqueItems": true},
+          "regression_tests": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

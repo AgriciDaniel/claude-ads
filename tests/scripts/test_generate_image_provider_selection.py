@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import sys
 from pathlib import Path
@@ -12,6 +13,11 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 import generate_image  # noqa: E402
+
+
+_VALID_PNG = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+)
 
 
 def _lifecycle() -> dict:
@@ -72,7 +78,7 @@ def test_gemini_dispatch_uses_exact_model_without_upgrade_or_fallback(monkeypatc
 
     def fake_generate(prompt, width, height, api_key, model, reference_path):
         calls.append((model, reference_path))
-        return b"image"
+        return _VALID_PNG
 
     monkeypatch.setattr(generate_image, "generate_gemini", fake_generate)
     image, _, _ = generate_image.generate_image(
@@ -84,8 +90,78 @@ def test_gemini_dispatch_uses_exact_model_without_upgrade_or_fallback(monkeypatc
         str(reference),
     )
 
-    assert image == b"image"
+    assert image == _VALID_PNG
     assert calls == [("operator-approved-model", str(reference))]
+
+
+def test_provider_output_must_be_a_complete_supported_png(monkeypatch):
+    monkeypatch.setattr(generate_image, "generate_openai", lambda *args: b"not-an-image")
+
+    with pytest.raises(RuntimeError, match="not a valid supported PNG"):
+        generate_image.generate_image(
+            "ephemeral prompt",
+            "1:1",
+            "openai",
+            "operator-approved-model",
+            "ephemeral-key",
+        )
+
+
+def test_provider_output_size_limit_is_enforced_after_in_memory_adapters(monkeypatch):
+    monkeypatch.setattr(generate_image, "MAX_GENERATED_IMAGE_BYTES", 8)
+    monkeypatch.setattr(generate_image, "generate_openai", lambda *args: _VALID_PNG)
+
+    with pytest.raises(RuntimeError, match="25 MiB limit"):
+        generate_image.generate_image(
+            "ephemeral prompt",
+            "1:1",
+            "openai",
+            "operator-approved-model",
+            "ephemeral-key",
+        )
+
+
+def test_streamed_provider_response_is_bounded_typed_and_closed(monkeypatch):
+    class Response:
+        status_code = 200
+        headers = {
+            "content-type": "image/png; charset=binary",
+            "content-length": str(len(_VALID_PNG)),
+        }
+
+        def __init__(self):
+            self.closed = False
+
+        def iter_content(self, chunk_size):
+            assert chunk_size == 64 * 1024
+            yield _VALID_PNG[:20]
+            yield _VALID_PNG[20:]
+
+        def close(self):
+            self.closed = True
+
+    response = Response()
+    assert generate_image._bounded_png_response(response, "provider") == _VALID_PNG
+    assert response.closed is True
+
+    response = Response()
+    response.headers = {"content-type": "text/html"}
+    with pytest.raises(RuntimeError, match="unsupported content type"):
+        generate_image._bounded_png_response(response, "provider")
+    assert response.closed is True
+
+    response = Response()
+    response.headers = {"content-type": "image/png"}
+    monkeypatch.setattr(generate_image, "MAX_GENERATED_IMAGE_BYTES", 8)
+    with pytest.raises(RuntimeError, match="25 MiB limit"):
+        generate_image._bounded_png_response(response, "provider")
+    assert response.closed is True
+
+
+@pytest.mark.parametrize("path", ["asset.jpg", "asset.jpeg", "asset", "asset.png.exe"])
+def test_generated_output_path_must_match_png_contract(path):
+    with pytest.raises(ValueError, match="must use the .png extension"):
+        generate_image._require_png_output_path(path)
 
 
 def test_reference_image_is_not_silently_dropped_for_unsupported_adapter(monkeypatch):

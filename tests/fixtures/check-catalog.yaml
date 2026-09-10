@@ -15,12 +15,12 @@
 #   - Prefixes: G=Google, M=Meta, L=LinkedIn, T=TikTok, MS=Microsoft
 
 version: "2.0"
-last_updated: "2026-07-11"
+last_updated: "2026-09-10"
 
 platforms:
   google:
     reference: ads/references/google-audit.md
-    total_checks: 95
+    total_checks: 97
     skill: ads-google
     audit_agent: audit-google
     check_ids:
@@ -120,6 +120,9 @@ platforms:
       - G93
       - G94
       - G95
+      # Public issue 65: same-campaign Search plus DSA overlap and cross-campaign keyword duplication
+      - G96
+      - G97
 
   meta:
     reference: ads/references/meta-audit.md

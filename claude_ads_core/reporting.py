@@ -15,7 +15,7 @@ import re
 import stat
 import tempfile
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 from .contracts import ContractError, validate_contract
 

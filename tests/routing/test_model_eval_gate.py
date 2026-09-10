@@ -261,8 +261,18 @@ def _assess_with_auth(
 
 def test_execution_plan_is_pinned_and_explicitly_not_run_evidence(repo_root):
     plan = build_plan(repo_root / "evals" / "model-eval-contract.json", repo_root)
+    candidate_commit = subprocess.check_output(
+        ["git", "rev-parse", "HEAD^{commit}"], cwd=repo_root, text=True
+    ).strip()
+    candidate_tree = subprocess.check_output(
+        ["git", "rev-parse", "HEAD^{tree}"], cwd=repo_root, text=True
+    ).strip()
     assert plan["artifact_class"] == "external_model_execution_plan"
     assert plan["is_model_run_evidence"] is False
+    assert plan["subjects"]["candidate"]["git_commit"] == candidate_commit
+    assert plan["subjects"]["candidate"]["git_tree"] == candidate_tree
+    assert plan["subjects"]["retained_v1"]["git_commit"] == BASELINE_COMMIT
+    assert plan["subjects"]["retained_v1"]["git_tree"] == BASELINE_TREE
     assert len(plan["task_packets"]) == 24
     assert plan["suite"]["sha256"] == _sha(
         (repo_root / "evals" / "v2-behavior-evals.json").read_text(encoding="utf-8")

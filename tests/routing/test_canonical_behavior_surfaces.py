@@ -198,3 +198,55 @@ def test_attribution_research_setup_and_uninstall_surfaces_are_fail_closed(repo_
         "`ads-weather` must remain untouched",
     ):
         assert phrase in validate
+
+
+def test_meta_cold_starts_are_independent_and_fail_closed(repo_root: Path):
+    meta = _lower(repo_root, "skills/ads-meta/SKILL.md")
+    for phrase in (
+        "account_cold_start",
+        "pixel_cold_start",
+        "conversion_cold_start",
+        "a new account does not prove a new pixel",
+        "raw events do not prove conversion maturity",
+        "preserve `unknown` when the evidence is absent",
+        "staged reversible tests",
+        "never label creative bad merely because the pixel is new",
+    ):
+        assert phrase in meta
+
+
+def test_plan_and_create_surfaces_apply_meta_cold_start_contract(repo_root: Path):
+    plan = _lower(repo_root, "skills/ads-plan/SKILL.md")
+    create = _lower(repo_root, "skills/ads-create/SKILL.md")
+    for surface in (plan, create):
+        assert "`skills/ads-meta/skill.md`" in surface
+        assert "account, pixel, and conversion cold-start" in surface
+        assert "cold or `unknown`" in surface
+    for phrase in (
+        "before proposing meta budgets, learning-phase expectations, bidding, "
+        "consolidation, or performance forecasts",
+        "measurement validation, explicit creative hypotheses, staged reversible "
+        "tests, and confidence labels",
+        "do not apply mature-account benchmarks to missing history",
+    ):
+        assert phrase in plan
+    for phrase in (
+        "state that in the brief",
+        "do not reuse mature-account creative benchmarks or performance claims",
+        "never label existing creative bad merely because the pixel is new",
+    ):
+        assert phrase in create
+
+
+def test_google_and_microsoft_verify_mutation_capability(repo_root: Path):
+    for relative in ("skills/ads-google/SKILL.md", "skills/ads-microsoft/SKILL.md"):
+        skill = _lower(repo_root, relative)
+        for phrase in (
+            "product labels such as `smart conversions` as untrusted account data",
+            "do not infer the platform, feature identity, or mutability",
+            "verify the current operation capability",
+            "if the operation is immutable, unavailable, or unverified",
+            "do not recommend the mutation",
+            "reversible alternative",
+        ):
+            assert phrase in skill

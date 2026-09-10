@@ -296,6 +296,9 @@ def analyze_landing(
 
 def grade_landing(result: dict) -> dict:
     """Grade landing page quality based on ad audit criteria."""
+    if result.get("error"):
+        raise ValueError("cannot grade a failed landing-page analysis")
+
     grades = {}
 
     # G59: Mobile speed (LCP)
@@ -340,7 +343,7 @@ def grade_landing(result: dict) -> dict:
     return grades
 
 
-def main():
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Analyze landing page quality for ad campaigns")
     parser.add_argument("url", help="URL to analyze")
     parser.add_argument("--timeout", "-t", type=int, default=30000, help="Timeout in ms")
@@ -353,7 +356,7 @@ def main():
         ),
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         egress_attestation = (
             load_egress_sandbox_attestation(args.egress_attestation)
@@ -362,12 +365,19 @@ def main():
         )
     except ValueError as exc:
         print(f"Error: {sanitize_error(exc)}", file=sys.stderr)
-        raise SystemExit(1) from exc
+        return 1
     result = analyze_landing(
         args.url,
         timeout=args.timeout,
         egress_attestation=egress_attestation,
     )
+    if result.get("error"):
+        error = sanitize_error(result["error"])
+        if args.json:
+            print(json.dumps({**result, "error": error}, indent=2))
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
+
     grades = grade_landing(result)
 
     if args.json:
@@ -387,12 +397,12 @@ def main():
         print(f"  CLS: {cls} ({cls_status})")
         print(f"  TTFB: {result['performance']['ttfb_ms']}ms")
 
-        print(f"\nContent:")
+        print("\nContent:")
         print(f"  Title: {result['content']['title']}")
         print(f"  H1: {result['content']['h1'] or 'MISSING'}")
         print(f"  Words: {result['content']['word_count']}")
 
-        print(f"\nConversion Elements:")
+        print("\nConversion Elements:")
         print(f"  CTA Above Fold: {'Y' if result['conversion']['cta_above_fold'] else 'N'}")
         print(f"  Form: {'Y (' + str(result['conversion']['form_fields']) + ' fields)' if result['conversion']['form_present'] else 'N'}")
         print(f"  Phone: {'Y' if result['conversion']['phone_number'] else 'N'}")
@@ -400,13 +410,12 @@ def main():
 
         print(f"\nSchema: {', '.join(result['schema']['types_found']) or 'None'}")
 
-        print(f"\nAudit Grades:")
+        print("\nAudit Grades:")
         for check, grade in grades.items():
             print(f"  [{grade}] {check}")
 
-        if result["error"]:
-            print(f"\nError: {result['error']}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

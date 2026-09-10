@@ -4,12 +4,16 @@ import copy
 import hashlib
 import importlib.util
 import json
+from datetime import timedelta
 from pathlib import Path
+import re
 import subprocess
 import sys
+import tomllib
 import zipfile
 
 import pytest
+from jsonschema import Draft202012Validator
 
 RELEASE_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "release.py"
 SPEC = importlib.util.spec_from_file_location("claude_ads_release", RELEASE_SCRIPT)
@@ -27,6 +31,8 @@ validate_portable_path = release.validate_portable_path
 verify_github_run = release.verify_github_run
 verify_release = release.verify_release
 check_grounding_and_capabilities = release._check_grounding_and_capabilities
+check_ecosystem = release._check_ecosystem
+check_vulnerability_exceptions = release._check_vulnerability_exceptions
 
 
 def _git(root: Path, *args: str) -> None:
@@ -107,6 +113,58 @@ def _repository(tmp_path: Path) -> Path:
     return root
 
 
+def _single_version(root: Path, relative: str, pattern: str) -> str:
+    text = (root / relative).read_text(encoding="utf-8")
+    matches = re.findall(pattern, text, flags=re.MULTILINE)
+    assert len(matches) == 1, f"expected exactly one version in {relative}"
+    return matches[0]
+
+
+def test_product_and_core_version_contracts_are_consistent() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    plugin = json.loads(
+        (root / ".claude-plugin/plugin.json").read_text(encoding="utf-8")
+    )
+    marketplace = json.loads(
+        (root / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    )
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+
+    product_versions = {
+        plugin["version"],
+        marketplace["metadata"]["version"],
+        marketplace["plugins"][0]["version"],
+        _single_version(root, "CITATION.cff", r'^version: "([^"]+)"$'),
+        _single_version(
+            root, "scripts/generate_report.py", r'^__version__ = "([^"]+)"$'
+        ),
+    }
+    core_versions = {
+        project["project"]["version"],
+        _single_version(
+            root, "claude_ads_core/__init__.py", r'^__version__ = "([^"]+)"$'
+        ),
+    }
+
+    assert product_versions == {plugin["version"]}
+    assert core_versions == {project["project"]["version"]}
+
+
+def test_dependabot_workflow_is_read_only() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    workflow = (root / ".github/workflows/dependabot-automerge.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "gh pr review" not in workflow
+    assert "--approve" not in workflow
+    assert "gh pr merge" not in workflow
+    assert "contents: write" not in workflow
+    assert "pull-requests: write" not in workflow
+    assert "contents: read" in workflow
+    assert "pull-requests: read" in workflow
+
+
 @pytest.mark.parametrize(
     "path",
     ["../escape", "/absolute", r"windows\separator", "aux.txt", "safe/../escape"],
@@ -142,6 +200,80 @@ def test_audit_checks_frontmatter_and_sensitive_content(tmp_path: Path) -> None:
     )
     errors = audit_repository(root)
     assert any("personal tilde path" in error for error in errors)
+
+
+def test_audit_rejects_sensitive_artifacts_and_binary_tokens(tmp_path: Path) -> None:
+    root = _repository(tmp_path)
+    database = root / "assets/cache.sqlite3"
+    database.parent.mkdir(parents=True, exist_ok=True)
+    database.write_bytes(b"SQLite format 3\x00")
+    _git(root, "add", "-f", "assets/cache.sqlite3")
+    assert any("sensitive artifact" in error for error in audit_repository(root))
+
+    binary_root = tmp_path / "binary"
+    binary_root.mkdir()
+    root = _repository(binary_root)
+    binary = root / "assets/provider-response.bin"
+    binary.parent.mkdir(parents=True, exist_ok=True)
+    binary.write_bytes(b"\x00\x01gh" + b"p_" + b"A" * 24 + b"\x00")
+    _git(root, "add", "assets/provider-response.bin")
+    assert any("possible GitHub token" in error for error in audit_repository(root))
+
+
+@pytest.mark.parametrize("encoding", ["utf-16-le", "utf-16-be", "utf-16"])
+def test_audit_rejects_utf16_encoded_tokens(tmp_path: Path, encoding: str) -> None:
+    root = _repository(tmp_path)
+    token = "gh" + "p_" + "A" * 24
+    fixture = root / "assets/exported-settings.bin"
+    fixture.parent.mkdir(parents=True, exist_ok=True)
+    fixture.write_bytes(f"token={token}\n".encode(encoding))
+    assert token.encode("utf-8") not in fixture.read_bytes()
+    _git(root, "add", "assets/exported-settings.bin")
+    errors = audit_repository(root)
+    assert any(
+        "possible GitHub token" in error and "utf-16" in error for error in errors
+    ), errors
+
+
+def test_sensitive_artifact_ignore_patterns_are_present() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    patterns = {
+        line.strip()
+        for line in (root / ".gitignore").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+    assert {
+        "*.log",
+        "*.db",
+        "*.sqlite",
+        "*.sqlite3",
+        "credentials*",
+        "secrets*",
+        "config.local.*",
+    } <= patterns
+
+
+def test_audit_rejects_case_insensitive_path_collisions(tmp_path: Path) -> None:
+    root = _repository(tmp_path)
+    _write(
+        root,
+        "skills/Ads-Google/SKILL.md",
+        "---\nname: Ads-Google\ndescription: collision fixture.\n---\n",
+    )
+    _git(root, "add", "skills/Ads-Google/SKILL.md")
+    errors = audit_repository(root)
+    assert any("case-insensitive path collision" in error for error in errors)
+
+
+def test_marketplace_install_identifier_is_normalized() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    marketplace = json.loads(
+        (root / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    )
+    assert "/plugin marketplace add agricidaniel/claude-ads" in readme
+    assert "/plugin marketplace add AgriciDaniel/claude-ads" not in readme
+    assert f"/plugin install claude-ads@{marketplace['name']}" in readme
 
 
 def test_package_is_deterministic_public_safe_and_verifiable(tmp_path: Path) -> None:
@@ -186,11 +318,16 @@ def test_release_manifest_schema_and_types_fail_closed(tmp_path: Path, case: str
     root = _repository(tmp_path)
     artifacts = build_release(root, tmp_path / "dist")
     manifest = json.loads(artifacts["manifest"].read_text(encoding="utf-8"))
-    if case == "top-field": manifest["unexpected"] = True
-    elif case == "bool-size": manifest["files"][0]["size"] = True
-    elif case == "float-size": manifest["archive"]["size"] = float(manifest["archive"]["size"])
-    elif case == "archive-field": manifest["archive"]["unexpected"] = "x"
-    else: manifest["product"]["name"] = "forged"
+    if case == "top-field":
+        manifest["unexpected"] = True
+    elif case == "bool-size":
+        manifest["files"][0]["size"] = True
+    elif case == "float-size":
+        manifest["archive"]["size"] = float(manifest["archive"]["size"])
+    elif case == "archive-field":
+        manifest["archive"]["unexpected"] = "x"
+    else:
+        manifest["product"]["name"] = "forged"
     artifacts["manifest"].write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     lines = artifacts["checksums"].read_text(encoding="utf-8").splitlines()
     artifacts["checksums"].write_text("\n".join(f"{hashlib.sha256(artifacts['manifest'].read_bytes()).hexdigest()}  release-manifest.json" if line.endswith("  release-manifest.json") else line for line in lines) + "\n", encoding="utf-8")
@@ -213,10 +350,11 @@ def test_external_runtime_manifest_is_exact_and_archived(tmp_path: Path) -> None
     root = _repository(tmp_path)
     document = release._load_external_runtime_dependencies(root)
     assert {item["id"] for item in document["dependencies"]} == {"playwright-browser-payload", "weasyprint-native-libraries"}
-    artifacts = build_release(root, tmp_path / "dist")
+    build_release(root, tmp_path / "dist")
     verify_release(tmp_path / "dist", _commit(root), root)
     path = root / "control-plane/manifests/external-runtime-dependencies.json"
-    value = json.loads(path.read_text(encoding="utf-8")); value["dependencies"][0]["included_in_python_sbom"] = True
+    value = json.loads(path.read_text(encoding="utf-8"))
+    value["dependencies"][0]["included_in_python_sbom"] = True
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     with pytest.raises(ReleaseError, match="reviewed document|boundary"):
         release._load_external_runtime_dependencies(root)
@@ -284,6 +422,47 @@ def test_lock_target_hash_and_marker_parity_fail_closed(tmp_path: Path) -> None:
 
     parsed = release._parse_hash_lock(RELEASE_SCRIPT.parents[1] / "requirements-dev.lock")
     assert parsed["colorama"]["marker"] == 'sys_platform == "win32"'
+
+
+def test_ci_only_tooling_is_isolated_and_hash_locked() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    audit_lock = release._parse_hash_lock(
+        root / ".github/requirements-pip-audit.lock"
+    )
+    schema_lock = release._parse_hash_lock(
+        root / ".github/requirements-schema-tests.lock"
+    )
+    schema_source = (
+        root / ".github/requirements-schema-tests.in"
+    ).read_text(encoding="utf-8")
+    workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert len(audit_lock) == 29
+    assert audit_lock["pip-audit"]["version"] == "2.10.1"
+    assert all(entry["hashes"] for entry in audit_lock.values())
+    assert set(schema_lock) == {
+        "attrs",
+        "jsonschema",
+        "jsonschema-specifications",
+        "referencing",
+        "rpds-py",
+        "typing-extensions",
+    }
+    assert schema_lock["jsonschema"]["version"] == "4.26.0"
+    assert all(entry["hashes"] for entry in schema_lock.values())
+    assert [
+        line for line in schema_source.splitlines() if line and not line.startswith("#")
+    ] == ["jsonschema==4.26.0"]
+    assert "python -m pip install pip-audit==" not in workflow
+    assert "python -m venv .pip-audit-venv" in workflow
+    assert (
+        ".pip-audit-venv/bin/python -m pip install --require-hashes "
+        "--only-binary=:all: -r .github/requirements-pip-audit.lock"
+    ) in workflow
+    assert workflow.count(
+        "python -m pip install --require-hashes --only-binary=:all: "
+        "-r .github/requirements-schema-tests.lock"
+    ) == 2
 
 
 def test_notice_inventory_has_no_dangling_references_and_records_bundled_terms() -> None:
@@ -483,11 +662,156 @@ def test_claude_command_contract_distinguishes_plugin_namespace() -> None:
 
 def test_release_grounding_gate_validates_control_registry_and_profiles() -> None:
     root = RELEASE_SCRIPT.parents[1]
-    result = check_grounding_and_capabilities(root, release.date(2026, 7, 11))
-    assert result["registered_control_count"] == 412
+    result = check_grounding_and_capabilities(root, release.date(2026, 9, 10))
+    assert result["registered_control_count"] == 414
     assert result["source_grounded_control_count"] > 0
     assert result["enabled_scoring_profile_count"] == 0
     assert result["disabled_scoring_profile_count"] == 12
+
+
+def test_release_grounding_gate_rejects_stale_load_bearing_source(
+    monkeypatch,
+) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    source_path = root / "control-plane/manifests/source-ledger.json"
+    source_doc = json.loads(source_path.read_text(encoding="utf-8"))
+    source = next(
+        item
+        for item in source_doc["sources"]
+        if item["id"] == "google-ads-conversion-goals-official"
+    )
+    source["retrieved_at"] = "2026-08-25"
+    source["refresh_due"] = "2026-08-25"
+    original_json_object = release._json_object
+
+    def json_object(path: Path, label: str):
+        if label == "source ledger":
+            return source_doc
+        return original_json_object(path, label)
+
+    monkeypatch.setattr(release, "_json_object", json_object)
+    with pytest.raises(
+        ReleaseError,
+        match="load-bearing source is stale: google-ads-conversion-goals-official",
+    ):
+        check_grounding_and_capabilities(root, release.date(2026, 9, 11))
+
+
+def test_vulnerability_exception_evidence_is_release_packaged() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    result = check_vulnerability_exceptions(root, release.date(2026, 9, 10))
+
+    assert result["exception_count"] == 17
+    assert "tests/scripts/test_generate_report.py" in result["packaged_evidence_paths"]
+    assert set(result["packaged_evidence_paths"]) <= set(
+        release.package_files(result["packaged_evidence_paths"])
+    )
+
+
+def test_ecosystem_gate_binds_public_snapshot_and_expires(
+    tmp_path: Path, monkeypatch
+) -> None:
+    source_root = RELEASE_SCRIPT.parents[1]
+    manifest = source_root / "control-plane/manifests/ecosystem-dispositions.json"
+    candidate = tmp_path / "control-plane/manifests/ecosystem-dispositions.json"
+    candidate.parent.mkdir(parents=True)
+    candidate.write_bytes(manifest.read_bytes())
+    monkeypatch.setattr(
+        release,
+        "_check_repository_review_ledger",
+        lambda root: {"repository_count": 33},
+    )
+
+    document = json.loads(manifest.read_text(encoding="utf-8"))
+    reviewed_at = release.date.fromisoformat(document["reviewed_at"])
+    public = document["public_snapshot"]
+    canonical = document["canonical_snapshot"]
+
+    result = check_ecosystem(tmp_path, reviewed_at)
+    assert result["public_issue_count"] == len(public["issue_numbers"])
+    assert result["public_pull_request_count"] == len(public["pull_request_numbers"])
+    assert result["canonical_issue_count"] == len(canonical["issue_numbers"])
+    assert result["canonical_pull_request_count"] == len(canonical["pull_request_numbers"])
+    assert result["issue_and_pull_request_count"] == len(document["entries"]) == (
+        len(public["issue_numbers"])
+        + len(public["pull_request_numbers"])
+        + len(canonical["issue_numbers"])
+        + len(canonical["pull_request_numbers"])
+    )
+    assert "dependency-review" not in candidate.read_text(encoding="utf-8")
+
+    with pytest.raises(ReleaseError, match="stale or future-dated"):
+        check_ecosystem(tmp_path, reviewed_at + timedelta(days=31))
+    with pytest.raises(ReleaseError, match="stale or future-dated"):
+        check_ecosystem(tmp_path, reviewed_at - timedelta(days=1))
+
+    dropped = public["pull_request_numbers"][-1]
+    document = json.loads(candidate.read_text(encoding="utf-8"))
+    document["public_snapshot"]["pull_request_numbers"].remove(dropped)
+    del document["public_snapshot"]["pull_request_heads"][str(dropped)]
+    candidate.write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(ReleaseError, match="coverage mismatch"):
+        check_ecosystem(tmp_path, reviewed_at)
+
+    document = json.loads(manifest.read_text(encoding="utf-8"))
+    last_canonical = str(canonical["pull_request_numbers"][-1])
+    document["canonical_snapshot"]["pull_request_heads"][last_canonical] = "not-a-sha"
+    candidate.write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(ReleaseError, match="head snapshot"):
+        check_ecosystem(tmp_path, reviewed_at)
+
+
+def test_breaking_control_contracts_have_v1_compatibility_and_v2_instances() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    ecosystem_v1_schema = json.loads(
+        (root / "control-plane/schemas/ecosystem-dispositions.v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    ecosystem_v2_schema = json.loads(
+        (root / "control-plane/schemas/ecosystem-dispositions.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    ecosystem_v2 = json.loads(
+        (root / "control-plane/manifests/ecosystem-dispositions.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    ecosystem_v1 = {
+        "schema_version": "1.0.0",
+        "reviewed_at": "2026-07-11",
+        "entries": [],
+    }
+
+    assert not list(Draft202012Validator(ecosystem_v1_schema).iter_errors(ecosystem_v1))
+    assert list(Draft202012Validator(ecosystem_v2_schema).iter_errors(ecosystem_v1))
+    assert not list(Draft202012Validator(ecosystem_v2_schema).iter_errors(ecosystem_v2))
+
+
+def test_release_gate_output_conforms_to_v2_schema() -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    schema = json.loads(
+        (root / "control-plane/schemas/release-gate-report.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    report = evaluate_release_gate(
+        root,
+        model_report=None,
+        review_evidence_dir=None,
+        github_run_id=None,
+    )
+
+    errors = list(Draft202012Validator(schema).iter_errors(report))
+    assert errors == []
+    assert report["schema_version"] == "2.0.0"
+    assert len(report["checks"]) == 8
+    assert len({item["id"] for item in report["checks"]}) == 8
+    assert {item["id"] for item in report["checks"]} >= {
+        "vulnerability-exception-integrity",
+        "ecosystem-ledger-integrity",
+    }
 
 
 def test_release_gate_fails_closed_without_external_model_review_and_ci_evidence() -> None:
@@ -501,6 +825,7 @@ def test_release_gate_fails_closed_without_external_model_review_and_ci_evidence
     checks = {item["id"]: item for item in report["checks"]}
     assert report["evidence_class"] == "release-gate-assessment"
     assert report["release_gate_satisfied"] is False
+    assert checks["vulnerability-exception-integrity"]["status"] == "pass"
     assert checks["canonical-model-evaluation"]["status"] == "fail"
     assert checks["independent-reviews"]["status"] == "fail"
     assert checks["remote-ci"]["status"] == "fail"
@@ -548,6 +873,7 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
         ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
     ).stdout.strip()
     required_jobs = [
+        "Live ecosystem reconciliation",
         "Repository audit",
         "Core tests (Python 3.11)",
         "Core tests (Python 3.12)",
@@ -561,6 +887,7 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
         "Installer tests (windows-latest, Python 3.11)",
         "Installer tests (windows-latest, Python 3.12)",
         "Reproducible package smoke test",
+        "validate",
     ]
 
     def evidence(_root: Path, endpoint: str) -> dict:
@@ -571,6 +898,7 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
         return {
             "head_sha": commit,
             "head_branch": "v2",
+            "event": "workflow_dispatch",
             "status": "completed",
             "conclusion": "success",
             "path": ".github/workflows/ci.yml",
@@ -581,6 +909,18 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
     result = verify_github_run(root, "123", commit)
     assert result["head_sha"] == commit
     assert result["repository_visibility"] == "private"
+    assert result["event"] == "workflow_dispatch"
+    assert result["ecosystem_reconciliation_mode"] == "strict"
+
+    def push_run(_root: Path, endpoint: str) -> dict:
+        value = evidence(_root, endpoint)
+        if endpoint.endswith("/actions/runs/123"):
+            value = {**value, "event": "push"}
+        return value
+
+    monkeypatch.setattr(release, "_gh_json", push_run)
+    with pytest.raises(ReleaseError, match="must be a workflow_dispatch run"):
+        verify_github_run(root, "123", commit)
 
     def wrong_subject(_root: Path, endpoint: str) -> dict:
         value = evidence(_root, endpoint)

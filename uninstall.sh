@@ -99,6 +99,7 @@ main() {
     local MANIFEST_PATH="${SKILL_BASE}/.claude-ads-${TARGET}.manifest"
     if [ ! -f "$MANIFEST_PATH" ]; then
         echo "✗ Ownership manifest not found: ${MANIFEST_PATH}" >&2
+        echo "  Installs older than v2.0.0 wrote no ownership manifest." >&2
         echo "  Refusing namespace-based deletion. Remove a legacy install manually after reviewing its files." >&2
         exit 1
     fi
