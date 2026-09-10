@@ -36,7 +36,8 @@ materially changes the work:
 - Business model, industry, offer, geography, and regulated category.
 - Objective and primary conversion, including value and attribution definition.
 - Monthly and per-platform spend plus target CPA, ROAS, MER, or LTV:CAC.
-- Active platforms, account age, campaign age, and recent material changes.
+- Active platforms, account age, campaign age, Pixel or conversion-signal
+  history, and recent material changes.
 - Available data source, date range, timezone, currency, and known gaps.
 - Whether the user requests analysis, a change draft, or approved execution.
 
