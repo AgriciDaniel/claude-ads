@@ -332,6 +332,45 @@ print("|".join((sys.implementation.name, f"{sys.version_info.major}.{sys.version
     fi
     echo "✓ Distribution source: ${SOURCE_MODE}"
 
+    # Installs older than v2.0.0 wrote no ownership manifest. Detect that
+    # layout once, before any destination write, instead of failing later
+    # with one generic unowned-file error per file. A PowerShell manifest was
+    # already rejected above, so reaching this point with no Bash manifest
+    # means nothing on disk records what this installer may overwrite.
+    if [ ! -f "$MANIFEST_PATH" ]; then
+        LEGACY_PATHS=""
+        if [ -e "${SKILL_DIR}/SKILL.md" ]; then
+            LEGACY_PATHS="${LEGACY_PATHS}    ${SKILL_DIR}/SKILL.md"$'\n'
+        fi
+        for source_file in "${SOURCE_DIR}/agents/"*.md; do
+            [ -f "$source_file" ] || continue
+            legacy_agent="${AGENT_DIR}/$(basename -- "$source_file")"
+            if [ -e "$legacy_agent" ]; then
+                LEGACY_PATHS="${LEGACY_PATHS}    ${legacy_agent}"$'\n'
+            fi
+        done
+        if [ -n "$LEGACY_PATHS" ]; then
+            {
+                echo "✗ Existing Claude Ads files without an ownership manifest detected:"
+                printf '%s' "$LEGACY_PATHS"
+                echo "  Installs older than v2.0.0 wrote no ownership manifest, so this installer"
+                echo "  cannot verify what it may overwrite. Remove the old install manually, then"
+                echo "  re-run. Paths this installer would own for target ${TARGET}:"
+                echo "    ${SKILL_DIR}/"
+                for skill_dir in "${SOURCE_DIR}/skills"/*/; do
+                    [ -f "${skill_dir}SKILL.md" ] || continue
+                    echo "    ${SKILL_BASE}/$(basename -- "${skill_dir}")/"
+                done
+                for source_file in "${SOURCE_DIR}/agents/"*.md; do
+                    [ -f "$source_file" ] || continue
+                    echo "    ${AGENT_DIR}/$(basename -- "$source_file")"
+                done
+                echo "    ${MANIFEST_PATH}"
+            } >&2
+            exit 1
+        fi
+    fi
+
     mkdir -p "${SKILL_BASE}" "${AGENT_DIR}"
     SKILL_BASE_CANON=$(CDPATH= cd -- "$SKILL_BASE" && pwd -P)
     AGENT_DIR_CANON=$(CDPATH= cd -- "$AGENT_DIR" && pwd -P)

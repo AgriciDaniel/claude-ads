@@ -98,6 +98,16 @@ For Claude Code, the native plugin flow is:
 /plugin install claude-ads@ai-marketing-hub-claude-ads
 ```
 
+If you added this marketplace before v2.0.0, Claude Code still holds it under
+the stale local alias `agricidaniel-claude-ads`. Remove that alias, then re-add
+and install:
+
+```text
+/plugin marketplace remove agricidaniel-claude-ads
+/plugin marketplace add agricidaniel/claude-ads
+/plugin install claude-ads@ai-marketing-hub-claude-ads
+```
+
 Or install from a local clone of the public repository:
 
 ```bash
