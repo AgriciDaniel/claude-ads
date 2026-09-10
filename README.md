@@ -244,6 +244,31 @@ evals/                routing and behavioral evaluation cases
 tests/                deterministic, security, installer, and adapter tests
 ```
 
+## Contributors and acknowledgments
+
+Claude Ads benefits from community bug reports, feature requests, and proposed
+fixes. Thank you to the following contributors whose work informed v2.0.2.
+Some proposals were independently implemented or superseded; these credits
+recognize the contribution without implying that every submitted patch was merged.
+
+| Contributor | Contribution | Discussion |
+| --- | --- | --- |
+| [@principisimone-sys](https://github.com/principisimone-sys) | Search and DSA overlap request | [#65](https://github.com/AgriciDaniel/claude-ads/issues/65) |
+| [@HarKro753](https://github.com/HarKro753) | Meta account, Pixel, and conversion cold-start request | [#53](https://github.com/AgriciDaniel/claude-ads/issues/53) |
+| [@plcosta](https://github.com/plcosta) | Marketplace case-normalization report and proposed documentation fix | [#17](https://github.com/AgriciDaniel/claude-ads/issues/17), [#18](https://github.com/AgriciDaniel/claude-ads/pull/18) |
+| [@ulises2k](https://github.com/ulises2k) | Stale marketplace-alias installation report | [#56](https://github.com/AgriciDaniel/claude-ads/issues/56) |
+| [@kutzki](https://github.com/kutzki) | Windows dependency-lock and older-install update report | [#57](https://github.com/AgriciDaniel/claude-ads/issues/57) |
+| [@SamaEducationalCo](https://github.com/SamaEducationalCo) | Misleading grades after failed landing-page analysis | [#61](https://github.com/AgriciDaniel/claude-ads/issues/61) |
+| [@Bortlesboat](https://github.com/Bortlesboat) | Proposed landing-page analysis failure fix | [#66](https://github.com/AgriciDaniel/claude-ads/pull/66) |
+| [@gabbyran2026-gif](https://github.com/gabbyran2026-gif) | Proposed target-lock test subprocess fix | [#58](https://github.com/AgriciDaniel/claude-ads/pull/58) |
+| [@AbundantASG](https://github.com/AbundantASG) | Proposed scoped target-lock test subprocess fix | [#59](https://github.com/AgriciDaniel/claude-ads/pull/59) |
+| [@hendrixfreire](https://github.com/hendrixfreire) | Sensitive-file ignore-pattern report | [#32](https://github.com/AgriciDaniel/claude-ads/issues/32) |
+| [@josefresco](https://github.com/josefresco) | Non-actionable Smart Conversions removal advice report | [#50](https://github.com/AgriciDaniel/claude-ads/issues/50) |
+| [@dead-simba](https://github.com/dead-simba) | Request to revisit Meta architecture guidance | [#15](https://github.com/AgriciDaniel/claude-ads/issues/15) |
+| [@c6zks4gssn-droid](https://github.com/c6zks4gssn-droid) | Repository-tooling proposal, including CodeQL | [#29](https://github.com/AgriciDaniel/claude-ads/pull/29) |
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to report a problem or propose a change.
+
 ## Privacy
 
 Client data, raw private research, captured prompts, credentials, account
