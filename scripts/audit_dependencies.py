@@ -8,6 +8,7 @@ import ast
 from dataclasses import dataclass
 from datetime import date, timedelta
 from importlib.metadata import PackageNotFoundError, version as distribution_version
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -30,6 +31,9 @@ EXPECTED_POLICY = (
     "expiry drift fails closed."
 )
 MAX_EXCEPTION_AGE = timedelta(days=30)
+# Packages that may carry a reviewed not_affected exception. Adding a package
+# here is a reviewed change; the audit rejects exceptions for any other package.
+EXCEPTION_PACKAGES = frozenset({"cryptography", "pillow", "weasyprint"})
 
 
 @dataclass(frozen=True)
@@ -38,6 +42,10 @@ class ExceptionRecord:
     package: str
     affected_version: str
     forbidden_import_prefixes: tuple[str, ...]
+    forbidden_call_keywords: tuple[str, ...] = ()
+
+
+CALL_KEYWORD_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*:[A-Za-z_][A-Za-z0-9_]*")
 
 
 def _parse_date(value: Any, label: str) -> date:
@@ -88,13 +96,194 @@ def _repository_file(root: Path, relative: Any, label: str) -> Path:
     return resolved
 
 
-def _call_name(node: ast.expr) -> str | None:
-    if isinstance(node, ast.Name):
-        return node.id
-    if isinstance(node, ast.Attribute):
-        parent = _call_name(node.value)
-        return f"{parent}.{node.attr}" if parent else node.attr
+# Modules whose attributes import other modules by name. A local name bound
+# to one of these modules, or to one of these attributes, is tracked so the
+# guard can see the module name passed to the eventual call.
+IMPORTER_ATTRIBUTES: dict[str, frozenset[str]] = {
+    "importlib": frozenset({"import_module", "__import__"}),
+    "builtins": frozenset({"__import__"}),
+}
+
+
+def _string_constant(node: ast.expr | None) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
     return None
+
+
+class _ImportGuard:
+    """Static import resolver for one source file.
+
+    Tracks names bound to ``importlib``/``builtins`` and to their importer
+    callables (``import_module`` and ``__import__`` in any spelling, including
+    from-imports and simple ``name = <importer>`` aliases), then requires every
+    reference to an importer to be a direct call with a string-literal module
+    name. Anything else raises ``DependencyAuditError`` so it cannot pass
+    silently. This is a syntactic guard over first-party source only.
+    """
+
+    def __init__(self, path: Path, tree: ast.AST) -> None:
+        self.path = path
+        self.tree = tree
+        self.modules: dict[str, str] = {"__builtins__": "builtins"}
+        self.importers: set[str] = {"__import__"}
+        self.alias_values: set[int] = set()
+
+    def _fail(self, node: ast.AST, reason: str) -> DependencyAuditError:
+        line = getattr(node, "lineno", "?")
+        return DependencyAuditError(
+            f"unresolvable dynamic import bypasses vulnerability import guard "
+            f"({reason}): {self.path}:{line}"
+        )
+
+    def _module_of(self, node: ast.expr) -> str | None:
+        if isinstance(node, ast.Name):
+            return self.modules.get(node.id)
+        return None
+
+    def _attribute_target(self, node: ast.expr) -> tuple[str, ast.expr | None] | None:
+        """Return (module, attribute node) for ``mod.x``, ``mod["x"]``, ``getattr(mod, x)``."""
+        if isinstance(node, ast.Attribute):
+            module = self._module_of(node.value)
+            return (module, ast.Constant(node.attr)) if module else None
+        if isinstance(node, ast.Subscript):
+            module = self._module_of(node.value)
+            return (module, node.slice) if module else None
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "getattr"
+            and node.args
+        ):
+            module = self._module_of(node.args[0])
+            attribute = node.args[1] if len(node.args) > 1 else None
+            return (module, attribute) if module else None
+        return None
+
+    def _is_importer(self, node: ast.expr) -> bool:
+        if isinstance(node, ast.Name):
+            return isinstance(node.ctx, ast.Load) and node.id in self.importers
+        target = self._attribute_target(node)
+        if target is None:
+            return False
+        module, attribute = target
+        name = _string_constant(attribute)
+        if name is None:
+            raise self._fail(node, f"computed attribute of {module}")
+        return name in IMPORTER_ATTRIBUTES[module]
+
+    def _bind(self) -> None:
+        """Collect module and importer bindings until no new name appears."""
+        while True:
+            before = (len(self.modules), len(self.importers), len(self.alias_values))
+            for node in ast.walk(self.tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        top = alias.name.split(".")[0]
+                        if alias.asname is None and top in IMPORTER_ATTRIBUTES:
+                            self.modules[top] = top
+                        elif alias.asname and alias.name in IMPORTER_ATTRIBUTES:
+                            self.modules[alias.asname] = alias.name
+                elif isinstance(node, ast.ImportFrom):
+                    if node.level == 0 and node.module in IMPORTER_ATTRIBUTES:
+                        exported = IMPORTER_ATTRIBUTES[node.module]
+                        for alias in node.names:
+                            if alias.name == "*":
+                                self.importers.update(exported)
+                            elif alias.name in exported:
+                                self.importers.add(alias.asname or alias.name)
+                elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+                    targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                    names = [t.id for t in targets if isinstance(t, ast.Name)]
+                    if node.value is None or len(names) != len(targets):
+                        continue
+                    if self._is_importer(node.value):
+                        self.importers.update(names)
+                        self.alias_values.add(id(node.value))
+                    else:
+                        module = self._module_of(node.value)
+                        if module:
+                            self.modules.update((name, module) for name in names)
+            if before == (len(self.modules), len(self.importers), len(self.alias_values)):
+                return
+
+    def _literal_module_name(self, call: ast.Call) -> str | None:
+        if any(isinstance(arg, ast.Starred) for arg in call.args) or any(
+            keyword.arg is None for keyword in call.keywords
+        ):
+            return None
+        keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+        name = _string_constant(call.args[0] if call.args else keywords.get("name"))
+        if name is None:
+            return None
+        level = call.args[4] if len(call.args) > 4 else keywords.get("level")
+        if level is not None and not (isinstance(level, ast.Constant) and level.value == 0):
+            return None
+        if not name.startswith("."):
+            return name
+        package = _string_constant(call.args[1] if len(call.args) > 1 else keywords.get("package"))
+        if package is None:
+            return None
+        try:
+            return importlib.util.resolve_name(name, package)
+        except (ImportError, ValueError):
+            return None
+
+    def dynamic_imports(self) -> set[str]:
+        self._bind()
+        names: set[str] = set()
+        call_targets: set[int] = set()
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Call) and self._is_importer(node.func):
+                call_targets.add(id(node.func))
+                name = self._literal_module_name(node)
+                if name is None:
+                    raise self._fail(node, "module name is not a string literal")
+                names.add(name)
+        for node in ast.walk(self.tree):
+            if id(node) in call_targets or id(node) in self.alias_values:
+                continue
+            if isinstance(node, ast.expr) and self._is_importer(node):
+                raise self._fail(node, "importer referenced outside a literal call")
+        return names
+
+
+def _call_keywords(path: Path) -> set[str]:
+    """Return ``function:keyword`` for every keyword argument passed to a call.
+
+    A call that forwards ``**mapping`` is reported as ``function:**`` and a
+    call whose target is not a plain name or attribute (``getattr(...)()``,
+    ``table["key"]()``, ``factory()()``) is reported with the function ``?``,
+    so a guarded keyword or an unresolvable forward never passes silently.
+    Assignments to library option dictionaries are outside this guard.
+    """
+
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    observed: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if isinstance(func, ast.Name):
+            name = func.id
+        elif isinstance(func, ast.Attribute):
+            name = func.attr
+        else:
+            name = "?"
+        for keyword in node.keywords:
+            observed.add(f"{name}:{keyword.arg or '**'}")
+    return observed
+
+
+def _matches_call_keyword(observed: str, pattern: str) -> bool:
+    """A guarded keyword passed to any callable matches; so does a forwarded
+    mapping to the guarded function or to an unresolvable callee."""
+
+    function, _, keyword = observed.partition(":")
+    guarded_function, _, guarded_keyword = pattern.partition(":")
+    if keyword == guarded_keyword:
+        return True
+    return keyword == "**" and function in {guarded_function, "?"}
 
 
 def _import_names(path: Path) -> set[str]:
@@ -109,15 +298,7 @@ def _import_names(path: Path) -> set[str]:
         elif isinstance(node, ast.ImportFrom) and node.module:
             names.add(node.module)
             names.update(f"{node.module}.{alias.name}" for alias in node.names)
-        elif isinstance(node, ast.Call) and _call_name(node.func) in {
-            "__import__",
-            "importlib.import_module",
-        }:
-            if not node.args or not isinstance(node.args[0], ast.Constant) or not isinstance(node.args[0].value, str):
-                raise DependencyAuditError(
-                    f"dynamic module name bypasses vulnerability import guard: {path}"
-                )
-            names.add(node.args[0].value)
+    names.update(_ImportGuard(path, tree).dynamic_imports())
     return names
 
 
@@ -165,6 +346,7 @@ def load_exceptions(root: Path, as_of: date) -> tuple[dict[str, ExceptionRecord]
     locked = {**runtime, **development}
     records: dict[str, ExceptionRecord] = {}
     forbidden: set[str] = set()
+    forbidden_calls: set[str] = set()
     seen_aliases: set[str] = set()
     required_fields = {
         "advisory_id", "aliases", "advisory_url", "package", "affected_version",
@@ -175,7 +357,7 @@ def load_exceptions(root: Path, as_of: date) -> tuple[dict[str, ExceptionRecord]
     if not isinstance(exceptions, list) or not exceptions:
         raise DependencyAuditError("vulnerability exception document is empty")
     for raw in exceptions:
-        if not isinstance(raw, dict) or set(raw) != required_fields:
+        if not isinstance(raw, dict) or set(raw) - {"forbidden_call_keywords"} != required_fields:
             raise DependencyAuditError("vulnerability exception fields mismatch")
         advisory_id = raw["advisory_id"]
         package = re.sub(r"[-_.]+", "-", str(raw["package"])).casefold()
@@ -183,7 +365,7 @@ def load_exceptions(root: Path, as_of: date) -> tuple[dict[str, ExceptionRecord]
             not isinstance(advisory_id, str)
             or not re.fullmatch(r"PYSEC-[0-9]{4}-[0-9]+", advisory_id)
             or advisory_id in records
-            or package not in {"cryptography", "pillow"}
+            or package not in EXCEPTION_PACKAGES
         ):
             raise DependencyAuditError("duplicate or invalid vulnerability exception ID")
         if raw["status"] != "not_affected" or raw["justification"] != "vulnerable_code_not_in_execute_path":
@@ -211,20 +393,27 @@ def load_exceptions(root: Path, as_of: date) -> tuple[dict[str, ExceptionRecord]
         for relative in evidence_paths:
             _repository_file(root, relative, f"vulnerability evidence for {advisory_id}")
         prefixes = raw["forbidden_import_prefixes"]
+        call_keywords = raw.get("forbidden_call_keywords", [])
         if (
             not isinstance(prefixes, list)
-            or not prefixes
             or not all(isinstance(item, str) for item in prefixes)
             or len(prefixes) != len(set(prefixes))
             or not all(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", item) for item in prefixes)
+            or not isinstance(call_keywords, list)
+            or not all(isinstance(item, str) for item in call_keywords)
+            or len(call_keywords) != len(set(call_keywords))
+            or not all(CALL_KEYWORD_PATTERN.fullmatch(item) for item in call_keywords)
+            or not (prefixes or call_keywords)
         ):
             raise DependencyAuditError(f"vulnerability exception lacks import guards: {advisory_id}")
         forbidden.update(prefixes)
+        forbidden_calls.update(call_keywords)
         records[advisory_id] = ExceptionRecord(
             advisory_id=advisory_id,
             package=package,
             affected_version=raw["affected_version"],
             forbidden_import_prefixes=tuple(prefixes),
+            forbidden_call_keywords=tuple(call_keywords),
         )
 
         aliases = raw["aliases"]
@@ -271,19 +460,31 @@ def load_exceptions(root: Path, as_of: date) -> tuple[dict[str, ExceptionRecord]
     if scope != EXPECTED_CODE_SCOPE:
         raise DependencyAuditError("vulnerability exception code scope mismatch")
     imports: dict[str, set[str]] = {}
+    calls: dict[str, set[str]] = {}
     for relative in scope:
         target = root / relative
         if not isinstance(relative, str) or not target.exists():
             raise DependencyAuditError(f"vulnerability code scope is missing: {relative}")
         candidates = [target] if target.is_file() else sorted(target.rglob("*.py"))
         for candidate in candidates:
-            imports[candidate.relative_to(root).as_posix()] = _import_names(candidate)
+            key = candidate.relative_to(root).as_posix()
+            imports[key] = _import_names(candidate)
+            calls[key] = _call_keywords(candidate)
     violations = sorted(
         f"{relative}: {import_name} matches prohibited {prefix}"
         for relative, imported in imports.items()
         for import_name in imported
         for prefix in forbidden
         if _matches_prefix(import_name, prefix)
+    )
+    violations.extend(
+        sorted(
+            f"{relative}: {call} matches prohibited {pattern}"
+            for relative, observed_calls in calls.items()
+            for call in observed_calls
+            for pattern in forbidden_calls
+            if _matches_call_keyword(call, pattern)
+        )
     )
     if violations:
         raise DependencyAuditError("vulnerability execution-path guard failed: " + "; ".join(violations))
