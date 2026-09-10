@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Microsoft Learn page and reworded from "in pilot" to a documented product
   with a public endpoint, payload schema, partner integrations, and UET
   deduplication.
+* **Source refresh 2026-09-10**: re-verified 60 platform, API, policy, and
+  regulator sources and 39 dependent claims against their current pages, with
+  no contradictions found; the Microsoft API claim now records the REST-only
+  cutover on 2026-10-01 and the SOAP deprecation scheduled for 2027-01-31, and
+  the TikTok reporting source points at the v1.3 basic-reports reference.
 * **Legacy install preflight** (public issue 57): `install.sh` and
   `install.ps1` now detect an existing Claude Ads install that has no
   ownership manifest (any install older than v2.0.0), print one message naming
@@ -94,6 +99,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* **Microsoft native export conversions**: the AdPerformanceReport profile
+  now maps `ConversionsQualified`; Microsoft documents the legacy
+  `Conversions` column as deprecated since 2022 and always zero, so exports
+  built on it under-reported conversions as zero.
 * **PDF report markup boundary**: the health score caption now escapes the
   score and grade values with the same helper used for all other report text,
   closing a ReportLab markup injection route reachable through `build_pdf`

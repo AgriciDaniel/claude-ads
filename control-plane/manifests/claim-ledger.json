@@ -10,8 +10,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-v181-tree"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "repository-maintainers"
     },
     {
@@ -22,8 +22,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-product-contract"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "product-owner"
     },
     {
@@ -34,8 +34,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-product-contract"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "security-owner"
     },
     {
@@ -71,8 +71,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-v2-export-adapter"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "adapter-owner"
     },
     {
@@ -83,8 +83,8 @@
       "verdict": "verified",
       "source_ids": ["google-ads-api-official", "google-ads-conversion-goals-official", "google-ads-enhanced-conversions-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "google-evidence-owner"
     },
     {
@@ -95,8 +95,8 @@
       "verdict": "verified",
       "source_ids": ["meta-marketing-api-official", "meta-conversions-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "meta-evidence-owner"
     },
     {
@@ -107,8 +107,8 @@
       "verdict": "verified",
       "source_ids": ["linkedin-marketing-api-official", "linkedin-conversion-tracking-official", "linkedin-conversions-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "linkedin-evidence-owner"
     },
     {
@@ -119,13 +119,13 @@
       "verdict": "verified",
       "source_ids": ["tiktok-business-api-official", "tiktok-events-api-official", "tiktok-pixel-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "tiktok-evidence-owner"
     },
     {
       "id": "CLM-0011",
-      "statement": "Microsoft Advertising uses UET for website conversion tracking, offers a documented server-side Conversions API (CAPI) with a public endpoint, payload schema, partner integrations, and UET deduplication through a shared event ID, and documents Google Ads import mappings and limitations that require explicit post-import validation.",
+      "statement": "Microsoft Advertising uses UET for website conversion tracking, offers a documented server-side Conversions API (CAPI) with a public endpoint, payload schema, partner integrations, and UET deduplication through a shared event ID, and documents Google Ads import mappings and limitations that require explicit post-import validation. New Microsoft Advertising API features are REST-only from 2026-10-01 and the SOAP API is scheduled for full deprecation on 2027-01-31.",
       "scope": "Microsoft runtime measurement and import controls; imported fields and CAPI availability must be checked against current account evidence",
       "classification": "evidence-based",
       "verdict": "verified",
@@ -143,8 +143,8 @@
       "verdict": "verified",
       "source_ids": ["youtube-google-ads-video-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "youtube-evidence-owner"
     },
     {
@@ -155,8 +155,8 @@
       "verdict": "verified",
       "source_ids": ["apple-ads-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "apple-evidence-owner"
     },
     {
@@ -167,8 +167,8 @@
       "verdict": "verified",
       "source_ids": ["amazon-ads-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "amazon-evidence-owner"
     },
     {
@@ -179,8 +179,8 @@
       "verdict": "verified",
       "source_ids": ["reddit-business-help"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "reddit-evidence-owner"
     },
     {
@@ -191,8 +191,8 @@
       "verdict": "verified",
       "source_ids": ["pinterest-conversions-api"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "pinterest-evidence-owner"
     },
     {
@@ -203,8 +203,8 @@
       "verdict": "verified",
       "source_ids": ["snap-marketing-api"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "snapchat-evidence-owner"
     },
     {
@@ -215,8 +215,8 @@
       "verdict": "verified",
       "source_ids": ["x-conversion-tracking"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "x-evidence-owner"
     },
     {
@@ -227,8 +227,8 @@
       "verdict": "verified",
       "source_ids": ["google-rsa-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -239,8 +239,8 @@
       "verdict": "verified",
       "source_ids": ["microsoft-ad-types-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -251,8 +251,8 @@
       "verdict": "verified",
       "source_ids": ["google-smart-bidding-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -263,8 +263,8 @@
       "verdict": "verified",
       "source_ids": ["google-target-roas-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -275,8 +275,8 @@
       "verdict": "verified",
       "source_ids": ["google-consent-modeling-official", "google-consent-modeling-improvement-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-26",
-      "refresh_due": "2026-09-25",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -287,8 +287,8 @@
       "verdict": "verified",
       "source_ids": ["tiktok-events-api-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -299,8 +299,8 @@
       "verdict": "verified",
       "source_ids": ["eu-ai-act-article-50-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -311,8 +311,8 @@
       "verdict": "verified",
       "source_ids": ["eu-dsa-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -335,8 +335,8 @@
       "verdict": "verified",
       "source_ids": ["hhs-tracking-guidance-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -347,8 +347,8 @@
       "verdict": "verified",
       "source_ids": ["ftc-endorsement-guides-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -359,8 +359,8 @@
       "verdict": "verified",
       "source_ids": ["google-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -371,8 +371,8 @@
       "verdict": "verified",
       "source_ids": ["amazon-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -383,8 +383,8 @@
       "verdict": "verified",
       "source_ids": ["tiktok-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -395,8 +395,8 @@
       "verdict": "verified",
       "source_ids": ["microsoft-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -407,8 +407,8 @@
       "verdict": "verified",
       "source_ids": ["meta-andromeda-engineering-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -419,8 +419,8 @@
       "verdict": "verified",
       "source_ids": ["meta-ai-ads-ranking-official", "meta-gem-training-official", "meta-sequence-ranking-official"],
       "load_bearing": false,
-      "last_verified": "2026-08-26",
-      "refresh_due": "2026-09-25",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -431,8 +431,8 @@
       "verdict": "verified",
       "source_ids": ["google-ads-campaign-fields-official", "youtube-google-ads-video-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -443,8 +443,8 @@
       "verdict": "verified",
       "source_ids": ["meta-insights-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -455,8 +455,8 @@
       "verdict": "verified",
       "source_ids": ["linkedin-ad-analytics-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -467,20 +467,20 @@
       "verdict": "verified",
       "source_ids": ["tiktok-integrated-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
       "id": "CLM-0205",
-      "statement": "Microsoft Advertising v13 AdPerformanceReport documents the daily account, campaign, ad, conversion, spend, and currency columns used by the native projection.",
+      "statement": "Microsoft Advertising v13 AdPerformanceReport documents the daily account, campaign, ad, spend, and currency columns used by the native projection, and documents ConversionsQualified as the current conversion column: the legacy Conversions column is deprecated as of 2022 and returns zero.",
       "scope": "microsoft-ad-performance-daily-csv-v1 only",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-ad-performance-report-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -491,8 +491,8 @@
       "verdict": "verified",
       "source_ids": ["apple-campaign-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -503,8 +503,8 @@
       "verdict": "verified",
       "source_ids": ["reddit-ads-reporting-v3-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -515,8 +515,8 @@
       "verdict": "verified",
       "source_ids": ["pinterest-ads-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -527,8 +527,8 @@
       "verdict": "verified",
       "source_ids": ["snap-ads-measurement-official"],
       "load_bearing": true,
-      "last_verified": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
