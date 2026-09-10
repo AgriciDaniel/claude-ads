@@ -57,7 +57,8 @@ capability loses its test evidence, or required remote CI does not pass.
   `__import__` calls with literal names fail CI; a guarded keyword passed to
   any callable fails CI; unresolvable dynamic imports, forwarded keyword
   mappings to the guarded function, and forwarded mappings to an unresolvable
-  callee fail CI. Transitive imports inside third-party packages and
+  callee fail CI. Transitive imports inside third-party packages,
+  computed values assigned to callable names, interprocedural data flow, and
   assignments to library option dictionaries are outside the guard and are
   covered only by the written analysis in the exception record.
 

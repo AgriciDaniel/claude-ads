@@ -5,7 +5,7 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.2] - 2026-09-10
 
 ### Added
 
@@ -31,8 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Microsoft Learn page and reworded from "in pilot" to a documented product
   with a public endpoint, payload schema, partner integrations, and UET
   deduplication.
-* **Source refresh 2026-09-10**: re-verified 60 platform, API, policy, and
-  regulator sources and 39 dependent claims against their current pages, with
+* **Source refresh 2026-09-10**: re-verified 61 platform, API, policy, and
+  regulator sources and 40 dependent claims against their current pages, with
   no contradictions found; the Microsoft API claim now records the REST-only
   cutover on 2026-10-01 and the SOAP deprecation scheduled for 2027-01-31, and
   the TikTok reporting source points at the v1.3 basic-reports reference.
@@ -99,6 +99,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* **Dependency guard aliases**: literal imports of importer modules are followed,
+  and forwarded keyword mappings through simple callable aliases are checked.
+  Simple alias cycles fail closed; computed alias values and interprocedural
+  data flow remain outside this syntactic first-party guard.
+
 * **Microsoft native export conversions**: the AdPerformanceReport profile
   now maps `ConversionsQualified`; Microsoft documents the legacy
   `Conversions` column as deprecated since 2022 and always zero, so exports
@@ -132,7 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now require verified operation capability before suggesting a setting change,
   and the public marketplace command uses the normalized lowercase repository
   identifier.
-* **Product metadata**: generated PDF reports use the 2.0.1 product version
+* **Product metadata**: generated PDF reports use the 2.0.2 product version
   while the Python core correctly retains its independent 2.0.0 version.
 * **Legacy report markup boundary**: user-controlled Markdown, section titles,
   and brand names are escaped before the constrained ReportLab formatting tags

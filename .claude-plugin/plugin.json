@@ -1,6 +1,6 @@
 {
   "name": "claude-ads",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Claude-first, portable paid-media operations for Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, Apple, Amazon, Reddit, Pinterest, Snapchat, and X. Source-grounded audits, plans, creative workflows, monitoring, experiments, versioned JSON reports, deterministic scoring, and capability-gated account changes.",
   "author": {
     "name": "AgriciDaniel",

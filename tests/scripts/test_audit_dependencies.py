@@ -257,3 +257,26 @@ def test_dynamic_import_guard_ignores_unrelated_importlib_usage(tmp_path: Path) 
     )
     names = audit._import_names(_source(tmp_path, "unrelated.py", source))
     assert names == {"importlib.util", "importlib", "importlib.metadata"}
+
+
+@pytest.mark.parametrize("source", [
+    'import importlib\nil = importlib.import_module("importlib")\nil.import_module("PIL.Image")\n',
+    'b = __import__("builtins")\nb.__import__("PIL.Image")\n',
+    'import importlib\nimportlib.import_module("importlib").import_module("PIL.Image")\n',
+])
+def test_returned_importer_module_cannot_hide_prohibited_import(tmp_path, source):
+    names = audit._import_names(_source(tmp_path, "importer.py", source))
+    assert any(audit._matches_prefix(name, "PIL") for name in names)
+
+
+@pytest.mark.parametrize("source", [
+    'writer = html.write_pdf\nwriter(**options)\n',
+    'writer = html.write_pdf\nsecond = writer\nsecond(**options)\n',
+    'writer: object = html.write_pdf\nwriter(**options)\n',
+    'writer = html.write_pdf\nwriter = safe_writer\nwriter(**options)\n',
+    'writer = other\nother = writer\nwriter(**options)\n',
+    'from library import write_pdf\ndef unrelated():\n    write_pdf = safe_writer\nwrite_pdf(**options)\n',
+])
+def test_forwarded_mapping_cannot_hide_guarded_callable(tmp_path, source):
+    calls = audit._call_keywords(_source(tmp_path, "alias.py", source))
+    assert any(audit._matches_call_keyword(call, "write_pdf:xmp_metadata") for call in calls)

@@ -139,6 +139,10 @@ class _ImportGuard:
     def _module_of(self, node: ast.expr) -> str | None:
         if isinstance(node, ast.Name):
             return self.modules.get(node.id)
+        if isinstance(node, ast.Call) and self._is_importer(node.func):
+            module = self._literal_module_name(node)
+            if module in IMPORTER_ATTRIBUTES:
+                return module
         return None
 
     def _attribute_target(self, node: ast.expr) -> tuple[str, ast.expr | None] | None:
@@ -255,10 +259,39 @@ def _call_keywords(path: Path) -> set[str]:
     call whose target is not a plain name or attribute (``getattr(...)()``,
     ``table["key"]()``, ``factory()()``) is reported with the function ``?``,
     so a guarded keyword or an unresolvable forward never passes silently.
-    Assignments to library option dictionaries are outside this guard.
+    Forwarded mappings follow simple assignment aliases conservatively across
+    the file; cycles remain unresolved. Computed values assigned to
+    names (such as dynamic HTTP dispatchers), interprocedural data flow, and
+    assignments to library option dictionaries are outside this guard.
     """
 
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    aliases: dict[str, list[ast.expr]] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Assign, ast.AnnAssign)) and isinstance(
+            node.value, (ast.Name, ast.Attribute)
+        ):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            for target in targets:
+                if isinstance(target, ast.Name):
+                    aliases.setdefault(target.id, []).append(node.value)
+
+    def forwarded_targets(func: ast.expr, visiting: frozenset[str] = frozenset()) -> set[str]:
+        if isinstance(func, ast.Attribute):
+            return {func.attr}
+        if isinstance(func, ast.Name):
+            if func.id in visiting:
+                return {"?"}
+            if func.id not in aliases:
+                return {func.id}
+            # Preserve the syntactic name: aliases elsewhere in the file must
+            # not hide a guarded call in another scope.
+            return {func.id}.union(*(
+                forwarded_targets(value, visiting | {func.id})
+                for value in aliases[func.id]
+            ))
+        return {"?"}
+
     observed: set[str] = set()
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
@@ -271,7 +304,10 @@ def _call_keywords(path: Path) -> set[str]:
         else:
             name = "?"
         for keyword in node.keywords:
-            observed.add(f"{name}:{keyword.arg or '**'}")
+            if keyword.arg is None:
+                observed.update(f"{target}:**" for target in forwarded_targets(func))
+            else:
+                observed.add(f"{name}:{keyword.arg}")
     return observed
 
 
