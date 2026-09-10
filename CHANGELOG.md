@@ -7,15 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* **Google Search overlap controls** (public issue 65): `G96` (same-campaign
+  Search plus Dynamic Search Ads overlap) and `G97` (cross-campaign keyword
+  duplication) join the Google catalog as conditional evidence controls. Both
+  are grounded in the current official in-account prioritization and DSA Ad
+  Rank pages, which state that eligible keywords targeting the same domain do
+  not compete with each other in the auction, so the controls describe traffic
+  routing and budget restriction rather than self-bidding or Ad Rank dilution.
+* **Meta cold-start contract in planning and creation** (public issue 53):
+  `/ads plan` and `/ads create` now collect the account, Pixel, and conversion
+  cold-start dimensions defined by `ads-meta` before proposing Meta budgets,
+  learning-phase expectations, forecasts, or creative benchmarks, and the root
+  intake asks for Pixel and conversion-signal history.
+
 ### Changed
+
+* **Ecosystem ledger refresh**: reviewed the public tracker as of 2026-09-10,
+  added dispositions for public issues 63 and 65 and pull request 66, and
+  removed public pull request 45, which GitHub no longer serves.
+* **Microsoft Conversions API claim**: re-verified against the current
+  Microsoft Learn page and reworded from "in pilot" to a documented product
+  with a public endpoint, payload schema, partner integrations, and UET
+  deduplication.
+* **Legacy install preflight** (public issue 57): `install.sh` and
+  `install.ps1` now detect an existing Claude Ads install that has no
+  ownership manifest (any install older than v2.0.0), print one message naming
+  the detected files and every path the installer would own, and exit before
+  any destination write instead of failing once per file. `uninstall.sh`
+  states the same v2.0.0 boundary when the manifest is missing. Managed v2
+  installs still upgrade in place.
+* **Marketplace alias note** (public issue 56): the README explains that
+  marketplaces added before v2.0.0 keep the stale `agricidaniel-claude-ads`
+  alias and shows the remove, add, and install commands.
+* **Live ecosystem gate modes**: `audit_ecosystem_live.py` now runs in
+  default mode on push and pull_request, failing only on an invalid ledger, a
+  mismatched review candidate, ledger items GitHub no longer serves, and
+  unrecorded items created on or before the snapshot date. Post-snapshot
+  items, head drift, metadata drift, and pull requests merged after the
+  snapshot are reported as structured findings and GitHub warning
+  annotations. `--strict` (workflow_dispatch) keeps exact reconciliation, and
+  release verification accepts only a strict workflow_dispatch run.
+* **Dependency audit import guard**: `importlib.import_module` and
+  `__import__` are now recognised under from-import, alias, `builtins`,
+  `getattr`, and subscript spellings, and any call whose module name is not a
+  string literal, or any importer referenced outside a direct call, fails the
+  audit as an unresolvable dynamic import. The guard is a syntactic check over
+  first-party source in the guarded scope; it does not see transitive imports
+  inside third-party packages or loaders other than importlib.
+* **Vulnerability exceptions re-verified** on 2026-09-10 against the current
+  import graph and OSV records, with a new `not_affected` record for
+  WeasyPrint PYSEC-2026-3940 (the product never passes `stylesheets` or
+  `xmp_metadata` to `write_pdf` or `render`). Exception records may now carry a
+  machine-checked `forbidden_call_keywords` guard for advisories whose
+  vulnerable channel is a call argument; a guarded keyword passed to any
+  callable, or a forwarded keyword mapping to the guarded function or an
+  unresolvable callee, fails the audit. The CI pip-audit lock now includes
+  `typing_extensions`, which `cyclonedx-python-lib` requires on CPython 3.12.
 
 * **Evidence and ecosystem review**: reconciled the load-bearing claim set
   against current primary sources, corrected an unreachable repository evidence
   SHA, qualified Google conversion-goal bidding exceptions, and refreshed the
-  supported Meta architecture claims through August 2026. An unsupported numeric
-  consent-mode threshold was removed after a fresh official-source check. Frozen
-  review ledgers now have a remote gate that reconciles current tracker state
-  and excludes only the exact review candidate.
+  supported Meta architecture claims through August 2026. The Google
+  consent-mode modeling threshold was re-verified against the current official
+  page and now carries a second source noting that no further figure is
+  published. Frozen review ledgers now have a remote gate that reconciles
+  current tracker state and excludes only the exact review candidate.
 * **Control contract migration**: versioned the ecosystem-disposition and
   release-gate report contracts at 2.0.0, retained the 1.0.0 schemas for stored
   evidence compatibility, and documented the migration boundary.
@@ -23,9 +81,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and Dependabot metadata actions by verified commit SHA, and added the
   aggregate `validate` job required by branch protection. The Dependabot
   workflow is now read-only, leaving approval and merge to a human.
+* **Test toolchain isolation**: JSON Schema test tooling installs from a
+  dedicated six-package hash lock (`.github/requirements-schema-tests.lock`) in
+  core and full CI jobs and in the documented local setup, so fresh
+  environments no longer fail test collection.
+* **Model evaluation subject binding**: the external model execution packet
+  now binds every task to the exact candidate commit and tree resolved at plan
+  generation time, alongside the pinned retained-v1 subject.
 
 ### Fixed
 
+* **PDF report markup boundary**: the health score caption now escapes the
+  score and grade values with the same helper used for all other report text,
+  closing a ReportLab markup injection route reachable through `build_pdf`
+  callers, and the regression test now exercises every caption route with a
+  markup payload.
+* **Release audit encoding coverage**: the secret and private-path scan now
+  also decodes tracked files as UTF-16 LE and BE, so tokens in UTF-16 files
+  can no longer pass. Live tracker query failures report the HTTP status and
+  endpoint path.
 * **Landing-page audit integrity**: `analyze_landing.py` now exits nonzero and
   withholds audit grades when browser validation, navigation, or page analysis
   fails. JSON failures remain machine-readable without presenting missing

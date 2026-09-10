@@ -233,8 +233,11 @@ def test_platform_grounding_claims_are_load_bearing_and_fresh(repo_root):
         claim = claims[claim_id]
         assert claim["load_bearing"] is True
         assert claim["verdict"] == "verified"
-        assert date.fromisoformat(claim["last_verified"]) <= date(2026, 8, 25)
-        assert date.fromisoformat(claim["refresh_due"]) >= date(2026, 8, 25)
+        last_verified = date.fromisoformat(claim["last_verified"])
+        refresh_due = date.fromisoformat(claim["refresh_due"])
+        assert last_verified >= date(2026, 8, 25)
+        assert date(2026, 1, 1) <= last_verified < refresh_due
+        assert (refresh_due - last_verified).days <= 30
 
 
 def test_unavailable_private_provenance_is_demoted(repo_root):
