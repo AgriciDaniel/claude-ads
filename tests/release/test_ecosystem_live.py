@@ -110,8 +110,8 @@ def test_live_reconciliation_allows_only_exact_current_candidate() -> None:
     ledger = _ledger()
     live = _live(ledger)
     candidate_head = "a" * 40
-    live[module.CANONICAL_REPOSITORY][("pull-request", 14)] = _pull(
-        14, candidate_head, created_at=AFTER_SNAPSHOT
+    live[module.CANONICAL_REPOSITORY][("pull-request", 998)] = _pull(
+        998, candidate_head, created_at=AFTER_SNAPSHOT
     )
 
     for strict in (False, True):
@@ -120,14 +120,14 @@ def test_live_reconciliation_allows_only_exact_current_candidate() -> None:
             live,
             repositories=BOTH,
             candidate_repository=module.CANONICAL_REPOSITORY,
-            candidate_pr=14,
+            candidate_pr=998,
             candidate_head=candidate_head,
             strict=strict,
         )
         assert result["status"] == "pass"
         assert result["mode"] == ("strict" if strict else "default")
         assert result["findings"] == []
-        assert result["candidate_exclusion"]["pull_request"] == 14
+        assert result["candidate_exclusion"]["pull_request"] == 998
 
 
 def test_exact_reconciliation_has_no_findings_in_either_mode() -> None:
@@ -208,16 +208,16 @@ def test_extra_recorded_item_fails_in_both_modes() -> None:
 def test_merged_after_snapshot_pull_is_set_aside_in_default_mode_only() -> None:
     ledger = _ledger()
     live = _live(ledger)
-    live[module.CANONICAL_REPOSITORY][("pull-request", 14)] = _pull(
-        14, "a" * 40, created_at=AFTER_SNAPSHOT, merged_at=AFTER_SNAPSHOT
+    live[module.CANONICAL_REPOSITORY][("pull-request", 998)] = _pull(
+        998, "a" * 40, created_at=AFTER_SNAPSHOT, merged_at=AFTER_SNAPSHOT
     )
 
     result = module.reconcile_live(ledger, live, repositories=BOTH)
     assert result["status"] == "pass"
     assert _finding_kinds(result) == ["merged_after_snapshot"]
     assert result["findings"][0]["recorded"] is False
-    assert result["repositories"][module.CANONICAL_REPOSITORY]["merged_after_snapshot"] == [14]
-    assert result["repositories"][module.CANONICAL_REPOSITORY]["pull_request_count"] == 13
+    assert result["repositories"][module.CANONICAL_REPOSITORY]["merged_after_snapshot"] == [998]
+    assert result["repositories"][module.CANONICAL_REPOSITORY]["pull_request_count"] == 14
 
     with pytest.raises(module.EcosystemAuditError, match="coverage mismatch"):
         module.reconcile_live(ledger, live, repositories=BOTH, strict=True)
@@ -254,8 +254,8 @@ def test_recorded_pull_merged_after_snapshot_is_set_aside_not_extra() -> None:
 def test_candidate_exclusion_rejects_wrong_head_or_recorded_input() -> None:
     ledger = _ledger()
     live = _live(ledger)
-    live[module.CANONICAL_REPOSITORY][("pull-request", 14)] = _pull(
-        14, "c" * 40, created_at=AFTER_SNAPSHOT
+    live[module.CANONICAL_REPOSITORY][("pull-request", 998)] = _pull(
+        998, "c" * 40, created_at=AFTER_SNAPSHOT
     )
     with pytest.raises(module.EcosystemAuditError, match="does not match"):
         module.reconcile_live(
@@ -263,7 +263,7 @@ def test_candidate_exclusion_rejects_wrong_head_or_recorded_input() -> None:
             live,
             repositories=BOTH,
             candidate_repository=module.CANONICAL_REPOSITORY,
-            candidate_pr=14,
+            candidate_pr=998,
             candidate_head="d" * 40,
         )
 
@@ -410,3 +410,89 @@ def test_fetcher_reports_status_code_and_path_only(monkeypatch) -> None:
         "GitHub tracker query failed for repos/AgriciDaniel/claude-ads/issues: HTTP 403"
     )
     assert "ghp_" not in message and "state=all" not in message
+
+
+def test_candidate_from_commit_matches_branch_head_and_merge_commit() -> None:
+    head = "a" * 40
+    merge = "b" * 40
+    pulls = [
+        {
+            "number": 15,
+            "state": "open",
+            "head": {"sha": head},
+            "merge_commit_sha": None,
+            "merged_at": None,
+        },
+        {
+            "number": 12,
+            "state": "closed",
+            "head": {"sha": "c" * 40},
+            "merge_commit_sha": merge,
+            "merged_at": AFTER_SNAPSHOT,
+        },
+    ]
+    calls: list[str] = []
+
+    def fetch(endpoint: str):
+        calls.append(endpoint)
+        return pulls
+
+    repo = module.CANONICAL_REPOSITORY
+    assert module._candidate_from_commit(fetch, repo, head) == (repo, 15, head, "open")
+    assert module._candidate_from_commit(fetch, repo, merge) == (repo, 12, "c" * 40, "merged")
+    assert module._candidate_from_commit(fetch, repo, "d" * 40) == (None, None, None, "open")
+    assert module._candidate_from_commit(fetch, repo, None) == (None, None, None, "open")
+    assert module._candidate_from_commit(fetch, repo, "short") == (None, None, None, "open")
+    assert calls[0].startswith(f"repos/{repo}/commits/{head}/pulls")
+
+
+def test_merged_candidate_is_excluded_only_with_merged_state() -> None:
+    ledger = _ledger()
+    live = _live(ledger)
+    repo = module.CANONICAL_REPOSITORY
+    live[repo][("pull-request", 998)] = _pull(
+        998, "a" * 40, created_at=AFTER_SNAPSHOT, merged_at=AFTER_SNAPSHOT
+    )
+    common = dict(
+        repositories=BOTH, candidate_repository=repo, candidate_pr=998, candidate_head="a" * 40
+    )
+
+    result = module.reconcile_live(ledger, live, candidate_state="merged", strict=True, **common)
+    assert result["candidate_exclusion"]["state"] == "merged"
+    assert result["status"] == "pass"
+
+    with pytest.raises(module.EcosystemAuditError, match="does not match current GitHub evidence"):
+        module.reconcile_live(ledger, live, candidate_state="open", strict=True, **common)
+    with pytest.raises(module.EcosystemAuditError, match="candidate state"):
+        module.reconcile_live(ledger, live, candidate_state="closed", **common)
+
+
+def test_main_derives_candidate_from_commit_on_dispatch_runs(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    ledger = _ledger()
+    live = _live(ledger)
+    repo = module.CANONICAL_REPOSITORY
+    head = "a" * 40
+    live[repo][("pull-request", 998)] = _pull(998, head, created_at=AFTER_SNAPSHOT)
+    base_fetch = _fake_fetch(live)
+
+    def fetch(endpoint: str):
+        if "/commits/" in endpoint:
+            return [{"number": 998, "state": "open", "head": {"sha": head}}]
+        return base_fetch(endpoint)
+
+    monkeypatch.setattr(module, "_github_fetcher", lambda token: fetch)
+    monkeypatch.delenv("GITHUB_EVENT_PATH", raising=False)
+    monkeypatch.setenv("GITHUB_REPOSITORY", repo)
+    monkeypatch.setenv("GITHUB_SHA", head)
+    ledger_path = tmp_path / "ledger.json"
+    ledger_path.write_text(json.dumps(ledger), encoding="utf-8")
+
+    code = module.main(["--ledger", str(ledger_path), "--strict", "--json"])
+    captured = capsys.readouterr()
+    assert code == 0
+    result = json.loads(captured.out)
+    assert result["mode"] == "strict"
+    assert result["candidate_exclusion"]["pull_request"] == 998
+    assert result["candidate_exclusion"]["state"] == "open"

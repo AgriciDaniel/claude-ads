@@ -50,7 +50,7 @@
     "observed_at": "2026-09-10",
     "source_url": "https://github.com/AI-Marketing-Hub/claude-ads",
     "issue_numbers": [],
-    "pull_request_numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    "pull_request_numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
     "pull_request_heads": {
       "1": "c1a863bd2ea38777f91fb3d1cb45b9411ade12c2",
       "2": "3b6ea29d7cffae9c91f1cb6d6b1e81a6bb3514a6",
@@ -64,7 +64,8 @@
       "10": "0d66a3df51fd23837fc1c470ff575520c0a2a375",
       "11": "bbb92c5463b8d1ea2e430a7949c4f4eb9f010aff",
       "12": "cdba46159f32b9eef8a4a2e315875cef6eccfe30",
-      "13": "efd66e7e8afa593012ed3bf164db5a9a8858018d"
+      "13": "efd66e7e8afa593012ed3bf164db5a9a8858018d",
+      "14": "119a9fcb672f6016764fa7a224de7141d4761238"
     }
   },
   "entries": [
@@ -140,6 +141,7 @@
     {"id":"private-pr-10","repository":"AI-Marketing-Hub/claude-ads","kind":"pull-request","number":10,"title":"deps: bump pillow 12.2.0 -> 12.3.0 (fix PYSEC-2026-3451/3452/3453)","url":"https://github.com/AI-Marketing-Hub/claude-ads/pull/10","state":"open","decision":"superseded","license_review":"same-project-mit","rationale":"PR 13 supersedes this exact head. Its Pillow upgrade raises the Linux floor and its global platform cache workaround masks the broad subprocess fixture instead of fixing that fixture.","requirement_ids":["REQ-DEP-001","REQ-SEC-001","REQ-CI-001"]},
     {"id":"private-pr-11","repository":"AI-Marketing-Hub/claude-ads","kind":"pull-request","number":11,"title":"chore(deps): Bump actions/setup-python from 6.2.0 to 7.0.0","url":"https://github.com/AI-Marketing-Hub/claude-ads/pull/11","state":"open","decision":"already-addressed","license_review":"same-project-mit","rationale":"The current workflow independently pins the same setup-python 7.0.0 release commit. The PR's failed automerge check is not evidence that the full CI matrix passed.","requirement_ids":["REQ-DEP-001","REQ-CI-001"]},
     {"id":"private-pr-12","repository":"AI-Marketing-Hub/claude-ads","kind":"pull-request","number":12,"title":"chore(deps): Bump actions/checkout from 6.0.2 to 7.0.1","url":"https://github.com/AI-Marketing-Hub/claude-ads/pull/12","state":"open","decision":"already-addressed","license_review":"same-project-mit","rationale":"The current workflow independently pins the same checkout 7.0.1 release commit. The PR's failed automerge check is not evidence that the full CI matrix passed.","requirement_ids":["REQ-DEP-001","REQ-CI-001"]},
-    {"id":"private-pr-13","repository":"AI-Marketing-Hub/claude-ads","kind":"pull-request","number":13,"title":"security: bump Pillow to 12.3.0 (PYSEC-2026-3451/3452/3453), release v2.0.2","url":"https://github.com/AI-Marketing-Hub/claude-ads/pull/13","state":"open","decision":"reject","license_review":"same-project-mit","rationale":"Do not merge this exact release head. It raises the Linux glibc floor, bundles a global cache workaround instead of the scoped subprocess fix, covers only an older three-advisory snapshot, and cuts v2.0.2 without full local, remote, model, or independent review gates.","requirement_ids":["REQ-DEP-001","REQ-SEC-001","REQ-CI-001","REQ-PKG-001"]}
+    {"id":"private-pr-13","repository":"AI-Marketing-Hub/claude-ads","kind":"pull-request","number":13,"title":"security: bump Pillow to 12.3.0 (PYSEC-2026-3451/3452/3453), release v2.0.2","url":"https://github.com/AI-Marketing-Hub/claude-ads/pull/13","state":"open","decision":"reject","license_review":"same-project-mit","rationale":"Do not merge this exact release head. It raises the Linux glibc floor, bundles a global cache workaround instead of the scoped subprocess fix, covers only an older three-advisory snapshot, and cuts v2.0.2 without full local, remote, model, or independent review gates.","requirement_ids":["REQ-DEP-001","REQ-SEC-001","REQ-CI-001","REQ-PKG-001"]},
+    {"id":"private-pr-14","repository":"AI-Marketing-Hub/claude-ads","kind":"pull-request","number":14,"title":"fix(release): complete evidence and ecosystem hardening","url":"https://github.com/AI-Marketing-Hub/claude-ads/pull/14","state":"open","decision":"superseded","license_review":"same-project-mit","rationale":"The tracker-review candidate contains every commit of this head and adds the fixes found by independent review of it: report caption escaping, import guard hardening, a workable live tracker gate, and the WeasyPrint advisory. Close in favour of the tracker-review pull request.","requirement_ids":["REQ-CI-001"]}
   ]
 }

@@ -217,6 +217,7 @@ def reconcile_live(
     candidate_repository: str | None = None,
     candidate_pr: int | None = None,
     candidate_head: str | None = None,
+    candidate_state: str = "open",
     strict: bool = False,
 ) -> dict[str, Any]:
     """Reconcile live coverage, allowing only the exact current candidate PR.
@@ -231,6 +232,8 @@ def reconcile_live(
         raise EcosystemAuditError("candidate repository, PR, and head must be supplied together")
     if candidate_head is not None and not _SHA.fullmatch(candidate_head):
         raise EcosystemAuditError("candidate head must be a full lowercase commit SHA")
+    if candidate_state not in {"open", "merged"}:
+        raise EcosystemAuditError("candidate state must be open or merged")
 
     snapshot_names = {
         PUBLIC_REPOSITORY: "public_snapshot",
@@ -267,7 +270,7 @@ def reconcile_live(
             candidate = current.get(key)
             if (
                 candidate is None
-                or candidate.get("state") != "open"
+                or candidate.get("state") != candidate_state
                 or candidate.get("head_sha") != candidate_head
             ):
                 raise EcosystemAuditError("candidate PR does not match current GitHub evidence")
@@ -282,6 +285,7 @@ def reconcile_live(
                 "repository": repository,
                 "pull_request": candidate_pr,
                 "head_sha": candidate_head,
+                "state": candidate_state,
                 "reason": "exact current review candidate",
             }
 
@@ -421,6 +425,37 @@ def _candidate_from_event(path: str | None) -> tuple[str | None, int | None, str
     return full_name, pull.get("number"), head.get("sha") if isinstance(head, dict) else None
 
 
+def _candidate_from_commit(
+    fetch: Callable[[str], Any], repository: str, sha: str | None
+) -> tuple[str | None, int | None, str | None, str]:
+    """Identify the pull request that produced ``sha`` on a non-PR run.
+
+    A branch head matches the open pull request whose head is ``sha``; a merge
+    commit matches the merged pull request whose ``merge_commit_sha`` is
+    ``sha``. Anything else has no candidate, so every live item must be
+    recorded.
+    """
+
+    if not sha or not _SHA.fullmatch(sha):
+        return None, None, None, "open"
+    encoded = quote(repository, safe="/")
+    value = fetch(f"repos/{encoded}/commits/{sha}/pulls?per_page=100")
+    if not isinstance(value, list):
+        raise EcosystemAuditError(f"GitHub commit pull listing is invalid for {repository}")
+    for item in value:
+        if not isinstance(item, dict) or not isinstance(item.get("number"), int):
+            continue
+        head = item.get("head") if isinstance(item.get("head"), dict) else {}
+        head_sha = head.get("sha")
+        if head_sha == sha and item.get("state") == "open":
+            return repository, item["number"], sha, "open"
+        if item.get("merge_commit_sha") == sha and item.get("merged_at") and _SHA.fullmatch(
+            str(head_sha)
+        ):
+            return repository, item["number"], head_sha, "merged"
+    return None, None, None, "open"
+
+
 def _emit_warnings(findings: list[dict[str, Any]]) -> None:
     prefix = "::warning::" if os.environ.get("GITHUB_ACTIONS") else "warning: "
     for finding in findings:
@@ -456,6 +491,7 @@ def main(argv: list[str] | None = None) -> int:
         fetch = _github_fetcher(os.environ.get("GITHUB_TOKEN"))
         live = {repository: collect_live_repository(repository, fetch) for repository in repositories}
         candidate_repository, candidate_pr, candidate_head = _candidate_from_event(args.event_path)
+        candidate_state = "open"
         explicit_candidate = (
             args.candidate_repository,
             args.candidate_pr,
@@ -463,6 +499,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         if any(value is not None for value in explicit_candidate):
             candidate_repository, candidate_pr, candidate_head = explicit_candidate
+        elif candidate_pr is None:
+            run_repository = os.environ.get("GITHUB_REPOSITORY")
+            if run_repository in repositories:
+                candidate_repository, candidate_pr, candidate_head, candidate_state = (
+                    _candidate_from_commit(fetch, run_repository, os.environ.get("GITHUB_SHA"))
+                )
         if candidate_repository not in repositories:
             candidate_repository = candidate_pr = candidate_head = None
         result = reconcile_live(
@@ -472,6 +514,7 @@ def main(argv: list[str] | None = None) -> int:
             candidate_repository=candidate_repository,
             candidate_pr=candidate_pr,
             candidate_head=candidate_head,
+            candidate_state=candidate_state,
             strict=args.strict,
         )
     except EcosystemAuditError as exc:

@@ -48,7 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   items, head drift, metadata drift, and pull requests merged after the
   snapshot are reported as structured findings and GitHub warning
   annotations. `--strict` (workflow_dispatch) keeps exact reconciliation, and
-  release verification accepts only a strict workflow_dispatch run.
+  release verification accepts only a strict workflow_dispatch run. On runs
+  without a pull request event the candidate is derived from the commit under
+  test: the open pull request whose head it is, or the merged pull request
+  whose merge commit it is.
 * **Dependency audit import guard**: `importlib.import_module` and
   `__import__` are now recognised under from-import, alias, `builtins`,
   `getattr`, and subscript spellings, and any call whose module name is not a
