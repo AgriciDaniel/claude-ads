@@ -35,6 +35,12 @@ jobs:
           if [ "$GITHUB_REPOSITORY" = "AgriciDaniel/claude-ads" ]; then
             args+=(--public-only)
           fi
+          # Push and pull_request runs report drift and unreviewed items as
+          # warnings. Manual dispatch runs strict reconciliation, which is the
+          # run that release verification accepts.
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            args+=(--strict)
+          fi
           python scripts/audit_ecosystem_live.py "${args[@]}"
 
   repository-audit:

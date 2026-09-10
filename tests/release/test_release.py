@@ -4,6 +4,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+from datetime import timedelta
 from pathlib import Path
 import re
 import subprocess
@@ -219,6 +220,21 @@ def test_audit_rejects_sensitive_artifacts_and_binary_tokens(tmp_path: Path) -> 
     assert any("possible GitHub token" in error for error in audit_repository(root))
 
 
+@pytest.mark.parametrize("encoding", ["utf-16-le", "utf-16-be", "utf-16"])
+def test_audit_rejects_utf16_encoded_tokens(tmp_path: Path, encoding: str) -> None:
+    root = _repository(tmp_path)
+    token = "gh" + "p_" + "A" * 24
+    fixture = root / "assets/exported-settings.bin"
+    fixture.parent.mkdir(parents=True, exist_ok=True)
+    fixture.write_bytes(f"token={token}\n".encode(encoding))
+    assert token.encode("utf-8") not in fixture.read_bytes()
+    _git(root, "add", "assets/exported-settings.bin")
+    errors = audit_repository(root)
+    assert any(
+        "possible GitHub token" in error and "utf-16" in error for error in errors
+    ), errors
+
+
 def test_sensitive_artifact_ignore_patterns_are_present() -> None:
     root = RELEASE_SCRIPT.parents[1]
     patterns = {
@@ -421,7 +437,7 @@ def test_ci_only_tooling_is_isolated_and_hash_locked() -> None:
     ).read_text(encoding="utf-8")
     workflow = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
 
-    assert len(audit_lock) == 28
+    assert len(audit_lock) == 29
     assert audit_lock["pip-audit"]["version"] == "2.10.1"
     assert all(entry["hashes"] for entry in audit_lock.values())
     assert set(schema_lock) == {
@@ -646,8 +662,8 @@ def test_claude_command_contract_distinguishes_plugin_namespace() -> None:
 
 def test_release_grounding_gate_validates_control_registry_and_profiles() -> None:
     root = RELEASE_SCRIPT.parents[1]
-    result = check_grounding_and_capabilities(root, release.date(2026, 8, 25))
-    assert result["registered_control_count"] == 412
+    result = check_grounding_and_capabilities(root, release.date(2026, 9, 10))
+    assert result["registered_control_count"] == 414
     assert result["source_grounded_control_count"] > 0
     assert result["enabled_scoring_profile_count"] == 0
     assert result["disabled_scoring_profile_count"] == 12
@@ -678,14 +694,14 @@ def test_release_grounding_gate_rejects_stale_load_bearing_source(
         ReleaseError,
         match="load-bearing source is stale: google-ads-conversion-goals-official",
     ):
-        check_grounding_and_capabilities(root, release.date(2026, 8, 26))
+        check_grounding_and_capabilities(root, release.date(2026, 9, 11))
 
 
 def test_vulnerability_exception_evidence_is_release_packaged() -> None:
     root = RELEASE_SCRIPT.parents[1]
-    result = check_vulnerability_exceptions(root, release.date(2026, 8, 25))
+    result = check_vulnerability_exceptions(root, release.date(2026, 9, 10))
 
-    assert result["exception_count"] == 16
+    assert result["exception_count"] == 17
     assert "tests/scripts/test_generate_report.py" in result["packaged_evidence_paths"]
     assert set(result["packaged_evidence_paths"]) <= set(
         release.package_files(result["packaged_evidence_paths"])
@@ -706,29 +722,43 @@ def test_ecosystem_gate_binds_public_snapshot_and_expires(
         lambda root: {"repository_count": 33},
     )
 
-    result = check_ecosystem(tmp_path, release.date(2026, 8, 25))
-    assert result["public_issue_count"] == 21
-    assert result["public_pull_request_count"] == 35
-    assert result["canonical_issue_count"] == 0
-    assert result["canonical_pull_request_count"] == 13
-    assert result["issue_and_pull_request_count"] == 69
+    document = json.loads(manifest.read_text(encoding="utf-8"))
+    reviewed_at = release.date.fromisoformat(document["reviewed_at"])
+    public = document["public_snapshot"]
+    canonical = document["canonical_snapshot"]
+
+    result = check_ecosystem(tmp_path, reviewed_at)
+    assert result["public_issue_count"] == len(public["issue_numbers"])
+    assert result["public_pull_request_count"] == len(public["pull_request_numbers"])
+    assert result["canonical_issue_count"] == len(canonical["issue_numbers"])
+    assert result["canonical_pull_request_count"] == len(canonical["pull_request_numbers"])
+    assert result["issue_and_pull_request_count"] == len(document["entries"]) == (
+        len(public["issue_numbers"])
+        + len(public["pull_request_numbers"])
+        + len(canonical["issue_numbers"])
+        + len(canonical["pull_request_numbers"])
+    )
     assert "dependency-review" not in candidate.read_text(encoding="utf-8")
 
     with pytest.raises(ReleaseError, match="stale or future-dated"):
-        check_ecosystem(tmp_path, release.date(2026, 9, 26))
+        check_ecosystem(tmp_path, reviewed_at + timedelta(days=31))
+    with pytest.raises(ReleaseError, match="stale or future-dated"):
+        check_ecosystem(tmp_path, reviewed_at - timedelta(days=1))
 
+    dropped = public["pull_request_numbers"][-1]
     document = json.loads(candidate.read_text(encoding="utf-8"))
-    document["public_snapshot"]["pull_request_numbers"].remove(62)
-    del document["public_snapshot"]["pull_request_heads"]["62"]
+    document["public_snapshot"]["pull_request_numbers"].remove(dropped)
+    del document["public_snapshot"]["pull_request_heads"][str(dropped)]
     candidate.write_text(json.dumps(document), encoding="utf-8")
     with pytest.raises(ReleaseError, match="coverage mismatch"):
-        check_ecosystem(tmp_path, release.date(2026, 8, 25))
+        check_ecosystem(tmp_path, reviewed_at)
 
     document = json.loads(manifest.read_text(encoding="utf-8"))
-    document["canonical_snapshot"]["pull_request_heads"]["13"] = "not-a-sha"
+    last_canonical = str(canonical["pull_request_numbers"][-1])
+    document["canonical_snapshot"]["pull_request_heads"][last_canonical] = "not-a-sha"
     candidate.write_text(json.dumps(document), encoding="utf-8")
     with pytest.raises(ReleaseError, match="head snapshot"):
-        check_ecosystem(tmp_path, release.date(2026, 8, 25))
+        check_ecosystem(tmp_path, reviewed_at)
 
 
 def test_breaking_control_contracts_have_v1_compatibility_and_v2_instances() -> None:
@@ -868,6 +898,7 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
         return {
             "head_sha": commit,
             "head_branch": "v2",
+            "event": "workflow_dispatch",
             "status": "completed",
             "conclusion": "success",
             "path": ".github/workflows/ci.yml",
@@ -878,6 +909,18 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
     result = verify_github_run(root, "123", commit)
     assert result["head_sha"] == commit
     assert result["repository_visibility"] == "private"
+    assert result["event"] == "workflow_dispatch"
+    assert result["ecosystem_reconciliation_mode"] == "strict"
+
+    def push_run(_root: Path, endpoint: str) -> dict:
+        value = evidence(_root, endpoint)
+        if endpoint.endswith("/actions/runs/123"):
+            value = {**value, "event": "push"}
+        return value
+
+    monkeypatch.setattr(release, "_gh_json", push_run)
+    with pytest.raises(ReleaseError, match="must be a workflow_dispatch run"):
+        verify_github_run(root, "123", commit)
 
     def wrong_subject(_root: Path, endpoint: str) -> dict:
         value = evidence(_root, endpoint)

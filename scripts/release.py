@@ -47,6 +47,7 @@ PACKAGE_FILES = {
     "requirements-dev.txt",
     "requirements.lock",
     "requirements-dev.lock",
+    "tests/core/test_reporting.py",
     "tests/scripts/test_generate_report.py",
     "uninstall.ps1",
     "uninstall.sh",
@@ -328,7 +329,13 @@ def audit_repository(root: Path) -> list[str]:
             continue
 
         raw = path.read_bytes()
-        scan_text = raw.decode("utf-8", errors="ignore")
+        # Secrets stored in UTF-16 files are invisible to a UTF-8 scan because
+        # every other byte is NUL, so scan both UTF-16 byte orders as well.
+        scan_texts = {
+            "utf-8": raw.decode("utf-8", errors="ignore"),
+            "utf-16-le": raw.decode("utf-16-le", errors="ignore"),
+            "utf-16-be": raw.decode("utf-16-be", errors="ignore"),
+        }
         text = _read_text(path)
         if text is not None and relative.endswith(".json"):
             try:
@@ -363,12 +370,14 @@ def audit_repository(root: Path) -> list[str]:
                     if previous != relative:
                         errors.append(f"duplicate skill name {name!r}: {previous} and {relative}")
 
-        for label, pattern in SECRET_PATTERNS.items():
-            if pattern.search(scan_text):
-                errors.append(f"{relative}: possible {label}")
-        for label, pattern in PRIVATE_PATH_PATTERNS.items():
-            if pattern.search(scan_text):
-                errors.append(f"{relative}: contains {label}")
+        for encoding, candidate_text in scan_texts.items():
+            suffix = "" if encoding == "utf-8" else f" ({encoding} text)"
+            for label, pattern in SECRET_PATTERNS.items():
+                if pattern.search(candidate_text):
+                    errors.append(f"{relative}: possible {label}{suffix}")
+            for label, pattern in PRIVATE_PATH_PATTERNS.items():
+                if pattern.search(candidate_text):
+                    errors.append(f"{relative}: contains {label}{suffix}")
 
     errors.extend(_audit_manifest_consistency(root, set(tracked)))
     selected = package_files(tracked)
@@ -2020,6 +2029,14 @@ def verify_github_run(root: Path, run_id: str, commit_sha: str) -> dict[str, obj
         or run.get("head_branch") != "v2"
     ):
         raise ReleaseError("GitHub Actions run does not prove the exact private v2 subject")
+    # Only workflow_dispatch runs execute the live ecosystem reconciliation in
+    # strict mode; push and pull_request runs downgrade drift to warnings, so a
+    # green run of either event is not release evidence.
+    if run.get("event") != "workflow_dispatch":
+        raise ReleaseError(
+            "GitHub Actions run must be a workflow_dispatch run so that the live "
+            "ecosystem reconciliation is strict"
+        )
     jobs_doc = _gh_json(root, f"repos/{repository}/actions/runs/{run_id}/jobs?per_page=100")
     jobs = jobs_doc.get("jobs")
     if not isinstance(jobs, list):
@@ -2057,6 +2074,8 @@ def verify_github_run(root: Path, run_id: str, commit_sha: str) -> dict[str, obj
         "run_id": int(run_id),
         "url": run.get("html_url"),
         "head_sha": commit_sha,
+        "event": "workflow_dispatch",
+        "ecosystem_reconciliation_mode": "strict",
         "jobs": sorted(required),
         "repository_visibility": "private",
     }

@@ -50,6 +50,16 @@ capability loses its test evidence, or required remote CI does not pass.
   path. New advisories, accepted-risk dispositions, import drift, or expired
   evidence fail closed. Every referenced evidence path must remain in the
   public release package.
+- Each exception carries at least one machine-checked guard: forbidden import
+  prefixes, or forbidden call keywords when the vulnerable channel is a call
+  argument rather than a module. The guards are syntactic checks over
+  first-party source in the guarded scope. Direct imports and `importlib` or
+  `__import__` calls with literal names fail CI; a guarded keyword passed to
+  any callable fails CI; unresolvable dynamic imports, forwarded keyword
+  mappings to the guarded function, and forwarded mappings to an unresolvable
+  callee fail CI. Transitive imports inside third-party packages and
+  assignments to library option dictionaries are outside the guard and are
+  covered only by the written analysis in the exception record.
 
 ## Evaluation gates
 
@@ -108,6 +118,11 @@ capability loses its test evidence, or required remote CI does not pass.
 
 - Required GitHub Actions checks pass on the integration commit. Local success
   does not substitute for unavailable, skipped, or billing-blocked remote CI.
+- The GitHub Actions run supplied to release verification is a
+  `workflow_dispatch` run of `ci.yml` at the release commit, because only that
+  event runs the live ecosystem reconciliation in strict mode. Green push or
+  pull_request runs report tracker drift as warnings and are not release
+  evidence.
 - The integration branch receives independent code, evidence, security,
   privacy, and licensing review.
 - Review evidence conforms to the independent-review schema, binds the exact
