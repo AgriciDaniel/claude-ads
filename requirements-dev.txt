@@ -3,4 +3,4 @@
 # running tests locally.
 pytest>=9.0.3,<10.0
 pyyaml>=6.0,<7.0
-cryptography>=48.0.1,<49.0.0  # GHSA-537c-gmf6-5ccf fix; review/egress tests
+cryptography>=50.0.1,<51.0.0  # GHSA-537c-gmf6-5ccf fix; review/egress tests
