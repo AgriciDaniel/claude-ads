@@ -13,7 +13,7 @@ Pillow>=11.0.0,<13.0.0            # Image dimension validation
 
 # PDF report generation (canonical JSON renderer plus retained legacy helper)
 weasyprint>=69.0,<70.0            # Canonical ReportBundle HTML-to-PDF renderer
-reportlab>=4.0,<5.0.0             # PDF layout and rendering
+reportlab>=5.0.1,<6.0.0             # PDF layout and rendering
 matplotlib>=3.8.0,<4.0.0          # Health score gauge and platform bar charts
 
 # Image generation has no preferred/default provider or model. Operators must
