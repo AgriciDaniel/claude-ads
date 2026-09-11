@@ -3,6 +3,20 @@
   "generated_at": "2026-08-25",
   "sources": [
     {
+      "id": "atlas-qwen-image-3-schema-official",
+      "title": "Atlas Cloud Qwen Image 3.0 Text-to-Image API schema",
+      "locator": "https://static.atlascloud.ai/model/schema/qwen-image-3.0-text-to-image.json",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-08-17",
+      "refresh_due": "2026-09-16",
+      "version": "1.0.0",
+      "confidence": "high",
+      "license": "Atlas Cloud documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0213"]
+    },
+    {
       "id": "claude-ads-v181-tree",
       "title": "Claude Ads v1.8.1 repository baseline",
       "locator": "git:86690b6",

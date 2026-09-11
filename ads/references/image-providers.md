@@ -97,3 +97,19 @@ corresponding flags are omitted. Absence of either value is `needs_input` and mu
 fail before credential lookup or network dispatch. A rejected or unavailable
 model is not automatically replaced with another model. Reference-image input is
 allowed only when the selected adapter explicitly implements that capability.
+
+### Atlas Cloud adapter
+
+Select the Atlas Cloud adapter explicitly with `--provider atlas`, set
+`ATLASCLOUD_API_KEY`, and pass a current model identifier with `--model`. The
+adapter has no default model and does not substitute another model after an API
+failure. Before a run, verify the chosen model in the live Atlas model catalog and
+read that model's schema. For example, the current
+`qwen-image-3.0/text-to-image` schema accepts `prompt` and optional
+`size=width*height` values.
+
+Atlas image generation is asynchronous. The adapter submits exactly one POST,
+polls the returned prediction with a fixed upper bound, and downloads the first
+completed output without forwarding the Atlas credential. Output downloads must
+remain HTTPS and public, may not redirect, must identify as an image, and are
+limited to 25 MiB. This adapter does not declare reference-image support.
