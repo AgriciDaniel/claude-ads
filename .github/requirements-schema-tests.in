@@ -1,0 +1,4 @@
+# Schema-conformance tooling used only by CI and repository contributors.
+# Keep this outside the product dependency inventory and install it only when
+# running the complete repository test suite.
+jsonschema==4.26.0

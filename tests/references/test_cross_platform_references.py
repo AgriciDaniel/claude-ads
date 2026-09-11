@@ -35,6 +35,7 @@ REQUIRED_SOURCE_IDS = {
     "google-smart-bidding-official",
     "google-rsa-official",
     "google-consent-modeling-official",
+    "google-consent-modeling-improvement-official",
     "tiktok-events-api-official",
     "eu-ai-act-article-50-official",
     "eu-dsa-official",
@@ -46,6 +47,8 @@ REQUIRED_SOURCE_IDS = {
     "microsoft-ads-mcp-official",
     "meta-andromeda-engineering-official",
     "meta-ai-ads-ranking-official",
+    "meta-gem-training-official",
+    "meta-sequence-ranking-official",
 }
 
 
@@ -58,7 +61,7 @@ def _reference_texts(repo_root: Path) -> dict[str, str]:
 
 def test_cross_platform_references_have_verification_and_refresh_metadata(repo_root):
     for name, text in _reference_texts(repo_root).items():
-        assert "**Verified:** 2026-07-11" in text, name
+        assert re.search(r"\*\*Verified:\*\* 20\d{2}-\d{2}-\d{2}", text), name
         assert "**Refresh" in text, name
 
 
@@ -85,6 +88,26 @@ def test_benchmarks_are_contextual_and_vendor_evidence_is_labeled(repo_root):
     ]
     assert "vendor-supplied" in texts["benchmarks.md"]
     assert "vendor-supplied" in texts["meta-ai-stack.md"]
+
+
+def test_meta_architecture_does_not_adopt_unverified_issue_prescriptions(repo_root):
+    meta = " ".join(_reference_texts(repo_root)["meta-ai-stack.md"].lower().split())
+    for unsupported in (
+        "1-2 campaigns max",
+        "campaign consolidation | 1-2 campaigns",
+        "4×4 creative framework",
+        "cpmr (cost per 1,000 reached)",
+    ):
+        assert unsupported not in meta
+    assert "cited practitioner articles, not a current meta source" in meta
+
+
+def test_consent_reference_does_not_invent_an_unpublished_threshold(repo_root):
+    conversion = " ".join(
+        _reference_texts(repo_root)["conversion-tracking.md"].lower().split()
+    )
+    assert "100 ad clicks" not in conversion
+    assert "does not publish another numeric click threshold" in conversion
 
 
 def test_automation_and_mcp_do_not_imply_write_authority(repo_root):

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import struct
 import sys
+import zlib
 from pathlib import Path
 
 import pytest
@@ -13,12 +15,29 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 import generate_image  # noqa: E402
 
 
-def _png(width: int = 1024, height: int = 1024) -> bytes:
+def _png(width: int = 16, height: int = 16) -> bytes:
+    """Build a real, fully valid greyscale PNG.
+
+    generate_image.py validates provider output with _validate_png, which
+    checks every chunk CRC and decompresses the IDAT stream, so a header stub
+    is not enough here.
+    """
+
+    def _chunk(kind: bytes, data: bytes) -> bytes:
+        return (
+            len(data).to_bytes(4, "big")
+            + kind
+            + data
+            + (zlib.crc32(kind + data) & 0xFFFFFFFF).to_bytes(4, "big")
+        )
+
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 0, 0, 0, 0)
+    raster = b"".join(b"\x00" + b"\x80" * width for _ in range(height))
     return (
         b"\x89PNG\r\n\x1a\n"
-        + b"\x00\x00\x00\rIHDR"
-        + width.to_bytes(4, "big")
-        + height.to_bytes(4, "big")
+        + _chunk(b"IHDR", ihdr)
+        + _chunk(b"IDAT", zlib.compress(raster))
+        + _chunk(b"IEND", b"")
     )
 
 
@@ -57,7 +76,7 @@ def test_atlas_submits_once_polls_and_downloads_without_credentials(monkeypatch)
             ),
             FakeResponse(
                 body=_png(),
-                headers={"content-type": "image/png", "content-length": "24"},
+                headers={"content-type": "image/png", "content-length": str(len(_png()))},
             ),
         ]
     )

@@ -23,7 +23,11 @@ raw private research, local absolute paths, or agent transcripts.
 git clone https://github.com/AgriciDaniel/claude-ads.git
 cd claude-ads
 python -m venv .venv
-.venv/bin/python -m pip install -e . -r requirements.txt -r requirements-dev.txt
+.venv/bin/python -m pip install --no-deps -e .
+.venv/bin/python -m pip install --require-hashes --only-binary=:all: -r requirements.lock
+.venv/bin/python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+.venv/bin/python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-schema-tests.lock
+.venv/bin/python -m pip check
 .venv/bin/python -m pytest -q
 ```
 

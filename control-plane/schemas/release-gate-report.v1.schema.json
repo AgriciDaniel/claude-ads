@@ -1,19 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v2:release-gate-report.v2.json",
+  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v1:release-gate-report.v1.json",
   "title": "Claude Ads release gate assessment",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version",
-    "evidence_class",
-    "evaluated_at",
-    "subject",
-    "checks",
+    "schema_version", "evidence_class", "evaluated_at", "subject", "checks",
     "release_gate_satisfied"
   ],
   "properties": {
-    "schema_version": {"const": "2.0.0"},
+    "schema_version": {"const": "1.0.0"},
     "evidence_class": {"const": "release-gate-assessment"},
     "evaluated_at": {"type": "string", "format": "date-time"},
     "subject": {
@@ -27,8 +23,8 @@
     },
     "checks": {
       "type": "array",
-      "minItems": 8,
-      "maxItems": 8,
+      "minItems": 7,
+      "maxItems": 7,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -36,14 +32,9 @@
         "properties": {
           "id": {
             "enum": [
-              "repository-audit",
-              "clean-subject",
-              "source-capability-integrity",
-              "vulnerability-exception-integrity",
-              "ecosystem-ledger-integrity",
-              "canonical-model-evaluation",
-              "independent-reviews",
-              "remote-ci"
+              "repository-audit", "clean-subject", "source-capability-integrity",
+              "ecosystem-dispositions", "canonical-model-evaluation",
+              "independent-reviews", "remote-ci"
             ]
           },
           "status": {"enum": ["pass", "fail"]},
@@ -51,16 +42,8 @@
           "error": {"type": "string", "minLength": 1}
         },
         "oneOf": [
-          {
-            "properties": {"status": {"const": "pass"}},
-            "required": ["evidence"],
-            "not": {"required": ["error"]}
-          },
-          {
-            "properties": {"status": {"const": "fail"}},
-            "required": ["error"],
-            "not": {"required": ["evidence"]}
-          }
+          {"properties": {"status": {"const": "pass"}}, "required": ["evidence"], "not": {"required": ["error"]}},
+          {"properties": {"status": {"const": "fail"}}, "required": ["error"], "not": {"required": ["evidence"]}}
         ]
       }
     },

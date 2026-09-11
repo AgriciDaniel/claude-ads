@@ -13,12 +13,19 @@ description: "Create a professional paid-advertising strategy covering objective
    supported platform. For a channel outside the twelve-platform contract, load
    `ads/references/additional-platforms.md` and return a research lead unless
    its current buying, eligibility, measurement, and creative evidence is present.
-4. Specify campaign architecture, audience strategy, creative system, budget and
+4. Before proposing Meta budgets, learning-phase expectations, bidding,
+   consolidation, or performance forecasts, collect the account, Pixel, and
+   conversion cold-start dimensions per the contract in
+   `skills/ads-meta/SKILL.md`. When any dimension is cold or `unknown`, plan
+   for measurement validation, explicit creative hypotheses, staged reversible
+   tests, and confidence labels; do not apply mature-account benchmarks to
+   missing history.
+5. Specify campaign architecture, audience strategy, creative system, budget and
    pacing, measurement, experiments, policy controls, and operating cadence.
-5. Phase prerequisites before launch, learning, optimization, and scale.
-6. Assign every action an owner, timing, dependency, guardrail, evidence, success
+6. Phase prerequisites before launch, learning, optimization, and scale.
+7. Assign every action an owner, timing, dependency, guardrail, evidence, success
    measure, and rollback or exit condition.
-7. Return canonical JSON and render the requested human plan.
+8. Return canonical JSON and render the requested human plan.
 
 A plan is advisory. It becomes an account change only through launch or optimize
 mutation gates.

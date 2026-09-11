@@ -276,7 +276,7 @@ PROFILES: dict[str, NativeExportProfile] = {
             _field("CampaignStatus", "campaign_status", "lower_text", "Microsoft Advertising campaign status."),
             _field("AdId", "creative_id", "text", "Microsoft Advertising ad identifier."),
             _field("AdTitle", "creative_name", "text", "Ad title used only as a display label, not a stable identity."),
-            _field("Conversions", "conversions", "decimal", "Conversions included for bidding-qualified goals."),
+            _field("ConversionsQualified", "conversions", "decimal", "Bidding-qualified conversions; the legacy Conversions column is deprecated and returns zero."),
             _field("Spend", "spend", "decimal", "Spend in the reported CurrencyCode."),
             _field("CurrencyCode", "currency", "text", "Report currency code."),
         ),

@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-08-17",
+  "generated_at": "2026-08-25",
   "claims": [
     {
-      "id": "CLM-0210",
+      "id": "CLM-0213",
       "statement": "The Atlas Cloud Qwen Image 3.0 Text-to-Image schema documents asynchronous image submission with explicit model, prompt, and width*height size fields, prediction polling states, and completed output URLs.",
       "scope": "scripts/generate_image.py Atlas text-to-image adapter contract only",
       "classification": "evidence-based",
@@ -22,8 +22,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-v181-tree"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "repository-maintainers"
     },
     {
@@ -34,8 +34,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-product-contract"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "product-owner"
     },
     {
@@ -46,8 +46,8 @@
       "verdict": "verified",
       "source_ids": ["claude-ads-product-contract"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "security-owner"
     },
     {
@@ -55,12 +55,13 @@
       "statement": "The v2 instruction architecture uses original clean-room implementations of explicit checklists, effort calibration, examples, repeated safety constraints, instruction precedence, and artifact-backed verification.",
       "scope": "instruction design provenance",
       "classification": "practitioner",
-      "verdict": "verified",
+      "verdict": "demoted",
       "source_ids": ["fable-private-cleanroom"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
-      "owner": "prompt-architecture-owner"
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
+      "owner": "prompt-architecture-owner",
+      "notes": "The private source was unavailable in the current workspace during the 2026-08-25 refresh. This non-load-bearing provenance claim is not treated as current evidence until that source is re-reviewed."
     },
     {
       "id": "CLM-0005",
@@ -77,25 +78,25 @@
     {
       "id": "CLM-0006",
       "statement": "The v2 generic CSV adapter normalizes the documented portable export shape for all twelve target platforms, with one sanitized fixture per platform and a parameterized contract test; it does not provide native live API access or writes.",
-      "scope": "portable CSV export ingestion at git commit df8ebb1",
+      "scope": "portable CSV export ingestion at git commit 8639529",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["claude-ads-v2-export-adapter"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "adapter-owner"
     },
     {
       "id": "CLM-0007",
-      "statement": "Google Ads distinguishes primary conversion actions used for bidding from secondary observation actions, and enhanced conversions supplement existing measurement with hashed first-party data subject to applicable policy and consent requirements.",
-      "scope": "Google Ads runtime measurement controls; feature eligibility and diagnostics remain account-specific",
+      "statement": "Google Ads treats a primary conversion action as biddable only when a campaign uses the goal containing that action. Secondary actions are observation-only except that a secondary action included in a custom goal is used for bidding when that custom goal is selected. Enhanced conversions supplement existing measurement with hashed first-party data subject to applicable policy and consent requirements.",
+      "scope": "Google Ads standard-goal and custom-goal bidding controls; feature eligibility and diagnostics remain account-specific",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-ads-api-official", "google-ads-conversion-goals-official", "google-ads-enhanced-conversions-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "google-evidence-owner"
     },
     {
@@ -106,8 +107,8 @@
       "verdict": "verified",
       "source_ids": ["meta-marketing-api-official", "meta-conversions-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "meta-evidence-owner"
     },
     {
@@ -118,8 +119,8 @@
       "verdict": "verified",
       "source_ids": ["linkedin-marketing-api-official", "linkedin-conversion-tracking-official", "linkedin-conversions-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "linkedin-evidence-owner"
     },
     {
@@ -130,32 +131,32 @@
       "verdict": "verified",
       "source_ids": ["tiktok-business-api-official", "tiktok-events-api-official", "tiktok-pixel-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "tiktok-evidence-owner"
     },
     {
       "id": "CLM-0011",
-      "statement": "Microsoft Advertising uses UET for website conversion tracking, provides a server-side Conversions API, and documents Google Ads import mappings and limitations that require explicit post-import validation.",
-      "scope": "Microsoft runtime measurement and import controls; imported fields and pilots must be checked against current account evidence",
+      "statement": "Microsoft Advertising uses UET for website conversion tracking, offers a documented server-side Conversions API (CAPI) with a public endpoint, payload schema, partner integrations, and UET deduplication through a shared event ID, and documents Google Ads import mappings and limitations that require explicit post-import validation. New Microsoft Advertising API features are REST-only from 2026-10-01 and the SOAP API is scheduled for full deprecation on 2027-01-31.",
+      "scope": "Microsoft runtime measurement and import controls; imported fields and CAPI availability must be checked against current account evidence",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-advertising-api-official", "microsoft-uet-official", "microsoft-conversions-api-official", "microsoft-google-import-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "microsoft-evidence-owner"
     },
     {
       "id": "CLM-0012",
       "statement": "The Google Ads API supports fetching and reporting on existing Video campaigns and their criteria, but does not support creating new Video campaigns or updating existing ones.",
-      "scope": "Google Ads API Video campaign surface retrieved 2026-07-11; Demand Gen and Google Ads scripts are separate surfaces",
+      "scope": "Google Ads API Video campaign surface verified 2026-08-25; Demand Gen and Google Ads scripts are separate surfaces",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["youtube-google-ads-video-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "youtube-evidence-owner"
     },
     {
@@ -166,8 +167,8 @@
       "verdict": "verified",
       "source_ids": ["apple-ads-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "apple-evidence-owner"
     },
     {
@@ -178,8 +179,8 @@
       "verdict": "verified",
       "source_ids": ["amazon-ads-api-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "amazon-evidence-owner"
     },
     {
@@ -190,8 +191,8 @@
       "verdict": "verified",
       "source_ids": ["reddit-business-help"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "reddit-evidence-owner"
     },
     {
@@ -202,8 +203,8 @@
       "verdict": "verified",
       "source_ids": ["pinterest-conversions-api"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "pinterest-evidence-owner"
     },
     {
@@ -214,8 +215,8 @@
       "verdict": "verified",
       "source_ids": ["snap-marketing-api"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "snapchat-evidence-owner"
     },
     {
@@ -226,68 +227,68 @@
       "verdict": "verified",
       "source_ids": ["x-conversion-tracking"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "x-evidence-owner"
     },
     {
       "id": "CLM-0100",
       "statement": "Google responsive search ads accept up to 15 headlines and four descriptions, and headline fields support up to 30 characters.",
-      "scope": "Google Ads RSA documentation retrieved 2026-07-11",
+      "scope": "Google Ads RSA documentation retrieved 2026-08-25",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-rsa-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0101",
       "statement": "Microsoft responsive search ads accept up to 15 headlines and four descriptions.",
-      "scope": "Microsoft Advertising RSA documentation retrieved 2026-07-11",
+      "scope": "Microsoft Advertising v13 RSA schema retrieved 2026-08-25",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-ad-types-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0102",
       "statement": "Google identifies Target CPA, Target ROAS, Maximize conversions, and Maximize conversion value as Smart Bidding strategies that optimize at auction time.",
-      "scope": "Google Ads; labels and eligibility vary by campaign type",
+      "scope": "Google Ads; labels and eligibility vary by campaign type, including the June 2026 label transition documented by Google",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-smart-bidding-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0103",
       "statement": "Google advises setting Target ROAS from business goals and historical performance and evaluating target changes over conversion cycles; an overly high target may restrict traffic.",
-      "scope": "Google Target ROAS guidance, not a guaranteed outcome",
+      "scope": "Google Target ROAS guidance, including the August 2026 bidding-system note; not a guaranteed outcome",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-target-roas-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0104",
-      "statement": "Google's consent-mode modeling quality checks include correct Consent Mode or IAB TCF implementation and 700 ad clicks per day over seven days per country/domain grouping.",
-      "scope": "Eligibility for Google consent-mode modeling only",
+      "statement": "Google's consent-mode modeling quality checks include correct Consent Mode or IAB TCF implementation and 700 ad clicks per day over seven days per country/domain grouping. Its separate impact-results page says additional volume and modeling thresholds apply without publishing another numeric click threshold. The active setup and current diagnostics remain controlling evidence.",
+      "scope": "Google consent-mode modeling eligibility and impact-results surfaces; no unpublished threshold is inferred",
       "classification": "evidence-based",
       "verdict": "verified",
-      "source_ids": ["google-consent-modeling-official"],
+      "source_ids": ["google-consent-modeling-official", "google-consent-modeling-improvement-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -298,8 +299,8 @@
       "verdict": "verified",
       "source_ids": ["tiktok-events-api-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -310,8 +311,8 @@
       "verdict": "verified",
       "source_ids": ["eu-ai-act-article-50-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -322,8 +323,8 @@
       "verdict": "verified",
       "source_ids": ["eu-dsa-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -334,8 +335,8 @@
       "verdict": "verified",
       "source_ids": ["cppa-regulations-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-08-25",
+      "refresh_due": "2026-09-24",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -346,8 +347,8 @@
       "verdict": "verified",
       "source_ids": ["hhs-tracking-guidance-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -358,20 +359,20 @@
       "verdict": "verified",
       "source_ids": ["ftc-endorsement-guides-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0111",
       "statement": "The current first-party Google Ads MCP README exposes read-oriented account search, resource metadata, accessible-customer, and discovery resources.",
-      "scope": "Repository README at retrieval date; no installed capability implied",
+      "scope": "Repository README at ba47210245f2925a130a2770a4d272d5dd0c91cd; no installed capability implied",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["google-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -382,8 +383,8 @@
       "verdict": "verified",
       "source_ids": ["amazon-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -394,20 +395,20 @@
       "verdict": "verified",
       "source_ids": ["tiktok-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0114",
-      "statement": "Microsoft's Advertising MCP page advertises live campaign-data workflows and presents a waitlist.",
-      "scope": "Provider page; availability must be verified per account",
+      "statement": "Microsoft's current Advertising MCP page documents setup and read-oriented live campaign-data querying and audit workflows.",
+      "scope": "Provider page; availability and configured access must be verified per environment and account",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-ads-mcp-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -418,20 +419,20 @@
       "verdict": "verified",
       "source_ids": ["meta-andromeda-engineering-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
       "id": "CLM-0116",
-      "statement": "Meta describes GEM as an ads ranking model using sequence-learning improvements and Meta Lattice as consolidating ranking across additional Facebook surfaces.",
-      "scope": "Meta-authored architecture description; performance claims excluded",
+      "statement": "Meta describes GEM as the central ads recommendation foundation model, documents a multi-stage sequence architecture within GEM, and describes Meta Lattice as consolidating ranking across additional Facebook surfaces.",
+      "scope": "Meta-authored architecture descriptions through August 2026; performance claims excluded",
       "classification": "evidence-based",
       "verdict": "verified",
-      "source_ids": ["meta-ai-ads-ranking-official"],
+      "source_ids": ["meta-ai-ads-ranking-official", "meta-gem-training-official", "meta-sequence-ranking-official"],
       "load_bearing": false,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "cross-platform-reference-owner"
     },
     {
@@ -442,8 +443,8 @@
       "verdict": "verified",
       "source_ids": ["google-ads-campaign-fields-official", "youtube-google-ads-video-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -454,8 +455,8 @@
       "verdict": "verified",
       "source_ids": ["meta-insights-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -466,32 +467,32 @@
       "verdict": "verified",
       "source_ids": ["linkedin-ad-analytics-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
       "id": "CLM-0204",
-      "statement": "TikTok integrated AUCTION_AD reporting provides the daily advertiser, campaign, ad, spend, and selected conversion fields used by the native projection.",
+      "statement": "TikTok API for Business v1.3 basic reporting at the AUCTION_AD level provides daily advertiser, campaign, ad, spend, and selected conversion fields used by the native projection.",
       "scope": "tiktok-integrated-report-ad-daily-v1 only",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["tiktok-integrated-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
       "id": "CLM-0205",
-      "statement": "Microsoft Advertising v13 AdPerformanceReport documents the daily account, campaign, ad, conversion, spend, and currency columns used by the native projection.",
+      "statement": "Microsoft Advertising v13 AdPerformanceReport documents the daily account, campaign, ad, spend, and currency columns used by the native projection, and documents ConversionsQualified as the current conversion column: the legacy Conversions column is deprecated as of 2022 and returns zero.",
       "scope": "microsoft-ad-performance-daily-csv-v1 only",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": ["microsoft-ad-performance-report-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -502,8 +503,8 @@
       "verdict": "verified",
       "source_ids": ["apple-campaign-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -514,8 +515,8 @@
       "verdict": "verified",
       "source_ids": ["reddit-ads-reporting-v3-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -526,8 +527,8 @@
       "verdict": "verified",
       "source_ids": ["pinterest-ads-reporting-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
     },
     {
@@ -538,9 +539,45 @@
       "verdict": "verified",
       "source_ids": ["snap-ads-measurement-official"],
       "load_bearing": true,
-      "last_verified": "2026-07-11",
-      "refresh_due": "2026-08-10",
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
       "owner": "native-export-owner"
+    },
+    {
+      "id": "CLM-0210",
+      "statement": "In a Google Ads account, when several keywords targeting the same domain are eligible for the same search term they do not compete with each other in the auction and only one of them triggers an ad. Exact match keywords identical to the term are prioritized first, then phrase and broad match keywords or search themes identical to the term; among equal-priority candidates the ad with the highest Ad Rank is chosen. A keyword in a budget-restricted campaign will not always be able to trigger an ad even when it otherwise could.",
+      "scope": "Google Ads in-account keyword, DSA, and search-theme selection; auction outcomes and account-specific costs remain unobserved",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-keyword-prioritization-official"],
+      "load_bearing": true,
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "owner": "google-evidence-owner"
+    },
+    {
+      "id": "CLM-0211",
+      "statement": "Dynamic Search Ads are ranked the same way as keyword-based ads. When a person searches for the exact keyword targeted in another campaign of the same account or a linked account, the keyword campaign's ad may show instead of the Dynamic Search Ad; the Dynamic Search Ad may show instead when the search term is a broad or phrase match to a keyword and the Dynamic Search Ad has the higher Ad Rank. DSA ad groups without keywords are selected on highest Ad Rank compared with other ads in the account.",
+      "scope": "Google Ads in-account keyword, DSA, and search-theme selection; auction outcomes and account-specific costs remain unobserved",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-dsa-ad-rank-official", "google-ads-keyword-prioritization-official"],
+      "load_bearing": true,
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "owner": "google-evidence-owner"
+    },
+    {
+      "id": "CLM-0212",
+      "statement": "Dynamic Search Ads targeting matches searches to pages on the advertiser's site through dynamic ad targets, whose options include an all-webpages target covering every crawled page on the domain as well as narrower URL, page feed, title, content, and category targets.",
+      "scope": "Google Ads DSA applicability evidence only; page coverage is account-configured",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-dsa-targets-official"],
+      "load_bearing": false,
+      "last_verified": "2026-09-10",
+      "refresh_due": "2026-10-10",
+      "owner": "google-evidence-owner"
     }
   ]
 }

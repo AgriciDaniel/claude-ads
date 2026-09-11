@@ -2387,6 +2387,65 @@
       }
     },
     {
+      "platform": "google",
+      "control_id": "G96",
+      "intent": "Same-campaign Search plus DSA overlap",
+      "disposition": "conditional_watchlist",
+      "source_claim_ids": [
+        "CLM-0211"
+      ],
+      "control_definition": {
+        "schema_version": "1.0.0",
+        "control_id": "G96",
+        "category": "unclassified",
+        "severity": "informational",
+        "required_inputs": [
+          "applicability_context",
+          "current_account_evidence",
+          "current_source_support"
+        ],
+        "source_ids": [
+          "google-ads-dsa-ad-rank-official",
+          "google-ads-keyword-prioritization-official"
+        ],
+        "maturity": "source-grounded",
+        "geographies": [
+          "account-configured"
+        ],
+        "scoring_behavior": "watchlist",
+        "stability": "experimental"
+      }
+    },
+    {
+      "platform": "google",
+      "control_id": "G97",
+      "intent": "Cross-campaign keyword duplication",
+      "disposition": "conditional_watchlist",
+      "source_claim_ids": [
+        "CLM-0210"
+      ],
+      "control_definition": {
+        "schema_version": "1.0.0",
+        "control_id": "G97",
+        "category": "unclassified",
+        "severity": "informational",
+        "required_inputs": [
+          "applicability_context",
+          "current_account_evidence",
+          "current_source_support"
+        ],
+        "source_ids": [
+          "google-ads-keyword-prioritization-official"
+        ],
+        "maturity": "source-grounded",
+        "geographies": [
+          "account-configured"
+        ],
+        "scoring_behavior": "watchlist",
+        "stability": "experimental"
+      }
+    },
+    {
       "platform": "meta",
       "control_id": "M01",
       "intent": "Meta Pixel installed",

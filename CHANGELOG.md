@@ -5,6 +5,159 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2026-09-10
+
+### Added
+
+* **Google Search overlap controls** (public issue 65): `G96` (same-campaign
+  Search plus Dynamic Search Ads overlap) and `G97` (cross-campaign keyword
+  duplication) join the Google catalog as conditional evidence controls. Both
+  are grounded in the current official in-account prioritization and DSA Ad
+  Rank pages, which state that eligible keywords targeting the same domain do
+  not compete with each other in the auction, so the controls describe traffic
+  routing and budget restriction rather than self-bidding or Ad Rank dilution.
+* **Meta cold-start contract in planning and creation** (public issue 53):
+  `/ads plan` and `/ads create` now collect the account, Pixel, and conversion
+  cold-start dimensions defined by `ads-meta` before proposing Meta budgets,
+  learning-phase expectations, forecasts, or creative benchmarks, and the root
+  intake asks for Pixel and conversion-signal history.
+
+### Changed
+
+* **Ecosystem ledger refresh**: reviewed the public tracker as of 2026-09-10,
+  added dispositions for public issues 63 and 65 and pull request 66, and
+  removed public pull request 45, which GitHub no longer serves.
+* **Microsoft Conversions API claim**: re-verified against the current
+  Microsoft Learn page and reworded from "in pilot" to a documented product
+  with a public endpoint, payload schema, partner integrations, and UET
+  deduplication.
+* **Source refresh 2026-09-10**: re-verified 61 platform, API, policy, and
+  regulator sources and 40 dependent claims against their current pages, with
+  no contradictions found; the Microsoft API claim now records the REST-only
+  cutover on 2026-10-01 and the SOAP deprecation scheduled for 2027-01-31, and
+  the TikTok reporting source points at the v1.3 basic-reports reference.
+* **Legacy install preflight** (public issue 57): `install.sh` and
+  `install.ps1` now detect an existing Claude Ads install that has no
+  ownership manifest (any install older than v2.0.0), print one message naming
+  the detected files and every path the installer would own, and exit before
+  any destination write instead of failing once per file. `uninstall.sh`
+  states the same v2.0.0 boundary when the manifest is missing. Managed v2
+  installs still upgrade in place.
+* **Marketplace alias note** (public issue 56): the README explains that
+  marketplaces added before v2.0.0 keep the stale `agricidaniel-claude-ads`
+  alias and shows the remove, add, and install commands.
+* **Live ecosystem gate modes**: `audit_ecosystem_live.py` now runs in
+  default mode on push and pull_request, failing only on an invalid ledger, a
+  mismatched review candidate, ledger items GitHub no longer serves, and
+  unrecorded items created on or before the snapshot date. Post-snapshot
+  items, head drift, metadata drift, and pull requests merged after the
+  snapshot are reported as structured findings and GitHub warning
+  annotations. `--strict` (workflow_dispatch) keeps exact reconciliation, and
+  release verification accepts only a strict workflow_dispatch run. On runs
+  without a pull request event the candidate is derived from the commit under
+  test: the open pull request whose head it is, or the merged pull request
+  whose merge commit it is.
+* **Dependency audit import guard**: `importlib.import_module` and
+  `__import__` are now recognised under from-import, alias, `builtins`,
+  `getattr`, and subscript spellings, and any call whose module name is not a
+  string literal, or any importer referenced outside a direct call, fails the
+  audit as an unresolvable dynamic import. The guard is a syntactic check over
+  first-party source in the guarded scope; it does not see transitive imports
+  inside third-party packages or loaders other than importlib.
+* **Vulnerability exceptions re-verified** on 2026-09-10 against the current
+  import graph and OSV records, with a new `not_affected` record for
+  WeasyPrint PYSEC-2026-3940 (the product never passes `stylesheets` or
+  `xmp_metadata` to `write_pdf` or `render`). Exception records may now carry a
+  machine-checked `forbidden_call_keywords` guard for advisories whose
+  vulnerable channel is a call argument; a guarded keyword passed to any
+  callable, or a forwarded keyword mapping to the guarded function or an
+  unresolvable callee, fails the audit. The CI pip-audit lock now includes
+  `typing_extensions`, which `cyclonedx-python-lib` requires on CPython 3.12.
+
+* **Evidence and ecosystem review**: reconciled the load-bearing claim set
+  against current primary sources, corrected an unreachable repository evidence
+  SHA, qualified Google conversion-goal bidding exceptions, and refreshed the
+  supported Meta architecture claims through August 2026. The Google
+  consent-mode modeling threshold was re-verified against the current official
+  page and now carries a second source noting that no further figure is
+  published. Frozen review ledgers now have a remote gate that reconciles
+  current tracker state and excludes only the exact review candidate.
+* **Control contract migration**: versioned the ecosystem-disposition and
+  release-gate report contracts at 2.0.0, retained the 1.0.0 schemas for stored
+  evidence compatibility, and documented the migration boundary.
+* **CI supply chain**: pinned current major releases of checkout, Python setup,
+  and Dependabot metadata actions by verified commit SHA, and added the
+  aggregate `validate` job required by branch protection. The Dependabot
+  workflow is now read-only, leaving approval and merge to a human.
+* **Test toolchain isolation**: JSON Schema test tooling installs from a
+  dedicated six-package hash lock (`.github/requirements-schema-tests.lock`) in
+  core and full CI jobs and in the documented local setup, so fresh
+  environments no longer fail test collection.
+* **Model evaluation subject binding**: the external model execution packet
+  now binds every task to the exact candidate commit and tree resolved at plan
+  generation time, alongside the pinned retained-v1 subject.
+
+### Fixed
+
+* **Dependency guard aliases**: literal imports of importer modules are followed,
+  and forwarded keyword mappings through simple callable aliases are checked.
+  Simple alias cycles fail closed; computed alias values and interprocedural
+  data flow remain outside this syntactic first-party guard.
+
+* **Microsoft native export conversions**: the AdPerformanceReport profile
+  now maps `ConversionsQualified`; Microsoft documents the legacy
+  `Conversions` column as deprecated since 2022 and always zero, so exports
+  built on it under-reported conversions as zero.
+* **PDF report markup boundary**: the health score caption now escapes the
+  score and grade values with the same helper used for all other report text,
+  closing a ReportLab markup injection route reachable through `build_pdf`
+  callers, and the regression test now exercises every caption route with a
+  markup payload.
+* **Release audit encoding coverage**: the secret and private-path scan now
+  also decodes tracked files as UTF-16 LE and BE, so tokens in UTF-16 files
+  can no longer pass. Live tracker query failures report the HTTP status and
+  endpoint path.
+* **Landing-page audit integrity**: `analyze_landing.py` now exits nonzero and
+  withholds audit grades when browser validation, navigation, or page analysis
+  fails. JSON failures remain machine-readable without presenting missing
+  observations as failed landing-page controls.
+* **Cross-installer safety**: the Bash and PowerShell installers now reject each
+  other's ownership manifests before any mutation. Bash also redirects Windows
+  dependency installs to PowerShell, with focused recovery guidance and
+  regression coverage.
+* **Release verification**: load-bearing source dates now fail closed alongside
+  claim dates, public tracker coverage must exactly match the reviewed snapshot,
+  the remote CI gate reconciles current issue and pull-request metadata and
+  exact heads, and target-lock tests no longer replace unrelated subprocess calls.
+* **Image provider validation**: generated images must be complete, bounded PNG
+  responses with matching output extensions before any provider result can be
+  written or reported as successful.
+* **Platform edge cases**: Meta planning now classifies account, Pixel, and
+  conversion cold starts independently. Google and Microsoft recommendations
+  now require verified operation capability before suggesting a setting change,
+  and the public marketplace command uses the normalized lowercase repository
+  identifier.
+* **Product metadata**: generated PDF reports use the 2.0.2 product version
+  while the Python core correctly retains its independent 2.0.0 version.
+* **Legacy report markup boundary**: user-controlled Markdown, section titles,
+  and brand names are escaped before the constrained ReportLab formatting tags
+  are introduced, preventing raw ReportLab markup from reaching the renderer.
+
+### Security
+
+* **Dependency VEX gate**: added 16 expiring `not_affected` dispositions for
+  current cryptography and Pillow advisories. Each is bound to exact lock
+  versions, upstream advisory IDs, evidence paths, and prohibited imports;
+  any new advisory, execution-path drift, accepted risk, or expiry fails CI.
+  The release retains every referenced evidence path. CI installs the current
+  pinned `pip-audit` 2.10.1 patch release and its full dependency closure from
+  a CPython 3.12 Linux hash lock in an isolated environment.
+* **Code scanning**: added a least-privilege Python CodeQL workflow using the
+  `security-extended` query suite and exact action commit pins.
+* **Sensitive artifact defense**: expanded ignore and release-audit coverage for
+  logs, local databases, credential catch-alls, local configuration, and token
+  patterns embedded in binary files.
+
 ## [2.0.1] - 2026-07-13
 
 Documentation and metadata patch on top of v2.0.0 for the public mirror

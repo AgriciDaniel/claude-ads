@@ -1,13 +1,72 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v1:ecosystem-dispositions.v1.json",
+  "$id": "urn:ai-marketing-hub:claude-ads:schema:control:v2:ecosystem-dispositions.v2.json",
   "title": "Claude Ads ecosystem disposition ledger",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "reviewed_at", "entries"],
+  "required": ["schema_version", "reviewed_at", "public_snapshot", "canonical_snapshot", "entries"],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"const": "2.0.0"},
     "reviewed_at": {"type": "string", "format": "date"},
+    "public_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository", "observed_at", "source_url", "issue_numbers",
+        "pull_request_numbers", "pull_request_heads"
+      ],
+      "properties": {
+        "repository": {"const": "AgriciDaniel/claude-ads"},
+        "observed_at": {"type": "string", "format": "date"},
+        "source_url": {"const": "https://github.com/AgriciDaniel/claude-ads"},
+        "issue_numbers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "integer", "minimum": 1},
+          "uniqueItems": true
+        },
+        "pull_request_numbers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "integer", "minimum": 1},
+          "uniqueItems": true
+        },
+        "pull_request_heads": {
+          "type": "object",
+          "propertyNames": {"pattern": "^[1-9][0-9]*$"},
+          "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        }
+      }
+    },
+    "canonical_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository", "observed_at", "source_url", "issue_numbers",
+        "pull_request_numbers", "pull_request_heads"
+      ],
+      "properties": {
+        "repository": {"const": "AI-Marketing-Hub/claude-ads"},
+        "observed_at": {"type": "string", "format": "date"},
+        "source_url": {"const": "https://github.com/AI-Marketing-Hub/claude-ads"},
+        "issue_numbers": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 1},
+          "uniqueItems": true
+        },
+        "pull_request_numbers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "integer", "minimum": 1},
+          "uniqueItems": true
+        },
+        "pull_request_heads": {
+          "type": "object",
+          "propertyNames": {"pattern": "^[1-9][0-9]*$"},
+          "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        }
+      }
+    },
     "entries": {
       "type": "array",
       "items": {
@@ -19,17 +78,17 @@
         ],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
-          "repository": {"type": "string", "minLength": 1},
+          "repository": {"enum": ["AgriciDaniel/claude-ads", "AI-Marketing-Hub/claude-ads"]},
           "kind": {"enum": ["issue", "pull-request"]},
           "number": {"type": "integer", "minimum": 1},
           "title": {"type": "string", "minLength": 1},
           "url": {"type": "string", "format": "uri"},
           "state": {"enum": ["open", "closed", "merged"]},
-          "decision": {"enum": ["adopt-reimplement", "adopt-concept", "already-addressed", "dependency-review", "defer", "reject", "superseded"]},
-          "license_review": {"enum": ["same-project-mit", "metadata-only", "pending"]},
+          "decision": {"enum": ["adopt-reimplement", "adopt-concept", "already-addressed", "defer", "reject", "superseded"]},
+          "license_review": {"enum": ["same-project-mit", "metadata-only"]},
           "rationale": {"type": "string", "minLength": 1},
-          "requirement_ids": {"type": "array", "items": {"type": "string", "pattern": "^REQ-[A-Z]+-[0-9]{3}$"}, "uniqueItems": true},
-          "regression_tests": {"type": "array", "items": {"type": "string"}}
+          "requirement_ids": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^REQ-[A-Z]+-[0-9]{3}$"}, "uniqueItems": true},
+          "regression_tests": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
         }
       }
     }

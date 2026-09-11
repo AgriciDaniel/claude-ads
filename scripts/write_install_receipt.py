@@ -83,14 +83,27 @@ def write_receipt(inventory_path: Path, lock_path: Path, evidence_path: Path, re
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--inventory", type=Path, required=True); parser.add_argument("--lock", type=Path, required=True)
-    parser.add_argument("--evidence", type=Path, required=True); parser.add_argument("--pip-report", type=Path, required=True)
-    parser.add_argument("--target-id", required=True); parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--inventory", type=Path, required=True)
+    parser.add_argument("--lock", type=Path, required=True)
+    parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--pip-report", type=Path, required=True)
+    parser.add_argument("--target-id", required=True)
+    parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    try: write_receipt(args.inventory, args.lock, args.evidence, args.pip_report, args.target_id, args.output)
+    try:
+        write_receipt(
+            args.inventory,
+            args.lock,
+            args.evidence,
+            args.pip_report,
+            args.target_id,
+            args.output,
+        )
     except Exception as exc:
-        print(f"install receipt validation failed: {exc}", file=sys.stderr); return 1
+        print(f"install receipt validation failed: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
-if __name__ == "__main__": raise SystemExit(main())
+if __name__ == "__main__":
+    raise SystemExit(main())

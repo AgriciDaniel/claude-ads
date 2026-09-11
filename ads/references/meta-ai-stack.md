@@ -1,7 +1,7 @@
 # Meta Ads Ranking Architecture
 
-**Verified:** 2026-07-11
-**Refresh due:** 2026-08-10
+**Verified:** 2026-08-26
+**Refresh due:** 2026-09-25
 **Evidence status:** first-party architecture awareness; not an optimization threshold
 
 This reference retains only architecture that Meta has described in current
@@ -12,8 +12,10 @@ vendor-reported uplifts into expected account results.
 
 - `meta-andromeda-engineering-official` — [Meta Andromeda engineering article](https://engineering.fb.com/2024/12/02/production-engineering/meta-andromeda-advantage-automation-next-gen-personalized-ads-retrieval-engine/), published 2024-12-02.
 - `meta-ai-ads-ranking-official` — [Meta: 2026 AI Drives Performance](https://about.fb.com/news/2026/01/2026-ai-drives-performance/), published 2026-01-28.
+- `meta-gem-training-official`: [Meta GEM training and architecture](https://engineering.fb.com/2026/08/03/ml-applications/training-gem-at-llm-scale-meta-ads-recommendation-foundation-model/), published 2026-08-03.
+- `meta-sequence-ranking-official`: [Meta multi-stage sequence architecture](https://engineering.fb.com/2026/08/05/ml-applications/from-user-sequences-to-scaling-laws-a-multi-stage-architecture-for-metas-ads-ranking/), published 2026-08-05.
 
-Both are Meta-authored sources. Architecture descriptions are high-confidence
+All are Meta-authored sources. Architecture descriptions are high-confidence
 evidence of what Meta publicly states. Performance lifts are vendor-supplied and
 not independently verified by Claude Ads.
 
@@ -29,6 +31,11 @@ sequence-learning architecture using longer behavior sequences and additional
 organic engagement data, and Meta Lattice as a model that consolidated ranking
 across additional Facebook surfaces. These are distinct from creative-generation
 features.
+
+Meta's August 2026 engineering posts further describe GEM as the central ads
+recommendation foundation model and document a two-stage sequence architecture
+that separates offline user modeling from online ranking. They do not establish
+an advertiser-facing campaign structure, creative quota, or optimization rule.
 
 Meta also reports performance changes from its deployments. Preserve those
 numbers only as labeled vendor evidence when a user explicitly needs product
@@ -64,6 +71,13 @@ dated first-party source, clear scope, and a non-prescriptive audit use.
 Likewise, terms such as “creative-similarity suppression,” guaranteed rewards for
 broad targeting, or a minimum creative count are hypotheses until demonstrated
 by account evidence or current official documentation.
+
+The April 2026 issue proposal cited practitioner articles, not a current Meta
+source. Its fixed one-to-two campaign maximum, fixed ad-set counts, mandatory
+Advantage+ adoption, four-by-four creative framework, and CPMr prescription are
+therefore not product rules in Claude Ads. Reconsider any one of them only when
+current first-party evidence and the account's own results support the specific
+decision.
 
 ## Finding contract
 

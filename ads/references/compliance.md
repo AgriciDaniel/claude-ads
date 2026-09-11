@@ -1,8 +1,10 @@
 # Platform Advertising Policy Review
 
-**Verified:** 2026-07-11
-**Refresh due:** 2026-08-10 and immediately after a policy or enforcement notice
+**Verified:** 2026-08-25
+**Refresh due:** 2026-09-24 and immediately after a policy or enforcement notice
 **Scope:** platform policy; regulation is handled in `compliance-requirements.md`
+**Evidence status:** all listed official policy entry points returned HTTP 200;
+precise rules still require a current product, geography, and account review
 
 Platform policy is contextual and changes by product, geography, objective,
 targeting, destination, advertiser status, and certification. Do not replace a

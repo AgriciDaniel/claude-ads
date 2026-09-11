@@ -1,2 +1,2 @@
-TimePeriod,AccountId,AccountName,CampaignId,CampaignName,CampaignStatus,AdId,AdTitle,Conversions,Spend,CurrencyCode
+TimePeriod,AccountId,AccountName,CampaignId,CampaignName,CampaignStatus,AdId,AdTitle,ConversionsQualified,Spend,CurrencyCode
 2026-06-15,demo-microsoft-account,Sanitized Microsoft Demo,demo-microsoft-campaign,Sanitized Search Campaign,Paused,demo-microsoft-ad,Sanitized Search Ad,7,37.50,USD

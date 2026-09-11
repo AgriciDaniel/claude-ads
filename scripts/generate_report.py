@@ -15,6 +15,7 @@ Dependencies:
 """
 
 import argparse
+import html
 import json
 import logging
 import math
@@ -31,7 +32,7 @@ from url_utils import resolve_output_path, sanitize_error
 
 # Version stamp shown in PDF header/footer. Keep in sync with
 # .claude-plugin/plugin.json `version`.
-__version__ = "2.0.0"
+__version__ = "2.0.2"
 
 try:
     from reportlab.lib import colors
@@ -107,12 +108,11 @@ SKIP_SECTIONS = {"executive summary", "critical issues", "quick wins"}
 # ---------------------------------------------------------------------------
 
 def _md_to_html(text: str) -> str:
-    """Convert markdown bold/italic to reportlab-compatible HTML tags."""
+    """Escape untrusted text, then add a constrained set of ReportLab tags."""
+    text = html.escape(str(text), quote=True)
     text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
     text = re.sub(r"\*(.+?)\*", r"<i>\1</i>", text)
     text = re.sub(r"`(.+?)`", r"<font face='Courier' size='9'>\1</font>", text)
-    # Escape angle brackets that aren't part of our tags
-    # (reportlab Paragraph treats < as HTML)
     return text
 
 
@@ -418,6 +418,16 @@ def _make_styles():
     return styles
 
 
+def _health_caption(score, grade) -> str:
+    """Build the Fig 1 caption with every report-supplied value escaped.
+
+    ``score`` and ``grade`` come from the parsed report dictionary, which any
+    caller of ``build_pdf`` controls, so both go through ``_md_to_html`` before
+    they reach a ReportLab Paragraph.
+    """
+    return f"Fig 1: Health Score {_md_to_html(score)}/100 (Grade {_md_to_html(grade)})"
+
+
 def _wrap_cell(text, style):
     """Wrap cell text in a Paragraph to prevent overflow and render markdown."""
     if not isinstance(text, str):
@@ -504,7 +514,7 @@ def build_pdf(data: dict, output_path: str, brand_name: str = ""):
 
     # --- Title Page Header ---
     title = brand_name or data.get("title", "Ad Account Audit Report")
-    elements.append(Paragraph(title, styles["RTitle"]))
+    elements.append(Paragraph(_md_to_html(title), styles["RTitle"]))
     elements.append(Spacer(1, 4))
     elements.append(Paragraph(
         f"Generated {datetime.now().strftime('%B %d, %Y')}  |  Powered by claude-ads v{__version__}",
@@ -535,17 +545,18 @@ def build_pdf(data: dict, output_path: str, brand_name: str = ""):
         ]))
         elements.append(chart_table)
         elements.append(Paragraph(
-            f"Fig 1: Health Score {score}/100 (Grade {grade})"
-            f"  |  Fig 2: Platform Score Comparison",
+            f"{_health_caption(score, grade)}  |  Fig 2: Platform Score Comparison",
             styles["RCaption"],
         ))
     elif gauge_path:
         temp_files.append(gauge_path)
         elements.append(Image(gauge_path, width=2.5 * inch, height=2.5 * inch))
-        elements.append(Paragraph(
-            f"Fig 1: Health Score {score}/100 (Grade {grade})", styles["RCaption"]))
+        elements.append(Paragraph(_health_caption(score, grade), styles["RCaption"]))
     elif score is not None:
         grade_color = colors.HexColor(GRADE_COLORS.get(grade, "#64748b"))
+        # Plain string cells are drawn literally by ReportLab (no markup
+        # parsing). Escape via _md_to_html before converting any of these
+        # cells to a Paragraph.
         score_tbl = Table(
             [["Ads Health Score", f"{score}/100", f"Grade: {grade}"]],
             colWidths=[3 * inch, 2 * inch, 2 * inch],
@@ -599,7 +610,7 @@ def build_pdf(data: dict, output_path: str, brand_name: str = ""):
         elements.append(HRFlowable(width="100%", thickness=0.5,
                                    color=colors.HexColor("#e2e8f0")))
         elements.append(Spacer(1, 4))
-        elements.append(Paragraph(section["title"], styles["RSectionHead"]))
+        elements.append(Paragraph(_md_to_html(section["title"]), styles["RSectionHead"]))
 
         for item in items:
             itype = item.get("type", "")
