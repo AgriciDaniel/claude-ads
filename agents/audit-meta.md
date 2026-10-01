@@ -1,7 +1,6 @@
 ---
 name: audit-meta
 description: "Meta Ads evidence and controls specialist. Returns schema-valid findings for Pixel and CAPI, attribution, creative diversity and fatigue, account structure, audiences, placements, automation, and policy eligibility."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

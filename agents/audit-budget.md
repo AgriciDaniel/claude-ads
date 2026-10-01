@@ -1,7 +1,6 @@
 ---
 name: audit-budget
 description: "Budget and finance specialist. Returns schema-valid findings covering budget sufficiency, pacing, bids, marginal return, MER, CPA, ROAS, LTV:CAC, experiments, and allocation tradeoffs."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

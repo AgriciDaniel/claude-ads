@@ -1,7 +1,6 @@
 ---
 name: audit-pinterest
 description: "Pinterest Ads evidence and controls specialist. Returns schema-valid findings for Pinterest Tag and CAPI, catalog and shopping readiness, visual creative, audiences, bidding, brand safety, and measurement."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

@@ -1,7 +1,6 @@
 ---
 name: skill-reviewer
 description: "Fresh-context reviewer for Claude Ads skill and agent routing, progressive disclosure, prompt contracts, safety boundaries, examples, and runnable verification."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

@@ -1,7 +1,6 @@
 ---
 name: audit-creative
 description: "Cross-platform creative specialist. Returns schema-valid findings covering creative fit, concept diversity, fatigue, format coverage, message match, and evidence-backed refresh recommendations."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

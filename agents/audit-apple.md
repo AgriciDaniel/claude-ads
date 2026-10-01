@@ -1,7 +1,6 @@
 ---
 name: audit-apple
 description: "Apple Ads evidence and controls specialist. Returns schema-valid findings for campaign and keyword structure, Search Match, placements, product pages, bidding, budget, AdServices attribution, and MMP reconciliation."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

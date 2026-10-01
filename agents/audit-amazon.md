@@ -1,7 +1,6 @@
 ---
 name: audit-amazon
 description: "Amazon Ads evidence and controls specialist. Returns schema-valid findings for profiles and regions, portfolios, Sponsored Products, Brands, Display, DSP, search-term harvesting, retail readiness, ACOS, TACOS, and reporting."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

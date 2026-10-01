@@ -1,7 +1,6 @@
 ---
 name: audit-youtube
 description: "YouTube Ads evidence and controls specialist. Returns schema-valid findings for video campaign setup, hooks and formats, Demand Gen, Shorts, CTV, audiences, frequency, measurement, and brand-safety controls."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

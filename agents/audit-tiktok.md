@@ -1,7 +1,6 @@
 ---
 name: audit-tiktok
 description: "TikTok Ads evidence and controls specialist. Returns schema-valid findings for Pixel and Events API, creative-native fit, Smart+, Shop, bidding, pacing, audiences, measurement, and policy eligibility."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

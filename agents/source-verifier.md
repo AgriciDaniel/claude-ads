@@ -1,7 +1,6 @@
 ---
 name: source-verifier
 description: "Adversarial source and claim verifier for paid-media facts, thresholds, policies, APIs, benchmarks, and repository evidence. Classifies confidence without repairing claims."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep, WebSearch, WebFetch
 ---

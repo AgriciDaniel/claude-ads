@@ -1,7 +1,6 @@
 ---
 name: audit-linkedin
 description: "LinkedIn Ads evidence and controls specialist. Returns schema-valid findings for Insight Tag and conversions, professional audiences, lead generation, creative, bidding, pacing, ABM, and policy eligibility."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

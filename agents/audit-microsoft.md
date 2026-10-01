@@ -1,7 +1,6 @@
 ---
 name: audit-microsoft
 description: "Microsoft Advertising evidence and controls specialist. Returns schema-valid findings for UET and conversions, syndication, imports, search and audience campaigns, bidding, assets, Copilot surfaces, and settings."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

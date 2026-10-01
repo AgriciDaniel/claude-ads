@@ -1,7 +1,6 @@
 ---
 name: audit-regulatory-compliance
 description: "Regulatory and privacy specialist. Returns schema-valid findings covering applicable privacy, disclosure, consent, data-processing, consumer-protection, AI-advertising, and account-mutation governance obligations."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

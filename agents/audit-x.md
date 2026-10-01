@@ -1,7 +1,6 @@
 ---
 name: audit-x
 description: "X Ads evidence and controls specialist. Returns schema-valid findings for website and app measurement, objectives, keyword and conversation targeting, creative, bidding, placements, brand safety, and account eligibility."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

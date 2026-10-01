@@ -1,7 +1,6 @@
 ---
 name: audit-snapchat
 description: "Snapchat Ads evidence and controls specialist. Returns schema-valid findings for Snap Pixel and CAPI, mobile-first creative, AR and catalog formats, audiences, bidding, app measurement, brand safety, and pacing."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

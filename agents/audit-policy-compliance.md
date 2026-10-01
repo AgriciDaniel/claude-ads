@@ -1,7 +1,6 @@
 ---
 name: audit-policy-compliance
 description: "Platform policy specialist. Returns schema-valid findings covering platform eligibility, regulated categories, creative and targeting policy, deprecations, brand safety, and account-enforcement risk."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

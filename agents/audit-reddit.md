@@ -1,7 +1,6 @@
 ---
 name: audit-reddit
 description: "Reddit Ads evidence and controls specialist. Returns schema-valid findings for Pixel and CAPI, community and interest targeting, placements, conversation and catalog ads, creative-native fit, bidding, brand safety, and measurement."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

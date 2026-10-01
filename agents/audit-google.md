@@ -1,7 +1,6 @@
 ---
 name: audit-google
 description: "Google Ads evidence and controls specialist. Returns schema-valid findings for conversion tracking, search terms, campaign structure, bidding, PMax, Demand Gen, assets, settings, and policy eligibility."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---

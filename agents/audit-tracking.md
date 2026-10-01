@@ -1,7 +1,6 @@
 ---
 name: audit-tracking
 description: "Tracking and attribution specialist. Returns schema-valid findings covering conversion taxonomy, tags and pixels, server-side events, deduplication, consent, MMPs, attribution windows, and cross-platform reconciliation."
-model: sonnet
 maxTurns: 24
 tools: Read, Glob, Grep
 ---
