@@ -333,7 +333,9 @@
       "control_id": "G14",
       "intent": "Negative-keyword governance",
       "disposition": "conditional_watchlist",
-      "source_claim_ids": [],
+      "source_claim_ids": [
+        "CLM-0213"
+      ],
       "control_definition": {
         "schema_version": "1.0.0",
         "control_id": "G14",
@@ -344,8 +346,10 @@
           "current_account_evidence",
           "current_source_support"
         ],
-        "source_ids": [],
-        "maturity": "inventory-baselined",
+        "source_ids": [
+          "google-ads-negative-keywords-official"
+        ],
+        "maturity": "source-grounded",
         "geographies": [
           "account-configured"
         ],
@@ -358,7 +362,9 @@
       "control_id": "G15",
       "intent": "Account-level negatives applied",
       "disposition": "conditional_watchlist",
-      "source_claim_ids": [],
+      "source_claim_ids": [
+        "CLM-0213"
+      ],
       "control_definition": {
         "schema_version": "1.0.0",
         "control_id": "G15",
@@ -369,8 +375,10 @@
           "current_account_evidence",
           "current_source_support"
         ],
-        "source_ids": [],
-        "maturity": "inventory-baselined",
+        "source_ids": [
+          "google-ads-negative-keywords-official"
+        ],
+        "maturity": "source-grounded",
         "geographies": [
           "account-configured"
         ],
@@ -1791,7 +1799,9 @@
       "control_id": "G-KW1",
       "intent": "Zero-impression keywords",
       "disposition": "conditional_watchlist",
-      "source_claim_ids": [],
+      "source_claim_ids": [
+        "CLM-0214"
+      ],
       "control_definition": {
         "schema_version": "1.0.0",
         "control_id": "G-KW1",
@@ -1802,8 +1812,10 @@
           "current_account_evidence",
           "current_source_support"
         ],
-        "source_ids": [],
-        "maturity": "inventory-baselined",
+        "source_ids": [
+          "google-ads-api-criteria-v25"
+        ],
+        "maturity": "source-grounded",
         "geographies": [
           "account-configured"
         ],

@@ -566,6 +566,30 @@
       "last_verified": "2026-09-10",
       "refresh_due": "2026-10-10",
       "owner": "google-evidence-owner"
+    },
+    {
+      "id": "CLM-0213",
+      "statement": "Google Ads negative keywords block a search as follows: negative broad match when the search contains all of the negative's terms in any order, negative phrase match when it contains the exact terms in the same order, and negative exact match when it contains the exact terms in the same order without extra words. Negative keywords do not match close variants or other expansions, so synonyms and singular or plural forms must be added separately, while casing and misspellings are handled automatically. Account-level negative keywords apply to all eligible Search and Shopping inventory in relevant campaign types.",
+      "scope": "Google Ads negative-keyword matching and scope; whether a specific search was blocked remains an account observation",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-negative-keywords-official"],
+      "load_bearing": true,
+      "last_verified": "2026-10-01",
+      "refresh_due": "2026-10-31",
+      "owner": "google-evidence-owner"
+    },
+    {
+      "id": "CLM-0214",
+      "statement": "In the Google Ads API v25, ad group criteria, campaign criteria, and shared criteria carry an immutable negative flag, so positive and negative keyword criteria share one resource and are separated only by that flag. Negative keyword lists are shared sets of type NEGATIVE_KEYWORDS whose keywords are shared criteria and which apply to campaigns attached through campaign shared sets; an ACCOUNT_LEVEL_NEGATIVE_KEYWORDS shared set, at most one per account, is attached through a customer negative criterion.",
+      "scope": "Google Ads API keyword and negative-keyword inventory design; field availability must be rechecked for the API version in use",
+      "classification": "evidence-based",
+      "verdict": "verified",
+      "source_ids": ["google-ads-api-shared-sets-official", "google-ads-api-criteria-v25"],
+      "load_bearing": true,
+      "last_verified": "2026-10-01",
+      "refresh_due": "2026-10-31",
+      "owner": "google-evidence-owner"
     }
   ]
 }

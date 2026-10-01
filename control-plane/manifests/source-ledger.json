@@ -922,6 +922,46 @@
       "license": "Google Help content terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": ["CLM-0212"]
+    },
+    {
+      "id": "google-ads-negative-keywords-official",
+      "title": "About negative keywords",
+      "locator": "https://support.google.com/google-ads/answer/2453972",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-01",
+      "refresh_due": "2026-10-31",
+      "confidence": "high",
+      "license": "Google Help content terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0213"]
+    },
+    {
+      "id": "google-ads-api-shared-sets-official",
+      "title": "Google Ads API shared sets guide",
+      "locator": "https://developers.google.com/google-ads/api/docs/targeting/shared-sets",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-01",
+      "refresh_due": "2026-10-31",
+      "confidence": "high",
+      "license": "Google Developers documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0214"]
+    },
+    {
+      "id": "google-ads-api-criteria-v25",
+      "title": "Google Ads API v25 resource definitions for ad group, campaign, shared, and customer negative criteria",
+      "locator": "https://github.com/googleapis/googleapis/tree/master/google/ads/googleads/v25/resources",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-01",
+      "refresh_due": "2026-10-31",
+      "version": "b29d17037e889281b718bfffdeea534aed00d36f",
+      "confidence": "high",
+      "license": "Apache-2.0",
+      "redistribution": "metadata-only",
+      "claim_ids": ["CLM-0214"]
     }
   ]
 }

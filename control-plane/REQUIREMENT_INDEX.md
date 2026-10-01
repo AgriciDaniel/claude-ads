@@ -21,6 +21,7 @@ requires executable verification.
 | `REQ-PLT-004` | Apple Ads has a first-class platform contract. |
 | `REQ-PLT-005` | Google audit and planning cover negative-keyword research with evidence and applicability rules. |
 | `REQ-PLT-006` | Google audit distinguishes same-campaign Search plus DSA overlap and cross-campaign keyword duplication from Search plus PMax overlap, with evidence and applicability rules. |
+| `REQ-PLT-007` | Google keyword controls count positive keywords only, keep negatives as a separate scoped inventory, and report self-blocking only for a match-type-aware, in-scope conflict. |
 | `REQ-EVL-001` | Skills contain observable validation checkpoints and pass failure-derived evaluations. |
 | `REQ-CI-001` | CI produces security analysis, dependency evidence, an SBOM, and release attestations where supported. |
 | `REQ-WIN-001` | Advertised Windows install/uninstall paths pass the supported PowerShell matrix. |
