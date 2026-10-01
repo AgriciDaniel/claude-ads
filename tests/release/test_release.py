@@ -4,7 +4,7 @@ import copy
 import hashlib
 import importlib.util
 import json
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 import re
 import subprocess
@@ -660,41 +660,123 @@ def test_claude_command_contract_distinguishes_plugin_namespace() -> None:
         assert "/claude-ads:ads" in text
 
 
+GROUNDING_WINDOW_AS_OF = release.date(2026, 9, 10)
+
+
 def test_release_grounding_gate_validates_control_registry_and_profiles() -> None:
+    """Use the release gate's own UTC date so expired or future-dated evidence fails here too."""
     root = RELEASE_SCRIPT.parents[1]
-    result = check_grounding_and_capabilities(root, release.date(2026, 9, 10))
+    as_of = release.datetime.now(release.timezone.utc).date()
+    result = check_grounding_and_capabilities(root, as_of)
     assert result["registered_control_count"] == 414
     assert result["source_grounded_control_count"] > 0
     assert result["enabled_scoring_profile_count"] == 0
     assert result["disabled_scoring_profile_count"] == 12
 
 
-def test_release_grounding_gate_rejects_stale_load_bearing_source(
-    monkeypatch,
-) -> None:
-    root = RELEASE_SCRIPT.parents[1]
-    source_path = root / "control-plane/manifests/source-ledger.json"
-    source_doc = json.loads(source_path.read_text(encoding="utf-8"))
-    source = next(
-        item
-        for item in source_doc["sources"]
-        if item["id"] == "google-ads-conversion-goals-official"
-    )
-    source["retrieved_at"] = "2026-08-25"
-    source["refresh_due"] = "2026-08-25"
+def _ledgers_in_window(
+    root: Path, verified: date, due: date
+) -> tuple[dict[str, object], dict[str, object], dict[str, object], dict[str, object]]:
+    """Copy the real ledgers with every load-bearing date moved to one fixed window.
+
+    Pinning the dates keeps unrelated evidence expiry from masking the window rule a
+    test targets, while reciprocity and registry checks still run on real data.
+    """
+    manifests = root / "control-plane/manifests"
+    source_doc = json.loads((manifests / "source-ledger.json").read_text(encoding="utf-8"))
+    claim_doc = json.loads((manifests / "claim-ledger.json").read_text(encoding="utf-8"))
+    load_bearing_source_ids: set[str] = set()
+    target_claim = None
+    for claim in claim_doc["claims"]:
+        if claim["load_bearing"]:
+            claim["last_verified"] = verified.isoformat()
+            claim["refresh_due"] = due.isoformat()
+            load_bearing_source_ids.update(claim["source_ids"])
+            target_claim = target_claim or claim
+    target_source = None
+    for source in source_doc["sources"]:
+        if source["id"] in load_bearing_source_ids:
+            source["retrieved_at"] = verified.isoformat()
+            source["refresh_due"] = due.isoformat()
+            target_source = target_source or source
+    assert target_claim is not None and target_source is not None
+    return source_doc, claim_doc, target_claim, target_source
+
+
+def _serve_ledgers(monkeypatch, source_doc: dict[str, object], claim_doc: dict[str, object]) -> None:
     original_json_object = release._json_object
 
     def json_object(path: Path, label: str):
         if label == "source ledger":
             return source_doc
+        if label == "claim ledger":
+            return claim_doc
         return original_json_object(path, label)
 
     monkeypatch.setattr(release, "_json_object", json_object)
+
+
+def test_release_grounding_gate_accepts_evidence_on_both_window_boundaries(monkeypatch) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, _, _ = _ledgers_in_window(root, as_of, as_of)
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    result = check_grounding_and_capabilities(root, as_of)
+    assert result["registered_control_count"] == 414
+
+
+def test_release_grounding_gate_detects_expiry_from_the_date_alone(monkeypatch) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, target_claim, _ = _ledgers_in_window(
+        root, as_of - timedelta(days=10), as_of + timedelta(days=20)
+    )
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    check_grounding_and_capabilities(root, as_of + timedelta(days=20))
     with pytest.raises(
-        ReleaseError,
-        match="load-bearing source is stale: google-ads-conversion-goals-official",
+        ReleaseError, match=f"load-bearing claim is stale: {target_claim['id']}"
     ):
-        check_grounding_and_capabilities(root, release.date(2026, 9, 11))
+        check_grounding_and_capabilities(root, as_of + timedelta(days=21))
+
+
+@pytest.mark.parametrize(
+    ("ledger", "verified_offset", "due_offset", "message"),
+    [
+        ("claim", 1, 20, "load-bearing claim has an invalid verification window"),
+        ("claim", -2, -5, "load-bearing claim has an invalid verification window"),
+        ("claim", -10, -1, "load-bearing claim is stale"),
+        ("source", 1, 20, "load-bearing source has an invalid verification window"),
+        ("source", -2, -5, "load-bearing source has an invalid verification window"),
+        ("source", -10, -1, "load-bearing source is stale"),
+    ],
+    ids=[
+        "claim-verified-after-as-of",
+        "claim-window-inverted",
+        "claim-expired",
+        "source-retrieved-after-as-of",
+        "source-window-inverted",
+        "source-expired",
+    ],
+)
+def test_release_grounding_gate_rejects_out_of_window_evidence(
+    monkeypatch, ledger: str, verified_offset: int, due_offset: int, message: str
+) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, target_claim, target_source = _ledgers_in_window(
+        root, as_of - timedelta(days=10), as_of + timedelta(days=20)
+    )
+    verified = (as_of + timedelta(days=verified_offset)).isoformat()
+    due = (as_of + timedelta(days=due_offset)).isoformat()
+    if ledger == "claim":
+        target_claim["last_verified"], target_claim["refresh_due"] = verified, due
+        target_id = target_claim["id"]
+    else:
+        target_source["retrieved_at"], target_source["refresh_due"] = verified, due
+        target_id = target_source["id"]
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    with pytest.raises(ReleaseError, match=f"{message}: {target_id}$"):
+        check_grounding_and_capabilities(root, as_of)
 
 
 def test_vulnerability_exception_evidence_is_release_packaged() -> None:
