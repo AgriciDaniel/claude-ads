@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import itertools
 import json
 from datetime import date, timedelta
 from pathlib import Path
@@ -13,6 +14,7 @@ import tomllib
 import zipfile
 
 import pytest
+import yaml
 from jsonschema import Draft202012Validator
 
 RELEASE_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "release.py"
@@ -474,10 +476,40 @@ def test_ci_only_tooling_is_isolated_and_hash_locked() -> None:
         ".pip-audit-venv/bin/python -m pip install --require-hashes "
         "--only-binary=:all: -r .github/requirements-pip-audit.lock"
     ) in workflow
-    assert workflow.count(
+    schema_install = (
         "python -m pip install --require-hashes --only-binary=:all: "
         "-r .github/requirements-schema-tests.lock"
-    ) == 2
+    )
+    jobs = yaml.safe_load(workflow)["jobs"]
+    for job_name in ("core-tests", "full-tests", "installer-matrix"):
+        commands = [step.get("run", "") for step in jobs[job_name]["steps"]]
+        assert any(schema_install in command.splitlines() for command in commands)
+    native_matrix = jobs["installer-matrix"]["strategy"]["matrix"]
+    assert native_matrix["shard-index"] == [0, 1]
+    managed_matrix = jobs["managed-install-matrix"]["strategy"]["matrix"]
+    assert managed_matrix == {
+        key: value for key, value in native_matrix.items() if key != "shard-index"
+    }
+    floor = jobs["linux-floor"]
+    assert re.fullmatch(
+        r"quay\.io/pypa/manylinux_2_28_x86_64@sha256:[0-9a-f]{64}",
+        floor["container"]["image"],
+    )
+    assert floor["strategy"]["matrix"]["python-tag"] == [
+        "cp311-cp311", "cp312-cp312",
+    ]
+    assert floor["defaults"]["run"]["shell"] == "bash"
+    assert not any("actions/setup-python@" in step.get("uses", "") for step in floor["steps"])
+    for job_name in ("package-smoke", "validate"):
+        assert "linux-floor" in jobs[job_name]["needs"]
+        assert "managed-install-matrix" in jobs[job_name]["needs"]
+    gate = jobs["validate"]["steps"][0]
+    assert gate["env"]["LINUX_FLOOR_RESULT"] == "${{ needs.linux-floor.result }}"
+    assert '"$LINUX_FLOOR_RESULT"' in gate["run"]
+    assert gate["env"]["MANAGED_INSTALL_MATRIX_RESULT"] == (
+        "${{ needs.managed-install-matrix.result }}"
+    )
+    assert '"$MANAGED_INSTALL_MATRIX_RESULT"' in gate["run"]
     repository_audit_lock = release._parse_hash_lock(
         root / ".github/requirements-repository-audit.lock"
     )
@@ -1046,23 +1078,23 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
     commit = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
     ).stdout.strip()
-    required_jobs = [
-        "Live ecosystem reconciliation",
-        "Repository audit",
-        "Core tests (Python 3.11)",
-        "Core tests (Python 3.12)",
-        "Full test suite",
-        "Installer tests (ubuntu-latest, Python 3.11)",
-        "Installer tests (ubuntu-latest, Python 3.12)",
-        "Installer tests (macos-15, Python 3.11)",
-        "Installer tests (macos-15, Python 3.12)",
-        "Installer tests (macos-15-intel, Python 3.11)",
-        "Installer tests (macos-15-intel, Python 3.12)",
-        "Installer tests (windows-latest, Python 3.11)",
-        "Installer tests (windows-latest, Python 3.12)",
-        "Reproducible package smoke test",
-        "validate",
-    ]
+    workflow = yaml.safe_load(
+        (RELEASE_SCRIPT.parents[1] / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    )
+    required_jobs = []
+    for job_id, job in workflow["jobs"].items():
+        matrix = job.get("strategy", {}).get("matrix", {})
+        assert not {"include", "exclude"} & matrix.keys()
+        for values in itertools.product(*matrix.values()):
+            parameters = dict(zip(matrix, values))
+            name = re.sub(
+                r"\$\{\{\s*matrix\.([a-zA-Z0-9_-]+)\s*\}\}",
+                lambda match: str(parameters[match.group(1)]),
+                job.get("name", job_id),
+            )
+            assert "${{" not in name
+            required_jobs.append(name)
+    assert len(required_jobs) == len(set(required_jobs))
 
     def evidence(_root: Path, endpoint: str) -> dict:
         if endpoint == "repos/AI-Marketing-Hub/claude-ads":
@@ -1085,6 +1117,35 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
     assert result["repository_visibility"] == "private"
     assert result["event"] == "workflow_dispatch"
     assert result["ecosystem_reconciliation_mode"] == "strict"
+    assert result["jobs"] == sorted(required_jobs)
+
+    # Every actual workflow job must be present and successful, including every
+    # native shard, each independent managed lifecycle, and both Linux floors.
+    for job_name in required_jobs:
+        for conclusion in (None, "failure", "skipped", "cancelled"):
+            def incomplete_jobs(_root: Path, endpoint: str) -> dict:
+                value = evidence(_root, endpoint)
+                if endpoint.endswith("/jobs?per_page=100"):
+                    remaining = [job for job in value["jobs"] if job["name"] != job_name]
+                    if conclusion is not None:
+                        remaining.append({"name": job_name, "conclusion": conclusion})
+                    value = {"jobs": remaining}
+                return value
+
+            monkeypatch.setattr(release, "_gh_json", incomplete_jobs)
+            with pytest.raises(ReleaseError, match="required GitHub jobs are incomplete"):
+                verify_github_run(root, "123", commit)
+
+    for malformed in (None, {"name": ""}, {"name": required_jobs[0], "conclusion": "success"}):
+        def invalid_jobs(_root: Path, endpoint: str) -> dict:
+            value = evidence(_root, endpoint)
+            if endpoint.endswith("/jobs?per_page=100"):
+                value = {"jobs": [*value["jobs"], malformed]}
+            return value
+
+        monkeypatch.setattr(release, "_gh_json", invalid_jobs)
+        with pytest.raises(ReleaseError, match="invalid or duplicate names"):
+            verify_github_run(root, "123", commit)
 
     def push_run(_root: Path, endpoint: str) -> dict:
         value = evidence(_root, endpoint)

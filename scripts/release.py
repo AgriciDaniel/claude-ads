@@ -2057,17 +2057,27 @@ def verify_github_run(root: Path, run_id: str, commit_sha: str) -> dict[str, obj
         "Core tests (Python 3.11)",
         "Core tests (Python 3.12)",
         "Full test suite",
-        "Installer tests (ubuntu-latest, Python 3.11)",
-        "Installer tests (ubuntu-latest, Python 3.12)",
-        "Installer tests (macos-15, Python 3.11)",
-        "Installer tests (macos-15, Python 3.12)",
-        "Installer tests (macos-15-intel, Python 3.11)",
-        "Installer tests (macos-15-intel, Python 3.12)",
-        "Installer tests (windows-latest, Python 3.11)",
-        "Installer tests (windows-latest, Python 3.12)",
         "Reproducible package smoke test",
         "validate",
     }
+    for runner in ("ubuntu-latest", "macos-15", "macos-15-intel", "windows-latest"):
+        for python_version in ("3.11", "3.12"):
+            required.add(f"Managed install ({runner}, Python {python_version})")
+            for shard_index in (0, 1):
+                required.add(
+                    f"Installer tests ({runner}, Python {python_version}, shard {shard_index})"
+                )
+    required.update(
+        f"Linux glibc 2.28 floor ({python_tag})"
+        for python_tag in ("cp311-cp311", "cp312-cp312")
+    )
+    names = [job.get("name") for job in jobs if isinstance(job, dict)]
+    if (
+        len(names) != len(jobs)
+        or any(not isinstance(name, str) or not name for name in names)
+        or len(set(names)) != len(names)
+    ):
+        raise ReleaseError("GitHub Actions jobs evidence has invalid or duplicate names")
     conclusions = {
         job.get("name"): job.get("conclusion")
         for job in jobs

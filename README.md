@@ -111,6 +111,9 @@ and install:
 Managed dependencies require CPython 3.11 or 3.12. Linux x86_64 requires glibc
 2.28 or later; musl is unsupported. macOS 11 x86_64/arm64 and Windows amd64
 remain declared wheel targets and require native CI qualification.
+CI checks the Linux minimum in an AlmaLinux 8 glibc 2.28 container with both
+supported interpreters. This checks Python wheels and the managed CLI lifecycle;
+browser payloads and PDF system libraries require separate host verification.
 
 Or install from a local clone of the public repository:
 

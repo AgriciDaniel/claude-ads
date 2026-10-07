@@ -50,12 +50,13 @@ def _fake_python(tmp_path: Path, target: str, fail_venv: bool = False) -> Path:
     directory = tmp_path / "fake-bin"
     directory.mkdir()
     script = directory / "python3"
+    delegate = shlex.quote(sys.executable)
     if target.count("|") == 3:
         target += "|glibc|2.28|supported" if "|linux|" in target else "|none|11.0|supported"
     script.write_text(
         "#!/bin/sh\n"
         f"if [ \"$1\" = \"-c\" ]; then printf '%s\\n' '{target}'; exit 0; fi\n"
-        + ("exit 42\n" if fail_venv else "exec /usr/bin/python3 \"$@\"\n"),
+        + ("exit 42\n" if fail_venv else f"exec {delegate} \"$@\"\n"),
         encoding="utf-8",
     )
     script.chmod(0o755)
@@ -87,6 +88,7 @@ def _managed_install(tmp_path: Path) -> tuple[Path, Path, dict[str, str]]:
         **os.environ,
         "PATH": f"{host_bin}{os.pathsep}{os.environ['PATH']}",
     }
+    environment.pop("PYTHONPATH", None)
     skills = tmp_path / "skills"
     agents = tmp_path / "agents"
     result = subprocess.run(
@@ -188,7 +190,12 @@ def _minimal_distribution(path: Path, *, with_scripts: bool = False) -> Path:
     (path / "agents").mkdir()
     (path / "agents/legacy-agent.md").write_text("legacy\n", encoding="utf-8")
     (path / "control-plane").mkdir()
-    (path / "control-plane/runtime-resources.txt").write_text("", encoding="utf-8")
+    (path / "control-plane/README.md").write_text(
+        "# Runtime resource fixture\n", encoding="utf-8"
+    )
+    (path / "control-plane/runtime-resources.txt").write_text(
+        "control-plane/README.md\n", encoding="utf-8"
+    )
     if with_scripts:
         (path / "scripts").mkdir()
         (path / "scripts/tool.py").write_text("VALUE = 1\n", encoding="utf-8")
@@ -204,6 +211,23 @@ def _minimal_distribution(path: Path, *, with_scripts: bool = False) -> Path:
             "{}\n", encoding="utf-8"
         )
     return path
+
+
+def test_minimal_distribution_declares_real_runtime_resources(tmp_path):
+    source = _minimal_distribution(tmp_path / "distribution")
+    entries = [
+        line
+        for line in (source / "control-plane/runtime-resources.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line and not line.startswith("#")
+    ]
+
+    assert entries
+    assert all((source / entry).is_file() for entry in entries)
+    assert all(
+        (source / entry).resolve().is_relative_to(source.resolve()) for entry in entries
+    )
 
 
 def _tree_snapshot(*roots: Path) -> dict[str, tuple[str, bytes]]:
@@ -983,7 +1007,11 @@ def test_bash_managed_repeat_rejects_forged_interpreter_before_execution(
     else:
         shutil.copy2(forged, interpreter)
     before = _tree_snapshot(skills, agents)
-    fake_bin = _fake_python(tmp_path, "cpython|3.12|linux|x86_64|glibc|2.43|supported")
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    fake_bin = _fake_python(
+        tmp_path,
+        f"cpython|{python_version}|linux|x86_64|glibc|2.43|supported",
+    )
     result = subprocess.run(
         ["bash", str(ROOT / "install.sh"), "--target=claude", "--source=local",
          f"--skill-dir={skills}", f"--agent-dir={agents}"],
@@ -1673,16 +1701,8 @@ def test_windows_powershell_51_parse_security_and_round_trip(tmp_path):
 
 @POWERSHELL_ONLY
 def test_powershell_repeat_preserves_dropped_owned_file_for_uninstall(tmp_path):
-    source = tmp_path / "distribution"
-    (source / "ads" / "references").mkdir(parents=True)
-    (source / "ads" / "SKILL.md").write_text("---\nname: ads\n---\n", encoding="utf-8")
-    (source / "skills" / "ads-demo").mkdir(parents=True)
-    (source / "skills" / "ads-demo" / "SKILL.md").write_text(
-        "---\nname: ads-demo\n---\n", encoding="utf-8"
-    )
-    (source / "agents").mkdir()
+    source = _minimal_distribution(tmp_path / "distribution")
     legacy_source = source / "agents" / "legacy-agent.md"
-    legacy_source.write_text("legacy\n", encoding="utf-8")
     skills = tmp_path / "skills"
     agents = tmp_path / "agents"
 
