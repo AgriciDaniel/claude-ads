@@ -1,41 +1,73 @@
 {
-  "schema_version": "1.0.0",
-  "subject": "claude-ads-external-runtime-dependencies",
-  "scope": "Non-Python payloads and system libraries are outside requirements.lock and the Python CycloneDX component closure.",
-  "sources": [
-    {"id": "playwright-python-intro", "url": "https://playwright.dev/python/docs/intro", "publisher": "Microsoft Playwright", "accessed_at": "2026-07-11"},
-    {"id": "playwright-browsers", "url": "https://playwright.dev/python/docs/browsers", "publisher": "Microsoft Playwright", "accessed_at": "2026-07-11"},
-    {"id": "playwright-ci", "url": "https://playwright.dev/python/docs/ci", "publisher": "Microsoft Playwright", "accessed_at": "2026-07-11"},
-    {"id": "weasyprint-69-install", "url": "https://doc.courtbouillon.org/weasyprint/v69.0/first_steps.html#installation", "publisher": "CourtBouillon", "accessed_at": "2026-07-11"},
-    {"id": "cyclonedx-1.5-json", "url": "https://cyclonedx.org/docs/1.5/json/", "publisher": "OWASP CycloneDX", "accessed_at": "2026-07-11"}
-  ],
   "dependencies": [
     {
-      "id": "playwright-browser-payload",
-      "consumer": "Playwright browser capture helpers",
       "acquisition": "Operator-managed `python -m playwright install chromium` or an approved prebuilt browser image.",
+      "consumer": "Playwright browser capture helpers",
+      "cross_platform_feature_attestation": "not-claimed",
+      "id": "playwright-browser-payload",
+      "included_in_python_lock": false,
+      "included_in_python_sbom": false,
+      "release_requirement": "Install and attest the browser payload and OS sandbox/egress controls separately before browser capture.",
+      "source_ids": [
+        "playwright-python-intro",
+        "playwright-browsers",
+        "playwright-ci"
+      ],
       "supported_execution_hosts": [
         "Windows 11 or Windows Server 2019+",
         "macOS 14+",
         "Debian 12 or 13",
         "Ubuntu 22.04, 24.04, or 26.04"
-      ],
-      "included_in_python_lock": false,
-      "included_in_python_sbom": false,
-      "cross_platform_feature_attestation": "not-claimed",
-      "source_ids": ["playwright-python-intro", "playwright-browsers", "playwright-ci"],
-      "release_requirement": "Install and attest the browser payload and OS sandbox/egress controls separately before browser capture."
+      ]
     },
     {
-      "id": "weasyprint-native-libraries",
-      "consumer": "WeasyPrint PDF rendering",
       "acquisition": "Operator-managed OS packages/libraries required by the selected WeasyPrint host.",
+      "consumer": "WeasyPrint PDF rendering",
+      "cross_platform_feature_attestation": "not-claimed",
+      "id": "weasyprint-native-libraries",
       "included_in_python_lock": false,
       "included_in_python_sbom": false,
-      "cross_platform_feature_attestation": "not-claimed",
-      "source_ids": ["weasyprint-69-install", "cyclonedx-1.5-json"],
-      "tested_surface": "A deterministic real-PDF integration smoke runs on the Ubuntu full-test job only.",
-      "release_requirement": "Validate Pango and other WeasyPrint native/system dependencies on the actual execution host before enabling PDF output."
+      "release_requirement": "Validate Pango and other WeasyPrint native/system dependencies on the actual execution host before enabling PDF output.",
+      "source_ids": [
+        "weasyprint-70-install",
+        "cyclonedx-1.5-json"
+      ],
+      "tested_surface": "A deterministic real-PDF integration smoke runs on the Ubuntu full-test job only."
     }
-  ]
+  ],
+  "schema_version": "1.0.0",
+  "scope": "Non-Python payloads and system libraries are outside requirements.lock and the Python CycloneDX component closure.",
+  "sources": [
+    {
+      "accessed_at": "2026-07-11",
+      "id": "playwright-python-intro",
+      "publisher": "Microsoft Playwright",
+      "url": "https://playwright.dev/python/docs/intro"
+    },
+    {
+      "accessed_at": "2026-07-11",
+      "id": "playwright-browsers",
+      "publisher": "Microsoft Playwright",
+      "url": "https://playwright.dev/python/docs/browsers"
+    },
+    {
+      "accessed_at": "2026-07-11",
+      "id": "playwright-ci",
+      "publisher": "Microsoft Playwright",
+      "url": "https://playwright.dev/python/docs/ci"
+    },
+    {
+      "accessed_at": "2026-10-07",
+      "id": "weasyprint-70-install",
+      "publisher": "CourtBouillon",
+      "url": "https://doc.courtbouillon.org/weasyprint/v70.0/first_steps.html#installation"
+    },
+    {
+      "accessed_at": "2026-07-11",
+      "id": "cyclonedx-1.5-json",
+      "publisher": "OWASP CycloneDX",
+      "url": "https://cyclonedx.org/docs/1.5/json/"
+    }
+  ],
+  "subject": "claude-ads-external-runtime-dependencies"
 }

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -51,6 +52,15 @@ EXPECTED = {
     "snapchat": (32.5, 2.0, "conversion_purchases", 0, 0),
 }
 
+EXPECTED_PROFILE_STATUSES = {
+    platform: (
+        "disabled"
+        if platform in {"amazon", "x"}
+        else "fixture-verified"
+    )
+    for platform in PLATFORMS
+}
+
 
 def _rewrite_csv(source: Path, target: Path, mutate) -> Path:
     with source.open("r", encoding="utf-8", newline="") as handle:
@@ -70,6 +80,25 @@ def test_v1_profiles_and_sanitized_fixtures_cover_exactly_all_twelve_platforms()
     assert {path.stem for path in FIXTURE_ROOT.glob("*.csv")} == PLATFORMS
     assert all(profile.schema_version == "1.0.0" for profile in PROFILES.values())
     assert len({profile.profile_id for profile in PROFILES.values()}) == 12
+
+
+def test_profile_status_schema_rejects_unknown_or_unexplained_nonverified_statuses():
+    assert {platform: profile.status for platform, profile in PROFILES.items()} == EXPECTED_PROFILE_STATUSES
+    with pytest.raises(ValueError, match="implemented.*require a status reason"):
+        replace(PROFILES["google"], status="implemented")
+    with pytest.raises(ValueError, match="unsupported native export profile status"):
+        replace(PROFILES["google"], status="unknown")
+
+
+@pytest.mark.parametrize("platform", ["meta", "tiktok"])
+def test_reverified_profiles_expose_fixture_maturity_and_decode_without_warning(platform: str):
+    adapter = NativeCSVExportAdapter(platform, CONTEXT[platform])
+    capability = adapter.discover_capabilities().capabilities[0]
+    assert capability.status == "fixture-verified"
+    assert capability.disabled_reason is adapter.profile.disabled_reason is None
+    snapshot = adapter.read_snapshot(FIXTURE_ROOT / f"{platform}.csv")
+    validate_contract("account-snapshot", snapshot)
+    assert snapshot["account"]["platform"] == platform
 
 
 def test_profile_source_ids_resolve_and_every_profile_cites_official_https_evidence():
@@ -93,6 +122,20 @@ def test_profile_source_ids_resolve_and_every_profile_cites_official_https_evide
                     claim["load_bearing"] and claim["verdict"] == "verified"
                     for claim in linked
                 ), f"{profile.profile_id} source {source_id} lacks a verified load-bearing claim"
+        elif profile.status == "implemented":
+            for source_id in profile.source_ids:
+                linked = [claims[claim_id] for claim_id in sources[source_id]["claim_ids"]]
+                assert not any(
+                    claim["load_bearing"] and claim["verdict"] == "verified"
+                    for claim in linked
+                ), f"{profile.profile_id} must be promoted before asserting current evidence"
+
+    assert PROFILES["google"].source_urls == (
+        "https://developers.google.com/google-ads/api/fields/v25/campaign",
+    )
+    assert "https://developers.google.com/google-ads/api/fields/v25/campaign" in PROFILES[
+        "youtube"
+    ].source_urls
 
 
 def test_profile_fields_are_unambiguous_and_semantically_documented():

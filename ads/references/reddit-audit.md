@@ -1,7 +1,21 @@
 # Reddit Ads control reference
 
-Retrieved: 2026-07-11. Refresh official platform and policy sources before using
-this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
+
+## Current API changes verified 2026-10-07
+
+The official `reddit-ads-api-history-official` changelog records these contract
+changes:
+
+- Since 2026-09-30, creating an onsite Lead Generation Form returns `410 Gone`;
+  retrieval remains available and existing ads using onsite forms are paused.
+- Since 2026-09-23, creative writes must use
+  `enhancements.user_generated_content.enroll_status`; the removed
+  `enhancements.allow_user_generated_content` field returns `HTTP 400`.
+- From 2026-12-08, report requests using the `HOUR` breakdown for more than seven
+  days return `400 Bad Request`. Until then, treat this as a migration deadline,
+  not an already-active response contract.
 
 ## Category model
 
@@ -49,6 +63,7 @@ unscored opportunities.
 ## Registered official evidence
 
 - `reddit-business-help`: [Reddit supported conversion events](https://business.reddithelp.com/articles/Knowledge/supported-conversion-events)
+- `reddit-ads-api-history-official`: [Reddit Ads API changelog](https://ads-api.reddit.com/docs/v3/history)
 
 Official sources override this summary when they change. Unsupported controls stay
 `unknown`; practitioner material may supplement but not replace official evidence.

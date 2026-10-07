@@ -23,6 +23,27 @@ The registered sources below cover only the measurement, API, and import foundat
 - `google-ads-dsa-ad-rank-official`: [About Dynamic Search Ads, Ad Rank, and performance](https://support.google.com/google-ads/answer/7018712)
 - `google-ads-keyword-prioritization-official`: [About ad group and asset group prioritization within a Google Ads account](https://support.google.com/google-ads/answer/2756257)
 - `google-ads-dsa-targets-official`: [About targets for Dynamic Search Ads](https://support.google.com/google-ads/answer/7334472)
+- `google-ads-negative-keywords-official`: [About negative keywords](https://support.google.com/google-ads/answer/2453972)
+- `google-ads-api-shared-sets-official`: [Google Ads API shared sets](https://developers.google.com/google-ads/api/docs/targeting/shared-sets)
+- `google-ads-api-deprecations-official`: [Google Ads API deprecations](https://developers.google.com/google-ads/api/docs/deprecations)
+
+## Current API changes verified 2026-10-07
+
+- From 2026-09-23, the API no longer creates Smart Campaigns. Existing Smart
+  Campaigns can continue serving and can still be updated or reported. Do not
+  describe the whole Smart Campaign surface as removed.
+- From 2026-09-30, manual `CampaignCriterion.language` is no longer supported for
+  Search, AI Max for Search, or the Google Search portion of Performance Max.
+  Search mutations fail; Performance Max requests do not fail because the setting
+  can still apply to other channels. Preserve that channel distinction.
+
+## Keyword evidence
+
+Before evaluating G03, G14, G15, G17, G18, G20 through G25, G-KW1, G-KW2,
+G-WS1, or G97, build the separate positive and negative inventories in
+`gaql-notes.md`. Count and recommend on positive keywords only. Apply the scoped,
+match-type-aware conflict rules and plausibility guards before reporting a
+self-blocking or zero-impression finding.
 
 ## Control registry
 
@@ -40,7 +61,7 @@ The registered sources below cover only the measurement, API, and import foundat
 | G-CT2 | GA4 linked and flowing | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G-CT3 | Google Tag firing | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G13 | Search term audit recency | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
-| G14 | Negative-keyword governance | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
+| G14 | Negative-keyword governance | Conditional evidence control: inventory negatives by scope separately from positives and report self-blocking only when an in-scope negative matches a positive's text under the negative's match type, per `gaql-notes.md`; otherwise return `unknown` or `not_applicable`. |
 | G15 | Account-level negatives applied | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G16 | Material irrelevant search-term spend | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G17 | Broad-match control | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
@@ -65,7 +86,7 @@ The registered sources below cover only the measurement, API, and import foundat
 | G23 | Ad relevance component | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G24 | Landing page experience | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G25 | Top keyword QS | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
-| G-KW1 | Zero-impression keywords | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
+| G-KW1 | Zero-impression keywords | Conditional evidence control: evaluate only the positive inventory joined to impression evidence for the same window and status scope; negatives never enter the count, per `gaql-notes.md`; otherwise return `unknown` or `not_applicable`. |
 | G-KW2 | Keyword-to-ad relevance | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G26 | RSA per ad group | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G27 | RSA headline count | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |

@@ -1,18 +1,18 @@
 # Claude Ads - Python Dependencies
 # Bounded version pinning with security-conscious minimums
-# Last updated: July 11, 2026
+# Last updated: October 7, 2026
 
 # Core dependencies (landing page analysis, brand screenshots)
 requests>=2.32.4,<3.0.0           # CVE-2024-47081, CVE-2024-35195 fixes
 playwright>=1.56.0,<2.0.0         # CVE-2025-59288 fix (macOS); used by ads-dna screenshots
-urllib3>=2.6.3,<3.0.0             # CRITICAL: CVE-2026-21441 (CVSS 8.9), CVE-2025-66418
+urllib3>=2.8.0,<3.0.0             # 2026 proxy and chunked-stream security fixes
 cryptography>=48.0.1,<49.0.0      # GHSA-537c-gmf6-5ccf fix; Ed25519 release/egress verification
 
 # Image validation (used by format-adapter agent)
-Pillow>=11.0.0,<13.0.0            # Image dimension validation
+Pillow>=12.3.0,<13.0.0            # 2026 PDF, EPS, and bitmap-font security fixes
 
 # PDF report generation (canonical JSON renderer plus retained legacy helper)
-weasyprint>=69.0,<70.0            # Canonical ReportBundle HTML-to-PDF renderer
+weasyprint>=70.0,<71.0            # 2026 EPS and URL-fetch security fixes
 reportlab>=4.0,<5.0.0             # PDF layout and rendering
 matplotlib>=3.8.0,<4.0.0          # Health score gauge and platform bar charts
 

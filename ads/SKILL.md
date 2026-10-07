@@ -141,12 +141,15 @@ Every task packet specifies:
 - Privacy classification and mutation authority.
 - Output schema and verification criteria.
 
-Every worker returns one result object with:
+Every audit worker returns one `audit-worker-result` v1 object with schema
+version, status, one canonical platform ID, string-array scope, canonical Finding
+v1 objects, contradictions, missing inputs, stale sources, and recovery hints.
+Finding severity remains registry-owned; workers emit structured evidence,
+confidence, observation, diagnosis, and a string recommendation.
 
-- `status`: `ok`, `needs_input`, `blocked`, or `failed`.
-- Findings with control ID, applicability, result, severity, confidence,
-  observations, evidence references, and recommendation.
-- Contradictions, missing inputs, stale sources, and recovery hints.
+Agents inherit the model selected by the host runtime. Do not pin a model in
+agent frontmatter. Override host selection only when the user explicitly requests
+it and the runtime supports that override.
 
 Retry one transient tool failure. Do not retry authentication, authorization,
 schema, policy, or validation failures without changed input. A failed required

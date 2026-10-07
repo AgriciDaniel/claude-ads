@@ -9,7 +9,14 @@ from .control_registry import (
     load_control_registry,
 )
 from .adapters import Adapter, AdapterCapabilities, GenericCSVExportAdapter, MutationDisabledError
-from .models import AccountSnapshot, ControlDefinition, Finding, ReportBundle, RunManifest
+from .models import (
+    AccountSnapshot,
+    AuditWorkerResult,
+    ControlDefinition,
+    Finding,
+    ReportBundle,
+    RunManifest,
+)
 from .orchestration import (
     OrchestrationError,
     OrchestrationStore,
@@ -58,6 +65,7 @@ __all__ = [
     "CATEGORY_WEIGHT_TOTAL",
     "SEVERITY_WEIGHTS",
     "AccountSnapshot",
+    "AuditWorkerResult",
     "Adapter",
     "AdapterCapabilities",
     "ContractError",

@@ -1,7 +1,7 @@
 # X Ads control reference
 
-Retrieved: 2026-07-11. Refresh official platform and policy sources before using
-this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
 
 ## Category model
 

@@ -310,16 +310,30 @@ function Main {
         return $FullRoot
     }
 
+    function Assert-ExactBytecodeDirectory([string]$Path) {
+        $Canonical = Assert-ConfiguredDestination $Path
+        $Allowed = @(
+            [IO.Path]::GetFullPath((Join-Path $SkillDirResolved "scripts\claude_ads_core\__pycache__")),
+            [IO.Path]::GetFullPath((Join-Path $SkillDirResolved "scripts\claude_ads_core\adapters\__pycache__"))
+        )
+        if (@($Allowed | Where-Object { $_.Equals($Canonical, $PathComparison) }).Count -ne 1) {
+            throw "Unsafe bytecode ownership root: $Path"
+        }
+        return $Canonical
+    }
+
     function Read-ValidPriorManifest {
         $PriorFiles = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $PriorDirectories = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $PriorRecursiveDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
+        $PriorBytecodeDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $ManifestItem = Get-Item -LiteralPath $ManifestPath -Force -ErrorAction SilentlyContinue
         if ($null -eq $ManifestItem) {
             return @{
                 Files = $PriorFiles
                 Directories = $PriorDirectories
                 RecursiveDirectories = $PriorRecursiveDirs
+                BytecodeDirectories = $PriorBytecodeDirs
             }
         }
         if ($ManifestItem.PSIsContainer -or
@@ -332,16 +346,21 @@ function Main {
         } catch {
             throw "Invalid ownership manifest: $ManifestPath"
         }
-        $ExpectedProperties = @('version','target','files','directories','recursive_directories')
+        $LegacyExpectedProperties = @('version','target','files','directories','recursive_directories')
+        $CurrentExpectedProperties = @($LegacyExpectedProperties + 'bytecode_directories')
         $ActualProperties = @($PriorManifest.PSObject.Properties.Name)
+        $HasLegacyShape = @(Compare-Object $LegacyExpectedProperties $ActualProperties).Count -eq 0
+        $HasCurrentShape = @(Compare-Object $CurrentExpectedProperties $ActualProperties).Count -eq 0
         $VersionType = if ($null -eq $PriorManifest.version) { $null } else { $PriorManifest.version.GetType() }
-        if (@(Compare-Object $ExpectedProperties $ActualProperties).Count -ne 0 -or
+        if ((-not $HasLegacyShape -and -not $HasCurrentShape) -or
             $VersionType -notin @([int], [long]) -or $PriorManifest.version -ne 1 -or
             -not ($PriorManifest.target -is [string]) -or $PriorManifest.target -cne $Target) {
             throw "Invalid or mismatched ownership manifest: $ManifestPath"
         }
         $AllPriorPaths = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
-        foreach ($PropertyName in @('files','directories','recursive_directories')) {
+        $OwnershipProperties = @('files','directories','recursive_directories')
+        if ($HasCurrentShape) { $OwnershipProperties += 'bytecode_directories' }
+        foreach ($PropertyName in $OwnershipProperties) {
             if (-not ($PriorManifest.$PropertyName -is [System.Array])) {
                 throw "Ownership manifest property must be an array: $PropertyName"
             }
@@ -350,6 +369,9 @@ function Main {
                     throw "Invalid ownership-manifest entry in ${PropertyName}: $ManifestPath"
                 }
                 $Canonical = Assert-ConfiguredDestination $OwnedPath
+                if ($PropertyName -eq 'bytecode_directories') {
+                    $Canonical = Assert-ExactBytecodeDirectory $Canonical
+                }
                 if (-not $OwnedPath.Equals($Canonical, $PathComparison)) {
                     throw "Non-canonical ownership-manifest path: $OwnedPath"
                 }
@@ -382,6 +404,10 @@ function Main {
                     if (-not $PriorRecursiveDirs.Add($Canonical)) {
                         throw "Duplicate recursive ownership-manifest directory: $Canonical"
                     }
+                } elseif ($PropertyName -eq 'bytecode_directories') {
+                    if (-not $PriorBytecodeDirs.Add($Canonical)) {
+                        throw "Duplicate bytecode ownership-manifest directory: $Canonical"
+                    }
                 }
             }
         }
@@ -390,6 +416,7 @@ function Main {
             Files = $PriorFiles
             Directories = $PriorDirectories
             RecursiveDirectories = $PriorRecursiveDirs
+            BytecodeDirectories = $PriorBytecodeDirs
         }
     }
 
@@ -417,6 +444,9 @@ function Main {
         $SourceDir = (Resolve-Path $SourceDir).Path
         if (-not (Test-Path (Join-Path $SourceDir "ads\SKILL.md"))) {
             throw "Local source is not a Claude Ads distribution: $SourceDir"
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $SourceDir "control-plane\runtime-resources.txt") -PathType Leaf)) {
+            throw "Local source is missing the runtime resource allowlist: $SourceDir"
         }
     } elseif (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Write-Host "X Git is required for -Source git." -ForegroundColor Red
@@ -458,6 +488,7 @@ function Main {
         $PlannedDirs = [System.Collections.Generic.List[string]]::new()
         $PlannedDirSet = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $RecursiveDirs = [System.Collections.Generic.List[string]]::new()
+        $BytecodeDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
 
         function Add-PlannedDirectory([string]$Destination) {
             $Canonical = Assert-ConfiguredDestination $Destination
@@ -475,15 +506,36 @@ function Main {
         }
 
         function Add-PlannedFile([string]$SourcePath, [string]$Destination) {
+            $SourceItem = Get-Item -LiteralPath $SourcePath -Force -ErrorAction SilentlyContinue
+            if ($null -eq $SourceItem -or $SourceItem.PSIsContainer -or
+                (($SourceItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) {
+                throw "Missing or reparse-point install source: $SourcePath"
+            }
+            [void](Assert-NoReparseChain $SourceItem.FullName)
             $Canonical = Assert-ConfiguredDestination $Destination
             if (-not $PlannedFiles.Add($Canonical)) {
                 throw "Duplicate planned install file: $Canonical"
             }
             [void](Add-PlannedDirectory ([IO.Path]::GetDirectoryName($Canonical)))
             [void]$FilePlan.Add([pscustomobject]@{
-                Source = [IO.Path]::GetFullPath($SourcePath)
+                Source = $SourceItem.FullName
                 Destination = $Canonical
             })
+        }
+
+        function Test-RuntimeResourcePath([string]$Relative) {
+            if ([string]::IsNullOrEmpty($Relative) -or $Relative -ne $Relative.Trim()) {
+                return $false
+            }
+            if (-not $Relative.StartsWith("control-plane/", [StringComparison]::Ordinal)) {
+                return $false
+            }
+            if ($Relative.Contains("\") -or [IO.Path]::IsPathRooted($Relative)) {
+                return $false
+            }
+            if ($Relative -notmatch '^[A-Za-z0-9._/-]+$') { return $false }
+            $Parts = $Relative.Split('/')
+            return (@($Parts | Where-Object { $_ -in @('', '.', '..') }).Count -eq 0)
         }
 
         [void](Add-PlannedDirectory $SkillDirResolved)
@@ -521,9 +573,11 @@ function Main {
         $ScriptsDir = Join-Path $SkillDirResolved "scripts"
         if (Test-Path -LiteralPath $ScriptsSource -PathType Container) {
             $ScriptsDir = Add-PlannedDirectory $ScriptsDir
-            Get-ChildItem (Join-Path $ScriptsSource "*.py") -File | Sort-Object Name | ForEach-Object {
-                Add-PlannedFile $_.FullName (Join-Path $ScriptsDir $_.Name)
-            }
+            Get-ChildItem (Join-Path $ScriptsSource "*.py") -File |
+                Where-Object { $_.Name -ne "verify_managed_install.py" } |
+                Sort-Object Name | ForEach-Object {
+                    Add-PlannedFile $_.FullName (Join-Path $ScriptsDir $_.Name)
+                }
             Add-PlannedFile (Join-Path $SourceDir "requirements.txt") (Join-Path $SkillDirResolved "requirements.txt")
             Add-PlannedFile (Join-Path $SourceDir "requirements.lock") (Join-Path $SkillDirResolved "requirements.lock")
             $CoreSource = Join-Path $SourceDir "claude_ads_core"
@@ -534,6 +588,38 @@ function Main {
                 $Relative = Get-CompatibleRelativePath $CoreSource $_.FullName
                 Add-PlannedFile $_.FullName (Join-Path $CoreDir $Relative)
             }
+            [void]$BytecodeDirs.Add((Assert-ExactBytecodeDirectory (Join-Path $CoreDir "__pycache__")))
+            [void]$BytecodeDirs.Add((Assert-ExactBytecodeDirectory (Join-Path $CoreDir "adapters\__pycache__")))
+        }
+
+        # Treat the curated list as data and plan each public runtime resource
+        # beneath the installed skill root at its repository-relative path.
+        $RuntimeResourceList = Join-Path $SourceDir "control-plane\runtime-resources.txt"
+        $RuntimeListItem = Get-Item -LiteralPath $RuntimeResourceList -Force -ErrorAction SilentlyContinue
+        if ($null -eq $RuntimeListItem -or $RuntimeListItem.PSIsContainer -or
+            ($RuntimeListItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Missing or reparse-point runtime resource allowlist"
+        }
+        $RuntimeResources = [System.Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase
+        )
+        foreach ($RuntimeResource in Get-Content -LiteralPath $RuntimeResourceList) {
+            if ([string]::IsNullOrEmpty($RuntimeResource) -or $RuntimeResource.StartsWith('#')) {
+                continue
+            }
+            if (-not (Test-RuntimeResourcePath $RuntimeResource)) {
+                throw "Unsafe runtime resource path: $RuntimeResource"
+            }
+            if (-not $RuntimeResources.Add($RuntimeResource)) {
+                throw "Duplicate runtime resource path: $RuntimeResource"
+            }
+            $RuntimeSource = Join-Path $SourceDir $RuntimeResource
+            $RuntimeSourceItem = Get-Item -LiteralPath $RuntimeSource -Force -ErrorAction SilentlyContinue
+            if ($null -eq $RuntimeSourceItem -or $RuntimeSourceItem.PSIsContainer -or
+                ($RuntimeSourceItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                throw "Missing or reparse-point runtime resource: $RuntimeResource"
+            }
+            Add-PlannedFile $RuntimeSource (Join-Path $SkillDirResolved $RuntimeResource)
         }
 
         $VenvDir = Assert-ConfiguredDestination (Join-Path $SkillDirResolved ".venv")
@@ -555,6 +641,7 @@ function Main {
         $PriorFiles = $Prior.Files
         $PriorDirectories = $Prior.Directories
         $PriorRecursiveDirs = $Prior.RecursiveDirectories
+        $PriorBytecodeDirs = $Prior.BytecodeDirectories
 
         # Installs older than v2.0.0 wrote no ownership manifest. Detect that
         # layout once, before any destination mutation, instead of failing
@@ -610,6 +697,13 @@ function Main {
                 }
             }
         }
+        foreach ($BytecodeDir in $BytecodeDirs) {
+            [void](Assert-NoReparseChain $BytecodeDir (Get-ContainingConfiguredRoot $BytecodeDir))
+            $BytecodeItem = Get-Item -LiteralPath $BytecodeDir -Force -ErrorAction SilentlyContinue
+            if ($null -ne $BytecodeItem -and -not $BytecodeItem.PSIsContainer) {
+                throw "Bytecode cache root is not a directory: $BytecodeDir"
+            }
+        }
         if ($AllowPip -and -not $NoDeps) {
             Assert-SafeRecursiveTree $VenvDir
             $VenvItem = Get-Item -LiteralPath $VenvDir -Force -ErrorAction SilentlyContinue
@@ -636,6 +730,12 @@ function Main {
         }
         Write-Host "Installing guarded skill, sub-skill, agent, and runtime files..."
         foreach ($PlannedFile in $FilePlan) {
+            $SourceItem = Get-Item -LiteralPath $PlannedFile.Source -Force -ErrorAction SilentlyContinue
+            if ($null -eq $SourceItem -or $SourceItem.PSIsContainer -or
+                (($SourceItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) {
+                throw "Install source changed before copy: $($PlannedFile.Source)"
+            }
+            [void](Assert-NoReparseChain $SourceItem.FullName)
             [void](Assert-NoReparseChain $PlannedFile.Destination)
             $DestinationItem = Get-Item -LiteralPath $PlannedFile.Destination -Force -ErrorAction SilentlyContinue
             if ($null -ne $DestinationItem -and
@@ -658,12 +758,16 @@ function Main {
         $ManifestRecursiveDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         [void]$ManifestRecursiveDirs.UnionWith($PriorRecursiveDirs)
         [void]$ManifestRecursiveDirs.UnionWith($RecursiveDirs)
+        $ManifestBytecodeDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
+        [void]$ManifestBytecodeDirs.UnionWith($PriorBytecodeDirs)
+        [void]$ManifestBytecodeDirs.UnionWith($BytecodeDirs)
         $Manifest = @{
             version = 1
             target = $Target
             files = @($ManifestFiles | Sort-Object)
             directories = @($ManifestDirectories | Sort-Object)
             recursive_directories = @($ManifestRecursiveDirs | Sort-Object)
+            bytecode_directories = @($ManifestBytecodeDirs | Sort-Object)
         }
         $ManifestTemp = Join-Path $SkillBase (".claude-ads-manifest-" + [IO.Path]::GetRandomFileName())
         $Manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $ManifestTemp -Encoding UTF8

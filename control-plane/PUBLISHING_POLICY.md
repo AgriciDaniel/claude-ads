@@ -1,8 +1,12 @@
 # Publishing Policy
 
-The canonical development repository remains private until the owner approves
-a separate public-release gate. Repository visibility and any Pages or release
-asset visibility must be checked independently.
+Claude Ads has an existing MIT public distribution at
+`AgriciDaniel/claude-ads` and a private development/community repository at
+`AI-Marketing-Hub/claude-ads`. Public distribution does not make private
+development inputs, review evidence, or future release candidates public.
+Repository visibility and any Pages or release-asset visibility must be checked
+independently. Each new release, publication, or visibility change still requires
+the owner's explicit approval and the public-release gates below.
 
 ## Classification
 

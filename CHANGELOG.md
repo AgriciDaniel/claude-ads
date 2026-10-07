@@ -5,6 +5,54 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+* Separate positive Google keyword inventory from ad-group, campaign, shared-list,
+  and account negatives. Conflict review uses match type and applicable scope;
+  missing or implausible inventory evidence produces an unknown result.
+* Respect the host or invocation model selection by removing package-level agent
+  model pins. Audit workers emit versioned envelopes with canonical findings.
+* Validate historical release-report v1 and current v2 independently. Reject
+  unknown versions, inconsistent checks, aggregates, and subjects.
+* Gate public scoring and report operations through canonical controls and
+  profiles. Resolve policy resources in source and standalone layouts, with an
+  explicit `--policy-root` override.
+* Install only the shared curated public runtime resources and record ownership.
+  Check standalone commands from unrelated directories and preserve unrelated
+  skills during upgrades and uninstall.
+* Accept standard managed virtual-environment links while binding reused Python
+  executables to the selected host interpreter before any installation mutation.
+  Remove only recognized owned-module bytecode during uninstall and preserve
+  unknown cache content.
+* Evaluate evidence freshness at the current UTC date and exercise synthetic
+  expiry boundaries. Packaging fixtures support managed worktrees and
+  case-insensitive filesystems without weakening the clean-subject release gate.
+
+### Changed
+
+* Correct Microsoft SOAP support through January 31, 2027. Record the September
+  Google Smart Campaign and Search language-targeting changes, Reddit onsite
+  lead-form retirement and reporting changes, and the scheduled LinkedIn API
+  sunset. Evidence retrieval gaps retain explicit verification limits.
+* Verify the exact public Meta Conversions API and campaign Insights contracts
+  and TikTok v1.3 BASIC reporting fields. Restore the existing native export
+  fixture maturity without claiming authenticated API execution or health scores.
+* Reconcile public and development tracker metadata and disposition overlapping
+  repairs once. New providers and other capability additions remain deferred.
+* Replace the moving repository-audit CI dependency install with a reviewed hash
+  lock. Dependency and target evidence changes require matching inventory and
+  support-policy verification.
+* Upgrade Pillow to 12.3.0, urllib3 to 2.8.0, and WeasyPrint to 70.0, with
+  regenerated target evidence, inventory, publisher hashes, notices, and verifier
+  bindings. Managed Linux dependencies require glibc 2.28 or later after the
+  separate owner approval of that support change. Retain three fresh guarded
+  cryptography dispositions for the macOS Intel-compatible 48.0.1 pin.
+* Clarify public MIT distribution and private development publication boundaries.
+  A new release still requires explicit approval and exact-candidate release
+  evidence.
+
 ## [2.0.2] - 2026-09-10
 
 ### Added

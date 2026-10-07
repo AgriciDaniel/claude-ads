@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import date
+from datetime import date, datetime, timezone
 from urllib.parse import urlparse
 
 
@@ -40,13 +40,14 @@ NEW_PLATFORM_FOUNDATION_SOURCES = {
     "CLM-0015": ("reddit-business-help", "business.reddithelp.com"),
     "CLM-0016": ("pinterest-conversions-api", "help.pinterest.com"),
     "CLM-0017": ("snap-marketing-api", "developers.snap.com"),
-    "CLM-0018": ("x-conversion-tracking", "business.x.com"),
+    "CLM-0018": ("x-conversion-tracking", "help.x.com"),
 }
 
 ALLOWED_DISCOVERY_ONLY_SOURCES = {
     "public-claude-ads-issues",
     "public-claude-ads-pulls",
     "meta-video-ads-official",
+    "meta-marketing-api-official",
     "linkedin-ads-guide-official",
     "tiktok-ad-format-policy-official",
     "apple-ads-creative-official",
@@ -55,6 +56,11 @@ ALLOWED_DISCOVERY_ONLY_SOURCES = {
     "pinterest-ad-specs-official",
     "snap-creative-specs-official",
     "x-creative-specs-official",
+    "tiktok-business-api-official",
+    "reddit-editorial-requirements-official",
+    "pinterest-advertising-guidelines-official",
+    "snap-advertising-policies-official",
+    "snap-capi-deduplication-official",
 }
 
 UNSCORED_DISCOVERY_IDS = {
@@ -226,28 +232,40 @@ def test_platform_runtime_sources_use_https_official_hosts(repo_root):
 def test_platform_grounding_claims_are_load_bearing_and_fresh(repo_root):
     claim_doc = _manifest(repo_root, "claim-ledger.json")
     claims = {item["id"]: item for item in claim_doc["claims"]}
+    sources = {item["id"]: item for item in _manifest(repo_root, "source-ledger.json")["sources"]}
+    assert {
+        claim["id"] for claim in claims.values()
+        if claim["load_bearing"] and claim["verdict"] != "verified"
+    } == set()
     for claim_id in (
         "CLM-0007", "CLM-0008", "CLM-0009", "CLM-0010", "CLM-0011",
         *NEW_PLATFORM_FOUNDATION_SOURCES,
     ):
-        claim = claims[claim_id]
-        assert claim["load_bearing"] is True
+        assert claims[claim_id]["load_bearing"] is True
+    as_of = datetime.now(timezone.utc).date()
+    for claim in claims.values():
+        if not claim["load_bearing"]:
+            continue
         assert claim["verdict"] == "verified"
         last_verified = date.fromisoformat(claim["last_verified"])
         refresh_due = date.fromisoformat(claim["refresh_due"])
-        assert last_verified >= date(2026, 8, 25)
-        assert date(2026, 1, 1) <= last_verified < refresh_due
+        assert last_verified <= as_of <= refresh_due
         assert (refresh_due - last_verified).days <= 30
+        for source_id in claim["source_ids"]:
+            source = sources[source_id]
+            assert date.fromisoformat(source["retrieved_at"]) <= as_of <= date.fromisoformat(source["refresh_due"])
 
 
 def test_unavailable_private_provenance_is_demoted(repo_root):
     claim_doc = _manifest(repo_root, "claim-ledger.json")
     claims = {item["id"]: item for item in claim_doc["claims"]}
 
-    claim = claims["CLM-0004"]
-    assert claim["load_bearing"] is False
-    assert claim["verdict"] == "demoted"
-    assert "unavailable" in claim["notes"].lower()
+    for claim_id in ("CLM-0004", "CLM-0005"):
+        claim = claims[claim_id]
+        assert claim["load_bearing"] is False
+        assert claim["verdict"] == "demoted"
+        assert "private" in claim["notes"].lower()
+        assert "not retrieved" in claim["notes"].lower()
 
 
 def test_new_platform_foundation_claims_use_registered_official_sources(repo_root):

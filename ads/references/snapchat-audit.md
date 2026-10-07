@@ -1,7 +1,7 @@
 # Snapchat Ads control reference
 
-Retrieved: 2026-07-11. Refresh official platform and policy sources before using
-this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
 
 ## Category model
 
@@ -47,6 +47,18 @@ reduce evidence coverage; unavailable, beta, premium, or ineligible features are
 unscored opportunities.
 
 ## Registered official evidence
+
+- `snap-ads-changelog-official`: [Marketing API changelog](https://developers.snap.com/marketing-api/Ads-API/changelog)
+- `snap-capi-deduplication-official`: [Conversions API deduplication](https://developers.snap.com/marketing-api/Conversions-API/Deduplication)
+- `snap-advertising-policies-official`: [Advertising policies](https://values.snap.com/policy/advertising-policies?lang=en-US)
+
+Checked October 7, 2026 (CLM-0219): the October 6 changelog documents Unified
+Attribution, App ID and TARGET_COST eligibility endpoints and an AI
+self-declaration field. Obtain account-specific eligibility rather than
+assuming access. September changes include asynchronous HOUR reporting and
+age-bucket changes. Retain timezone and finalization timestamps when comparing
+reports. Old wording that CAPI v2 would deprecate in early 2025 does not prove
+its current removal; verify the selected version separately.
 
 - `snap-marketing-api`: [Snap Marketing API](https://developers.snap.com/marketing-api/home)
 

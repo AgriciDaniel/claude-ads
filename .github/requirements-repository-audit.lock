@@ -1,0 +1,5 @@
+# Repository-audit tooling for CI only.
+# This lock is not part of the product runtime or packaged dependency inventory.
+# CPython 3.12, Ubuntu x86_64, binary wheel only.
+pyyaml==6.0.3 \
+    --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc

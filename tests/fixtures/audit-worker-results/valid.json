@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "status": "needs_input",
+  "platform": "google",
+  "scope": ["tracking"],
+  "findings": [
+    {
+      "schema_version": "1.0.0",
+      "control_id": "G01",
+      "status": "unknown",
+      "evidence": [],
+      "confidence": "none",
+      "observation": "The supplied export does not contain the required field.",
+      "diagnosis": "The control cannot be resolved from current evidence.",
+      "recommendation": "Supply the missing field for the same reporting window."
+    }
+  ],
+  "contradictions": [],
+  "missing_inputs": ["conversion action configuration"],
+  "stale_sources": [],
+  "recovery_hints": ["Export conversion action configuration for the audit window."]
+}

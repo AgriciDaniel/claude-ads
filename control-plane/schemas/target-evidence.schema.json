@@ -8,7 +8,7 @@
   "properties": {
     "schema_version": {"const": "1.0.0"}, "evidence_id": {"type": "string", "minLength": 1},
     "evidence_class": {"const": "cross-target-pip-resolution-requiring-native-ci-confirmation"},
-    "resolved_at": {"const": "2026-07-11T00:00:00Z"}, "source_date_epoch": {"const": 1783728000},
+    "resolved_at": {"const": "2026-10-07T00:00:00Z"}, "source_date_epoch": {"const": 1791331200},
     "source_report_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "source_pip_version": {"type": "string", "pattern": "^[0-9]+(?:\\.[0-9]+){1,3}$"},
     "source_environment": {"type": "object"}, "normalization_notes": {"type": "array", "items": {"type": "string"}},
     "environment": {"type": "object"}, "resolver": {"const": "pip / PyPI"},

@@ -113,9 +113,39 @@
     "evidence_coverage": 61.54,
     "status": "provisional",
     "categories": [
-      {"category": "tracking", "category_weight": 50.0, "health_score": 0.0, "evidence_coverage": 100.0},
-      {"category": "creative", "category_weight": 20.0, "health_score": null, "evidence_coverage": 0.0},
-      {"category": "policy", "category_weight": 30.0, "health_score": 100.0, "evidence_coverage": 100.0}
+      {
+        "category": "creative",
+        "category_weight": 20.0,
+        "health_score": null,
+        "evidence_coverage": 0.0,
+        "applicable_controls": 1,
+        "known_controls": 0,
+        "passed_controls": 0,
+        "failed_controls": 0,
+        "unknown_controls": 1
+      },
+      {
+        "category": "policy",
+        "category_weight": 30.0,
+        "health_score": 100.0,
+        "evidence_coverage": 100.0,
+        "applicable_controls": 1,
+        "known_controls": 1,
+        "passed_controls": 1,
+        "failed_controls": 0,
+        "unknown_controls": 0
+      },
+      {
+        "category": "tracking",
+        "category_weight": 50.0,
+        "health_score": 0.0,
+        "evidence_coverage": 100.0,
+        "applicable_controls": 1,
+        "known_controls": 1,
+        "passed_controls": 0,
+        "failed_controls": 1,
+        "unknown_controls": 0
+      }
     ]
   },
   "contradictions": [

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "snapshot_at": "2026-07-11",
+  "snapshot_at": "2026-10-07",
   "default_mutation_mode": "read-only",
   "platforms": [
     {
@@ -22,9 +22,9 @@
       "target_tier": "first-class",
       "skill_path": "skills/ads-meta/SKILL.md",
       "capabilities": [
-        {"id": "skill-guidance", "mode": "export-read", "status": "implemented", "implementation_paths": ["skills/ads-meta/SKILL.md"], "fixture_paths": [], "test_paths": [], "source_ids": ["claude-ads-v181-tree", "meta-marketing-api-official"]},
-        {"id": "export-ingestion", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/csv_export.py"], "fixture_paths": ["tests/fixtures/exports/meta.csv"], "test_paths": ["tests/core/test_adapters.py"], "source_ids": ["claude-ads-v2-export-adapter", "meta-marketing-api-official"]},
-        {"id": "native-export-normalization", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/mappings_v1.py", "claude_ads_core/adapters/native_export.py"], "fixture_paths": ["tests/fixtures/native_exports/meta.csv"], "test_paths": ["tests/core/test_native_exports.py"], "source_ids": ["meta-insights-reporting-official"]},
+        {"id": "skill-guidance", "mode": "export-read", "status": "implemented", "implementation_paths": ["skills/ads-meta/SKILL.md"], "fixture_paths": [], "test_paths": [], "source_ids": ["claude-ads-v181-tree", "meta-conversions-api-official"]},
+        {"id": "export-ingestion", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/csv_export.py"], "fixture_paths": ["tests/fixtures/exports/meta.csv"], "test_paths": ["tests/core/test_adapters.py"], "source_ids": ["claude-ads-v2-export-adapter"]},
+        {"id": "native-export-normalization", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/mappings_v1.py", "claude_ads_core/adapters/native_export.py"], "fixture_paths": ["tests/fixtures/native_exports/meta.csv"], "test_paths": ["tests/core/test_native_exports.py"], "source_ids": ["meta-insights-reporting-official", "meta-campaign-insights-reference-official"]},
         {"id": "account-health-scoring", "mode": "export-read", "status": "disabled", "implementation_paths": ["claude_ads_core/control_registry.py", "control-plane/manifests/control-registry.json", "control-plane/manifests/scoring-profiles.json"], "fixture_paths": [], "test_paths": ["tests/core/test_control_registry.py", "tests/core/test_platform_report_contracts.py"], "source_ids": [], "disabled_reason": "No approved source-grounded control-severity decision set; discovery findings remain unscored."},
         {"id": "account-mutation", "mode": "live-write", "status": "disabled", "implementation_paths": [], "fixture_paths": [], "test_paths": [], "source_ids": [], "disabled_reason": "No approved v2 write adapter lifecycle."}
       ]
@@ -63,7 +63,7 @@
       "capabilities": [
         {"id": "skill-guidance", "mode": "export-read", "status": "implemented", "implementation_paths": ["skills/ads-tiktok/SKILL.md"], "fixture_paths": [], "test_paths": [], "source_ids": ["claude-ads-v181-tree", "tiktok-business-api-official"]},
         {"id": "export-ingestion", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/csv_export.py"], "fixture_paths": ["tests/fixtures/exports/tiktok.csv"], "test_paths": ["tests/core/test_adapters.py"], "source_ids": ["claude-ads-v2-export-adapter", "tiktok-business-api-official"]},
-        {"id": "native-export-normalization", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/mappings_v1.py", "claude_ads_core/adapters/native_export.py"], "fixture_paths": ["tests/fixtures/native_exports/tiktok.csv"], "test_paths": ["tests/core/test_native_exports.py"], "source_ids": ["tiktok-integrated-reporting-official"]},
+        {"id": "native-export-normalization", "mode": "export-read", "status": "fixture-verified", "implementation_paths": ["claude_ads_core/adapters/mappings_v1.py", "claude_ads_core/adapters/native_export.py"], "fixture_paths": ["tests/fixtures/native_exports/tiktok.csv"], "test_paths": ["tests/core/test_native_exports.py"], "source_ids": ["tiktok-integrated-reporting-official", "tiktok-basic-report-dimensions-v13-official", "tiktok-basic-report-metrics-v13-official"]},
         {"id": "account-health-scoring", "mode": "export-read", "status": "disabled", "implementation_paths": ["claude_ads_core/control_registry.py", "control-plane/manifests/control-registry.json", "control-plane/manifests/scoring-profiles.json"], "fixture_paths": [], "test_paths": ["tests/core/test_control_registry.py", "tests/core/test_platform_report_contracts.py"], "source_ids": [], "disabled_reason": "No approved source-grounded control-severity decision set; discovery findings remain unscored."},
         {"id": "account-mutation", "mode": "live-write", "status": "disabled", "implementation_paths": [], "fixture_paths": [], "test_paths": [], "source_ids": [], "disabled_reason": "No approved v2 write adapter lifecycle."}
       ]

@@ -1,7 +1,7 @@
 # Pinterest Ads control reference
 
-Retrieved: 2026-07-11. Refresh official platform and policy sources before using
-this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
 
 ## Category model
 
@@ -47,6 +47,18 @@ reduce evidence coverage; unavailable, beta, premium, or ineligible features are
 unscored opportunities.
 
 ## Registered official evidence
+
+- `pinterest-objective-simplification-official`: [Campaign objective migration](https://developers.pinterest.com/docs/work-with-ads/try-out-campaign-objective-type-simplification/)
+- `pinterest-api-changelog-official`: [API changelog](https://developers.pinterest.com/docs/changelog/changelog/)
+- `pinterest-advertising-guidelines-official`: [Advertising guidelines](https://policy.pinterest.com/en/advertising-guidelines)
+
+Checked October 7, 2026 (CLM-0218): SALES and LEADS are in production. The
+listed legacy-objective creation restrictions are scheduled for February 1,
+2027, with listed legacy campaign archival scheduled for April 30, 2027. Vendor
+dates may change. During migration, reporting filters need both current and
+applicable legacy objective values. Recheck the active API and account context
+before recommending changes. The announced November 12, 2026 policy preview is
+not the active policy on the verification date.
 
 - `pinterest-conversions-api`: [Pinterest API for Conversions](https://help.pinterest.com/en/business/article/the-pinterest-api-for-conversions)
 

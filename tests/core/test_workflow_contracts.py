@@ -53,7 +53,14 @@ def _set_path(payload: dict, path: tuple[str | int, ...], value) -> None:
 def _declared_integer_fields(repo_root: Path) -> set[tuple[str, tuple[str | int, ...], int]]:
     declared: set[tuple[str, tuple[str | int, ...], int]] = set()
     for contract in CONTRACT_NAMES:
-        if contract in {"account-snapshot", "control-definition", "finding", "report-bundle", "run-manifest"}:
+        if contract in {
+            "account-snapshot",
+            "audit-worker-result",
+            "control-definition",
+            "finding",
+            "report-bundle",
+            "run-manifest",
+        }:
             continue
         schema = json.loads(schema_path(contract).read_text(encoding="utf-8"))
 

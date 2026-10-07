@@ -54,6 +54,22 @@ def test_all_twelve_profiles_are_versioned_disabled_and_fail_closed(repo_root: P
         assert result.status == "insufficient_evidence"
 
 
+def test_disabled_profile_still_rejects_noncanonical_findings(repo_root: Path):
+    registry = load_control_registry(repo_root)
+    finding = {
+        "schema_version": "1.0.0",
+        "control_id": "invented",
+        "status": "unknown",
+        "evidence": [],
+        "confidence": "none",
+        "observation": "",
+        "diagnosis": "",
+        "recommendation": "",
+    }
+    with pytest.raises(RegistryError, match="non-canonical"):
+        registry.score_platform("google", [finding])
+
+
 def test_source_grounded_watchlists_resolve_to_verified_load_bearing_claims(repo_root: Path):
     registry = load_control_registry(repo_root)
     claims = json.loads(

@@ -13,12 +13,26 @@
 
 ## Source coverage boundary
 
+The October 7, 2026 refresh verified the exact public Conversions API,
+Insights, and campaign Insights reference pages. CLM-0008 and CLM-0202 cover
+only those documented foundations. Daily Insights rows require
+`time_increment=1`; the native scalar projection excludes action arrays.
+Documentation and fixtures do not establish an authenticated account request,
+consent state, matching quality, deduplication health, or account health.
+
+The general Marketing API overview and Reels source remain unverified
+for current claims. Meta engineering architecture sources were checked
+separately and do not prove measurement or creative requirements.
+
 The registered sources below cover only the measurement, API, and import foundations stated in the claim ledger. They do not support every named product or control in this catalog. Until a narrower current claim exists, treat those names as routing labels and gather fresh official or in-account evidence.
 
 ## Official evidence
 
 - `meta-marketing-api-official`: [Meta Marketing APIs documentation](https://developers.facebook.com/docs/marketing-apis/)
-- `meta-conversions-api-official`: [Meta Conversions API overview](https://www.facebook.com/business/help/AboutConversionsAPI)
+- `meta-conversions-api-official`: [Meta Conversions API overview](https://developers.facebook.com/documentation/ads-commerce/conversions-api)
+
+- `meta-insights-reporting-official`: [Meta Insights reporting](https://developers.facebook.com/documentation/ads-commerce/marketing-api/insights)
+- `meta-campaign-insights-reference-official`: [Meta campaign Insights reference](https://developers.facebook.com/documentation/ads-commerce/marketing-api/reference/ad-campaign-group/insights)
 
 ## Control registry
 

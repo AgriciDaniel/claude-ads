@@ -34,11 +34,11 @@ def native_target_id(profile: str) -> str:
     if system == "linux" and machine == "x86_64":
         libc_name, libc_version = platform.libc_ver()
         try:
-            libc_ok = libc_name == "glibc" and tuple(map(int, libc_version.split(".")[:2])) >= (2, 17)
+            libc_ok = libc_name == "glibc" and tuple(map(int, libc_version.split(".")[:2])) >= (2, 28)
         except ValueError:
             libc_ok = False
         if not libc_ok:
-            raise release.ReleaseError("native Linux lock evidence requires glibc >=2.17; musl is unsupported")
+            raise release.ReleaseError("native Linux lock evidence requires glibc >=2.28; musl is unsupported")
         target = "linux"
     elif system == "darwin" and machine in {"arm64", "x86_64"}:
         target = "macos-arm" if machine == "arm64" else "macos-x86"

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-marketing-hub:claude-ads:schema:core:v1:audit-worker-result.schema.json",
+  "title": "AuditWorkerResult v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "platform",
+    "scope",
+    "findings",
+    "contradictions",
+    "missing_inputs",
+    "stale_sources",
+    "recovery_hints"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"enum": ["ok", "needs_input", "blocked", "failed"]},
+    "platform": {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:workflow-common.schema.json#/$defs/platform"},
+    "scope": {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:workflow-common.schema.json#/$defs/string_array"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:finding.schema.json"}
+        ],
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {},
+          "control_id": {},
+          "status": {},
+          "evidence": {},
+          "confidence": {},
+          "source_classification": {},
+          "observation": {},
+          "diagnosis": {},
+          "recommendation": {},
+          "score_contribution": {}
+        }
+      }
+    },
+    "contradictions": {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:workflow-common.schema.json#/$defs/string_array"},
+    "missing_inputs": {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:workflow-common.schema.json#/$defs/string_array"},
+    "stale_sources": {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:workflow-common.schema.json#/$defs/string_array"},
+    "recovery_hints": {"$ref": "urn:ai-marketing-hub:claude-ads:schema:core:v1:workflow-common.schema.json#/$defs/string_array"}
+  }
+}

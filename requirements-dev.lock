@@ -1,5 +1,6 @@
 # Claude Ads development dependency lock
-# Exact versions and union hashes for the supported CPython 3.11/3.12 wheel matrix.
+# Exact versions and union hashes for CPython 3.11/3.12 on glibc 2.28+ x86_64,
+# macOS 11 x86_64/arm64, and Windows amd64.
 cffi==2.1.0 \
     --hash=sha256:02cb7ff33ded4f1532476731f89ede53e2e488a8e6205515a82144246ffa7dcc \
     --hash=sha256:1e9f50d192a3e525b15a75ab5114e442d83d657b7ec29182a991bc9a88fd3a66 \

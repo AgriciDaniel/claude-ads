@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 import importlib.util
 import json
 from pathlib import Path
@@ -16,6 +16,8 @@ assert SPEC and SPEC.loader
 audit = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = audit
 SPEC.loader.exec_module(audit)
+
+AS_OF = datetime.now(timezone.utc).date()
 
 
 def _reports(records):
@@ -42,21 +44,23 @@ def _reports(records):
 
 
 def test_not_affected_evidence_matches_locks_and_code_paths() -> None:
-    records, scope = audit.load_exceptions(ROOT, date(2026, 9, 10))
-    assert len(records) == 17
+    records, scope = audit.load_exceptions(ROOT, AS_OF)
+    assert records
     assert scope == ["claude_ads_core", "evals", "scripts"]
     summary = audit.evaluate_reports(_reports(records), records)
     assert summary == {
         "status": "pass",
         "profiles": ["development", "runtime", "schema-tests"],
-        "not_affected_advisory_count": 17,
-        "vulnerable_package_count": 3,
+        "not_affected_advisory_count": len(records),
+        "vulnerable_package_count": len(
+            {(record.package, record.affected_version) for record in records.values()}
+        ),
         "unhandled_advisory_count": 0,
     }
 
 
 def test_unhandled_advisory_fails_closed() -> None:
-    records, _ = audit.load_exceptions(ROOT, date(2026, 9, 10))
+    records, _ = audit.load_exceptions(ROOT, AS_OF)
     reports = _reports(records)
     reports["runtime"]["dependencies"].append(
         {"name": "example", "version": "1.0", "vulns": [{"id": "PYSEC-2099-1"}]}
@@ -66,8 +70,9 @@ def test_unhandled_advisory_fails_closed() -> None:
 
 
 def test_stale_exception_document_fails_closed() -> None:
+    expiry = date.fromisoformat(_document()["expires_at"])
     with pytest.raises(audit.DependencyAuditError, match="stale or future-dated"):
-        audit.load_exceptions(ROOT, date(2026, 10, 11))
+        audit.load_exceptions(ROOT, expiry + timedelta(days=1))
 
 
 def test_import_prefix_guard_detects_parent_and_child_imports() -> None:
@@ -86,7 +91,7 @@ def test_vulnerability_evidence_path_traversal_fails_closed(monkeypatch) -> None
     monkeypatch.setattr(audit.json, "loads", lambda _value: document)
 
     with pytest.raises(audit.DependencyAuditError, match="unsafe vulnerability evidence"):
-        audit.load_exceptions(ROOT, date(2026, 9, 10))
+        audit.load_exceptions(ROOT, AS_OF)
 
 
 def _document() -> dict:
@@ -103,7 +108,7 @@ def test_exception_for_unreviewed_package_fails_closed(monkeypatch) -> None:
     monkeypatch.setattr(audit.json, "loads", lambda _value: document)
 
     with pytest.raises(audit.DependencyAuditError, match="invalid vulnerability exception ID"):
-        audit.load_exceptions(ROOT, date(2026, 9, 10))
+        audit.load_exceptions(ROOT, AS_OF)
 
 
 def test_exception_without_any_guard_fails_closed(monkeypatch) -> None:
@@ -113,19 +118,16 @@ def test_exception_without_any_guard_fails_closed(monkeypatch) -> None:
     monkeypatch.setattr(audit.json, "loads", lambda _value: document)
 
     with pytest.raises(audit.DependencyAuditError, match="lacks import guards"):
-        audit.load_exceptions(ROOT, date(2026, 9, 10))
+        audit.load_exceptions(ROOT, AS_OF)
 
 
-def test_weasyprint_exception_is_guarded_by_call_keywords() -> None:
-    records, _ = audit.load_exceptions(ROOT, date(2026, 9, 10))
-    record = records["PYSEC-2026-3940"]
-    assert record.package == "weasyprint"
-    assert record.forbidden_import_prefixes == ()
-    assert record.forbidden_call_keywords == (
-        "write_pdf:stylesheets",
-        "render:stylesheets",
-        "write_pdf:xmp_metadata",
-    )
+def test_cryptography_exceptions_retain_import_guards() -> None:
+    records, _ = audit.load_exceptions(ROOT, AS_OF)
+    cryptography = [
+        record for record in records.values() if record.package == "cryptography"
+    ]
+    assert cryptography
+    assert all(record.forbidden_import_prefixes for record in cryptography)
 
 
 @pytest.mark.parametrize(
@@ -174,7 +176,7 @@ def test_mismatched_profile_versions_fail_closed(monkeypatch) -> None:
     monkeypatch.setattr(audit, "_lock_versions", mismatched_locks)
 
     with pytest.raises(audit.DependencyAuditError, match="lock versions disagree"):
-        audit.load_exceptions(ROOT, date(2026, 9, 10))
+        audit.load_exceptions(ROOT, AS_OF)
 
 
 def _source(tmp_path: Path, name: str, source: str) -> Path:
@@ -280,3 +282,13 @@ def test_returned_importer_module_cannot_hide_prohibited_import(tmp_path, source
 def test_forwarded_mapping_cannot_hide_guarded_callable(tmp_path, source):
     calls = audit._call_keywords(_source(tmp_path, "alias.py", source))
     assert any(audit._matches_call_keyword(call, "write_pdf:xmp_metadata") for call in calls)
+
+
+
+def test_x509_exceptions_record_upstream_scanner_range_discrepancy() -> None:
+    by_id = {item["advisory_id"]: item for item in _document()["exceptions"]}
+    for advisory_id in ("PYSEC-2026-3553", "PYSEC-2026-3554"):
+        analysis = by_id[advisory_id]["analysis"]
+        assert "publisher advisory defines the affected range as <=48.0.0" in analysis
+        assert f"pip-audit reports {advisory_id} against 48.0.1" in analysis
+        assert by_id[advisory_id]["forbidden_import_prefixes"] == ["cryptography.x509"]

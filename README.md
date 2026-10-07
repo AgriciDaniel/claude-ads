@@ -108,6 +108,10 @@ and install:
 /plugin install claude-ads@ai-marketing-hub-claude-ads
 ```
 
+Managed dependencies require CPython 3.11 or 3.12. Linux x86_64 requires glibc
+2.28 or later; musl is unsupported. macOS 11 x86_64/arm64 and Windows amd64
+remain declared wheel targets and require native CI qualification.
+
 Or install from a local clone of the public repository:
 
 ```bash
@@ -157,6 +161,10 @@ The PowerShell equivalent is `uninstall.ps1`.
 One conductor owns scope, policy, aggregation, and final artifacts. Workers
 analyze bounded slices and return schema-valid findings. Required-worker failure
 makes the run partial. It is never silently presented as a complete audit.
+
+Agent definitions omit model pins. The host or invocation selects the model;
+Claude Code inherits the main conversation's model when no higher-priority
+selection applies. See the [official subagent model documentation](https://code.claude.com/docs/en/sub-agents#choose-a-model).
 
 The canonical result is versioned JSON. Markdown, HTML, and PDF are renderings
 of the same validated run bundle.
@@ -208,6 +216,23 @@ release requirements.
 
 See the [release requirements](control-plane/RELEASE_REQUIREMENTS.md) and
 [publishing policy](control-plane/PUBLISHING_POLICY.md).
+
+The MIT public distribution and private development/community repository have
+separate publication boundaries. Local verification does not authorize a new
+release, a visibility change, or publication of private review evidence.
+
+Runtime commands locate policy beside the source checkout or in the curated
+standalone installation. Use `--policy-root ROOT` for another explicit policy
+location. `status` and `next` retain `--root ROOT` as a compatibility alias;
+commands never select policy from an unrelated working directory. Repository
+audit and release helpers require a source checkout.
+
+Public scoring uses the canonical registry. Legacy control and category-weight
+inputs are accepted only when they exactly match approved policy. Report status
+and rendering reject fabricated health or incompatible historical bundles;
+regenerate those bundles using the current registry. All twelve production
+health profiles remain disabled, returning null health and zero approved
+coverage until a severity and weight policy is approved.
 
 ## Development
 

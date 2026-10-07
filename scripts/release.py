@@ -116,15 +116,15 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # notice review. The inventory digest is filled from the reviewed canonical
 # document; keeping it in executable verifier code makes self-consistent
 # archive/manifest/SBOM/checksum forgery fail closed.
-EXPECTED_DEPENDENCY_INVENTORY_SHA256 = "48ed1cdd3023bdb9781e7ffe9d987fb9425cc23e2dea053e2da5e8d461e588de"
-EXPECTED_THIRD_PARTY_NOTICES_SHA256 = "b90c38b4cce60c06c0090be31ee721d3482640923d9ff6f3c711c047317746d0"
-EXPECTED_EXTERNAL_RUNTIME_DEPENDENCIES_SHA256 = "c5962746f3a49570c810525c5a8557a3884e64e3b764476ff18cb65741853bc2"
-INVENTORY_RESOLVED_AT = "2026-07-11T00:00:00Z"
-INVENTORY_SOURCE_DATE_EPOCH = 1783728000
+EXPECTED_DEPENDENCY_INVENTORY_SHA256 = "cf993e3cecf0f8ad1932b995d8e0f4448e3931b27b1dbe06fd90e5e162de3e1f"
+EXPECTED_THIRD_PARTY_NOTICES_SHA256 = "16283036f1235d79fb3f0c69dd24d21258482f57470cf482b94be30d1778b88e"
+EXPECTED_EXTERNAL_RUNTIME_DEPENDENCIES_SHA256 = "c1a6e7a1a49e1a6f6662a37f3f731dc7c30bc4ac247f34496fb58d50d7f7d66b"
+INVENTORY_RESOLVED_AT = "2026-10-07T00:00:00Z"
+INVENTORY_SOURCE_DATE_EPOCH = 1791331200
 INVENTORY_PYTHON_REQUIRES = ">=3.11,<3.13"
 INVENTORY_POLICY = (
     "One exact lowest-common version set with target-specific wheel hashes for "
-    "glibc 2.17+/manylinux-compatible x86_64, macOS 11 x86_64/arm64, and "
+    "glibc 2.28+/manylinux-compatible x86_64, macOS 11 x86_64/arm64, and "
     "Windows amd64. Unlisted interpreters, libc families, platforms, and "
     "architectures fail closed."
 )
@@ -463,7 +463,7 @@ def _wheel_is_compatible(filename: str, target: dict[str, object], name: str, ve
                 match = re.fullmatch(r"manylinux_(\d+)_(\d+)_x86_64", platform_tag)
                 if not match:
                     raise ReleaseError(f"wheel platform is incompatible with {target['id']}/{name}")
-                if (int(match.group(1)), int(match.group(2))) <= (2, 17):
+                if (int(match.group(1)), int(match.group(2))) <= (2, 28):
                     compatible_baseline = True
         if not compatible_baseline:
             raise ReleaseError(f"wheel requires a newer glibc baseline: {target['id']}/{name}")
@@ -904,11 +904,16 @@ def _load_external_runtime_dependencies(root: Path) -> dict[str, object]:
         raise ReleaseError("external runtime dependency manifest identity mismatch")
     sources = document["sources"]
     dependencies = document["dependencies"]
-    expected_source_ids = {"playwright-python-intro", "playwright-browsers", "playwright-ci", "weasyprint-69-install", "cyclonedx-1.5-json"}
+    expected_source_ids = {"playwright-python-intro", "playwright-browsers", "playwright-ci", "weasyprint-70-install", "cyclonedx-1.5-json"}
     if not isinstance(sources, list) or {item.get("id") for item in sources if isinstance(item, dict)} != expected_source_ids or len(sources) != len(expected_source_ids):
         raise ReleaseError("external runtime dependency source coverage mismatch")
+    expected_accessed_at = {source_id: "2026-07-11" for source_id in expected_source_ids}
+    expected_accessed_at["weasyprint-70-install"] = "2026-10-07"
     for source in sources:
-        if set(source) != {"id", "url", "publisher", "accessed_at"} or not str(source["url"]).startswith("https://") or source["accessed_at"] != "2026-07-11" or not source["publisher"]:
+        if (set(source) != {"id", "url", "publisher", "accessed_at"}
+                or not str(source["url"]).startswith("https://")
+                or source["accessed_at"] != expected_accessed_at.get(source["id"])
+                or not source["publisher"]):
             raise ReleaseError("external runtime dependency source metadata mismatch")
     if not isinstance(dependencies, list) or {item.get("id") for item in dependencies if isinstance(item, dict)} != {"playwright-browser-payload", "weasyprint-native-libraries"} or len(dependencies) != 2:
         raise ReleaseError("external runtime dependency coverage mismatch")
@@ -1963,10 +1968,15 @@ def _check_ecosystem(root: Path, as_of: date | None = None) -> dict[str, object]
         snapshot = snapshots[repository][0]
         item_path = "issues" if entry["kind"] == "issue" else "pull"
         expected_url = f"{snapshot['source_url']}/{item_path}/{entry['number']}"
-        expected_license = (
-            "metadata-only" if entry["kind"] == "issue" else "same-project-mit"
+        # A tracker disposition can retain metadata and independently
+        # reimplement an idea without importing the contributor's patch.
+        # MIT patch-use review is a separate, stronger assertion.
+        permitted_licenses = (
+            {"metadata-only"}
+            if entry["kind"] == "issue"
+            else {"metadata-only", "same-project-mit"}
         )
-        if entry.get("url") != expected_url or entry.get("license_review") != expected_license:
+        if entry.get("url") != expected_url or entry.get("license_review") not in permitted_licenses:
             raise ReleaseError(f"ecosystem entry URL or license is invalid: {entry['id']}")
 
     for repository, (_, issues, pulls) in snapshots.items():

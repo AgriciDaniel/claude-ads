@@ -20,6 +20,14 @@ The registered sources below cover only the measurement, API, and import foundat
 - `linkedin-marketing-api-official`: [LinkedIn Marketing Developer Platform](https://learn.microsoft.com/en-us/linkedin/marketing/overview)
 - `linkedin-conversion-tracking-official`: [LinkedIn conversion tracking](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking)
 - `linkedin-conversions-api-official`: [LinkedIn Conversions API use cases](https://learn.microsoft.com/en-us/linkedin/marketing/conversions/conversions-usecase)
+- `linkedin-marketing-api-changes-official`: [Recent LinkedIn Marketing API changes](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2026-07)
+
+## API version status verified 2026-10-07
+
+LinkedIn lists Marketing API version `202510` for sunset on 2026-10-15. Treat
+that date as an imminent migration deadline and verify the requested replacement
+version and endpoint compatibility before changing an integration. Do not report
+`202510` as already removed before the effective date.
 
 ## Control registry
 

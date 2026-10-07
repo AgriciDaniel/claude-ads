@@ -57,7 +57,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install audit dependency
-        run: python -m pip install "pyyaml>=6.0,<7.0"
+        run: 'python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-repository-audit.lock'
 
       - name: Check Python syntax
         run: python -m compileall -q claude_ads_core evals scripts tests
@@ -189,7 +189,7 @@ jobs:
           probe="$RUNNER_TEMP/claude-ads-managed-install"
           for pass in 1 2; do
             bash install.sh --target=claude --source=local --skill-dir="$probe/skills" --agent-dir="$probe/agents"
-            python scripts/verify_managed_install.py --skill-dir "$probe/skills/ads"
+            python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
           done
           "$probe/skills/ads/.venv/bin/python" -c "import pathlib,sysconfig; p=pathlib.Path(sysconfig.get_paths()['purelib'])/'unexpected_probe-1.0.dist-info'; p.mkdir(exist_ok=True); (p/'METADATA').write_text('Metadata-Version: 2.1\nName: unexpected-probe\nVersion: 1.0\n')"
           if bash install.sh --target=claude --source=local --skill-dir="$probe/skills" --agent-dir="$probe/agents"; then
@@ -209,13 +209,13 @@ jobs:
           $probe = Join-Path $env:RUNNER_TEMP "claude-ads-managed-install"
           foreach ($pass in 1, 2) {
             ./install.ps1 -Target claude -Source local -SkillDir "$probe/skills" -AgentDir "$probe/agents"
-            python scripts/verify_managed_install.py --skill-dir "$probe/skills/ads"
+            python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
             if ($LASTEXITCODE -ne 0) { throw "managed install verification failed" }
           }
           ./install.ps1 -Target claude -Source local -NoDeps -SkillDir "$probe/skills" -AgentDir "$probe/agents"
           if (-not (Test-Path "$probe/skills/ads/managed-runtime-receipt.json")) { throw "NoDeps repeat stranded the managed receipt" }
           if (-not (Test-Path "$probe/skills/ads/.venv")) { throw "NoDeps repeat stranded the managed environment" }
-          python scripts/verify_managed_install.py --skill-dir "$probe/skills/ads"
+          python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
           if ($LASTEXITCODE -ne 0) { throw "NoDeps repeat invalidated the managed install" }
           & "$probe/skills/ads/.venv/Scripts/python.exe" -c 'import pathlib,sysconfig; p=pathlib.Path(sysconfig.get_paths()["purelib"])/"unexpected_probe-1.0.dist-info"; p.mkdir(exist_ok=True); (p/"METADATA").write_text("Metadata-Version: 2.1\nName: unexpected-probe\nVersion: 1.0\n")'
           $failedClosed = $false

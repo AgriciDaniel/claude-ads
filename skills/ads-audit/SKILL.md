@@ -53,34 +53,43 @@ Add cross-platform workers only when their inputs exist:
 - Budget, pacing, and financial viability.
 - Platform policy, privacy, and regulation.
 
-## Required finding fields
+## Required worker result
 
-Each worker returns conclusions, not files:
+Each platform or cross-platform worker handles one canonical platform per task and
+returns exactly one `audit-worker-result` v1 object. Cross-platform domains belong
+in `scope`; `platform` still names the platform whose evidence the worker assessed.
 
 ```json
 {
+  "schema_version": "1.0.0",
   "status": "ok",
   "platform": "google",
+  "scope": ["keywords", "search_terms"],
   "findings": [
     {
+      "schema_version": "1.0.0",
       "control_id": "G-EXAMPLE",
-      "result": "pass|fail|unknown|not_applicable",
-      "severity": "critical|high|medium|info",
-      "confidence": "high|medium|low|none",
-      "source_classification": "evidence_based|practitioner|contested|folklore",
-      "observation": "What the supplied data demonstrates",
-      "evidence_refs": ["input:...", "source:..."],
-      "recommendation": "Decision-complete next action or null"
+      "status": "unknown",
+      "evidence": [{"kind": "account_export", "ref": "input:keywords"}],
+      "confidence": "low",
+      "source_classification": "evidence_based",
+      "observation": "The supplied export does not distinguish positive and negative criteria.",
+      "diagnosis": "Keyword inventory completeness cannot be established.",
+      "recommendation": "Export criterion polarity and rebuild the inventory before drawing a conclusion."
     }
   ],
   "contradictions": [],
-  "missing_inputs": [],
-  "recovery_hints": []
+  "missing_inputs": ["criterion polarity"],
+  "stale_sources": [],
+  "recovery_hints": ["Provide an export containing the negative field."]
 }
 ```
 
-Validate against the repository schema rather than relying on this illustrative
-fragment when the installed schema is available.
+Every envelope field is required. Validate against the installed
+`audit-worker-result` v1 schema. Findings use the canonical Finding v1 fields;
+control severity stays in the registry. Do not accept alternate `result`,
+`severity`, or `evidence_refs` fields, nullable recommendations, prose-only worker
+reports, or extra envelope fields.
 
 ## Completeness rules
 

@@ -131,8 +131,9 @@ capability loses its test evidence, or required remote CI does not pass.
   Pending templates and repository-local trust roots cannot satisfy this gate.
 - No critical blocker remains in the ecosystem disposition ledger.
 - Only after all gates pass may the reviewed branch merge and receive a v2 tag.
-- Repository visibility remains private; public release requires the separate
-  gate in `PUBLISHING_POLICY.md`.
+- The development repository remains private. Existing public distribution does
+  not authorize a new publication; every new public release requires the
+  separate gate in `PUBLISHING_POLICY.md`.
 
 ## Independent-review evidence protocol
 
