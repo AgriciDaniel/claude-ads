@@ -192,6 +192,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
+      - name: Install exact verifier tooling
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+
       - name: Produce and verify native target dependency evidence
         run: |
           python -c "from pathlib import Path; Path('target-evidence/runtime-wheels').mkdir(parents=True); Path('target-evidence/development-wheels').mkdir(parents=True)"
@@ -328,6 +332,14 @@ jobs:
           test -x "$python_bin/python"
           "$python_bin/python" -c 'import os,platform,sys; assert platform.python_implementation() == "CPython"; assert platform.libc_ver() == ("glibc", "2.28"); assert f"cp{sys.version_info.major}{sys.version_info.minor}-cp{sys.version_info.major}{sys.version_info.minor}" == os.environ["PYTHON_TAG"]'
           echo "$python_bin" >> "$GITHUB_PATH"
+
+      - name: Prepare exact verifier tooling and Git workspace trust
+        run: |
+          # Checkout's temporary HOME does not persist safe.directory for later
+          # container steps. Trust only this disposable job's checked-out path.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" rev-parse --verify HEAD
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
 
       - name: Verify exact runtime wheels on glibc 2.28
         run: |

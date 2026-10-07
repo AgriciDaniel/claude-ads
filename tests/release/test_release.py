@@ -490,6 +490,27 @@ def test_ci_only_tooling_is_isolated_and_hash_locked() -> None:
     assert managed_matrix == {
         key: value for key, value in native_matrix.items() if key != "shard-index"
     }
+    verifier_tooling_install = (
+        "python -m pip install --require-hashes --only-binary=:all: "
+        "-r requirements-dev.lock"
+    )
+    for job_name in ("managed-install-matrix", "linux-floor"):
+        lines = [
+            line for step in jobs[job_name]["steps"]
+            for line in step.get("run", "").splitlines()
+        ]
+        tooling_index = lines.index(verifier_tooling_install)
+        verifier_index = next(
+            index for index, line in enumerate(lines)
+            if line.startswith("python scripts/verify_target_lock.py ")
+        )
+        assert tooling_index < verifier_index
+    floor_lines = [
+        line for step in jobs["linux-floor"]["steps"]
+        for line in step.get("run", "").splitlines()
+    ]
+    assert 'git config --global --add safe.directory "$GITHUB_WORKSPACE"' in floor_lines
+    assert 'git -C "$GITHUB_WORKSPACE" rev-parse --verify HEAD' in floor_lines
     floor = jobs["linux-floor"]
     assert re.fullmatch(
         r"quay\.io/pypa/manylinux_2_28_x86_64@sha256:[0-9a-f]{64}",
