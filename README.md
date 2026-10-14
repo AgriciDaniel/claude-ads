@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Claude Ads: find out what is wrong with your ad accounts, and what to fix first" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+    <img src="assets/banner-light.svg" alt="Claude Ads: every ad account, one command line" width="100%">
+  </picture>
 </p>
 
 # Claude Ads
@@ -36,7 +39,10 @@ It is made for agencies, consultants, and in-house marketing teams. It reads you
 5. Run `/ads report` to see a past run again, and `/ads next` to see the most important blocker.
 
 <p align="center">
-  <img src="assets/how-it-works.svg" alt="Three steps: tell it about your business, give it your data, then read the audit" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
+    <img src="assets/how-it-works-light.svg" alt="Three steps: tell it about your business, give it your data, then read the audit" width="100%">
+  </picture>
 </p>
 
 ## What you can do
@@ -53,7 +59,10 @@ It is made for agencies, consultants, and in-house marketing teams. It reads you
 ## Platforms
 
 <p align="center">
-  <img src="assets/platforms.svg" alt="Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, Apple, Amazon, Reddit, Pinterest, Snapchat and X" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/platforms-dark.svg">
+    <img src="assets/platforms-light.svg" alt="Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, Apple, Amazon, Reddit, Pinterest, Snapchat and X" width="100%">
+  </picture>
 </p>
 
 Each platform has its own focused skill, audit worker, control reference, and capability declaration. The
@@ -85,7 +94,10 @@ Platform shortcuts such as `/ads google`, `/ads meta`, `/ads amazon`, and
 ## Built to be trusted
 
 <p align="center">
-  <img src="assets/trust.svg" alt="Read only by default, evidence for every finding, honest about gaps, and your data stays yours" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/trust-dark.svg">
+    <img src="assets/trust-light.svg" alt="Read only by default, evidence for every finding, honest about gaps, and your data stays yours" width="100%">
+  </picture>
 </p>
 
 Every check ends in one of four results: `pass`, `fail`, `unknown`, or `not_applicable`. Unknown is a real answer. It means the data was missing, and it is never guessed.
