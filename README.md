@@ -19,17 +19,6 @@ It is made for agencies, consultants, and in-house marketing teams. It reads you
 > [AI Marketing Hub Pro](https://www.skool.com/ai-marketing-hub-pro) members
 > get early access and direct collaboration.
 
-> [!IMPORTANT]
-> **Status: development candidate.** Claude Ads is not release-ready until every
-> gate in [control-plane/RELEASE_REQUIREMENTS.md](control-plane/RELEASE_REQUIREMENTS.md)
-> passes in a fresh verification context.
->
-> - All twelve account-health scoring profiles are disabled, so no health score is
->   produced. Audits report findings, unknowns, and evidence coverage instead.
-> - The Cockpit companion is optional and not yet natively accepted; see its
->   [compatibility and acceptance limits](docs/cockpit/compatibility.md).
-> - Account changes stay drafts unless the full mutation gate passes.
-
 ## Quickstart
 
 1. Install (see [Installation](#installation)): `/plugin marketplace add agricidaniel/claude-ads`, then `/plugin install claude-ads@ai-marketing-hub-claude-ads`.
@@ -223,6 +212,19 @@ The Bash and PowerShell skill installers do not enable or load Cockpit. Its
 optional plugin has its own marketplace entry and curated archive, and requires
 an explicitly bound trusted core and Python executable. Installing the main
 skill alone preserves the existing experience.
+
+## Project status
+
+> [!IMPORTANT]
+> **Status: development candidate.** Claude Ads is not release-ready until every
+> gate in [control-plane/RELEASE_REQUIREMENTS.md](control-plane/RELEASE_REQUIREMENTS.md)
+> passes in a fresh verification context.
+>
+> - All twelve account-health scoring profiles are disabled, so no health score is
+>   produced. Audits report findings, unknowns, and evidence coverage instead.
+> - The Cockpit companion is optional and not yet natively accepted; see its
+>   [compatibility and acceptance limits](docs/cockpit/compatibility.md).
+> - Account changes stay drafts unless the full mutation gate passes.
 
 ## For engineers and contributors
 
