@@ -52,14 +52,13 @@ export function overview(kit, ctx) {
     ]));
   }
 
-  // 6. What the person has to supply, when there are several things.
+  // 6. What the person has to supply, when there are several things. A long list is capped; the Inputs screen has all of it.
   if (c.missing.length > 1) {
+    const shownInputs = c.missing.slice(0, 5);
     out.push(kit.section([
-      kit.heading('Needs your input'),
-      ...c.missing.map((m, i) => kit.row([
-        kit.line([{ text: '▲ ', tone: 'warn' }, `${platformName(m.platform)}: ${m.text}`]),
-        kit.button(`worker-input-${m.workerId}-${i}`, 'Open Inputs', undefined, () => ctx.go('Inputs', { workerId: m.workerId, missingInput: m.text }), { plain: true }),
-      ], { gap: 2, wrap: true })),
+      kit.heading('Needs your input', `${c.missing.length} items`),
+      ...shownInputs.map(m => kit.line([{ text: '▲ ', tone: 'warn' }, cut(`${platformName(m.platform)}: ${m.text}`, Math.max(20, kit.width - 4))])),
+      kit.button('worker-input-all', c.missing.length > shownInputs.length ? `See all ${c.missing.length} on Inputs` : 'Open Inputs', undefined, () => ctx.go('Inputs'), { plain: true }),
     ]));
   }
 
@@ -67,12 +66,13 @@ export function overview(kit, ctx) {
   const attention = byAttention(snapshot.findings).filter(e => e.item.finding.status === 'fail' || e.item.finding.status === 'unknown');
   if (attention.length) {
     const shown = attention.slice(0, 5);
+    const quietSupport = snapshot.findings.filter(f => f.evidence_status === 'missing').length * 2 > snapshot.findings.length;
     out.push(kit.section([
       kit.heading('Needs attention', `${attention.length} of ${snapshot.findings.length} checks`),
       ...shown.map(({ item, index }) => {
         const f = item.finding;
         const tone = statusTone(f.status);
-        const support = item.evidence_status === 'current' ? '' : `  · ${say('support', item.evidence_status).word}`;
+        const support = item.evidence_status === 'current' || (quietSupport && item.evidence_status === 'missing') ? '' : `  · ${say('support', item.evidence_status).word}`;
         return kit.row([kit.mark(tone), kit.button(`finding-evidence-${index}`, cut(`${platformName(item.platform)} ${f.control_id}  ${item.control_title}${support}`, Math.max(20, kit.width - 6)), undefined, () => ctx.go('Evidence', { platform: item.platform, controlId: f.control_id }), { plain: true })], { gap: 1 });
       }),
       ...(attention.length > shown.length ? [kit.button('see-findings', `See all ${snapshot.findings.length} checks`, undefined, () => ctx.go('Evidence'), { plain: true })] : []),
@@ -85,7 +85,14 @@ export function overview(kit, ctx) {
     ...w.contradictions.map(text => ({ label: 'Conflict', text, w })),
     ...w.stale_sources.map(text => ({ label: 'Out-of-date source', text, w })),
   ]);
-  if (notes.length) out.push(kit.section([kit.heading('Notes from the audit'), ...notes.map(n => kit.line([{ text: '↳ ', dim: true }, { text: `${platformName(n.w.platform)}  `, dim: true }, `${n.label}: ${n.text}`]))]));
+  if (notes.length) {
+    const noteLimit = ctx.state.details ? notes.length : 4;
+    out.push(kit.section([
+      kit.heading('Notes from the audit', notes.length > noteLimit ? `${notes.length} notes` : undefined),
+      ...notes.slice(0, noteLimit).map(n => kit.line([{ text: '↳ ', dim: true }, { text: `${platformName(n.w.platform)}  `, dim: true }, cut(`${n.label}: ${n.text}`, Math.max(30, kit.width * 2 - 20))])),
+      ...(notes.length > noteLimit ? [kit.t(`${notes.length - noteLimit} more notes. Press d for details to see them all.`, { dimColor: true })] : []),
+    ]));
+  }
 
   // 9. Scores. A disabled profile is never shown as a number.
   out.push(kit.section(allScoresOff(snapshot)

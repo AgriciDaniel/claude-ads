@@ -31,6 +31,8 @@ export function makeKit(ui, width = 60) {
     return Text({ children: parts.map(part => (typeof part === 'string' ? safeText(part) : Text({ children: [safeText(part.text)], ...partStyle(part) }))), ...defined(rest) });
   };
   const hint = (content, options = {}) => t(content, { dimColor: true, ...options });
+  // A list item that may wrap. The glyph and text stay in one paragraph, so a wrapped line never leaves the glyph alone.
+  const item = (glyph, content) => Text({ children: [Text({ children: [`${glyph} `], bold: true }), safeText(content)] });
   const mark = name => t(toneOf(name).mark, toneStyle(name));
   const row = (children, { gap = 1, wrap = false, key } = {}) => Box({ ...defined({ key }), flexDirection: 'row', columnGap: gap, ...(wrap ? { flexWrap: 'wrap' } : {}), children });
   const col = (children, { gap, key } = {}) => Box({ ...defined({ key, rowGap: gap }), flexDirection: 'column', children });
@@ -120,5 +122,5 @@ export function makeKit(ui, width = 60) {
     return [...runs, ...(tones.length > shown.length ? [{ text: ` +${tones.length - shown.length}`, dim: true }] : [])];
   };
   const titleRule = title => line([{ text: `── ${title} `, bold: true }, { text: '─'.repeat(Math.max(2, Math.min(width, 100) - title.length - 4)), dim: true }], { wrap: 'truncate-end' });
-  return { ui, width, narrow, wide, tile, tiles, stackBar, squares, titleRule, t, line, hint, mark, row, col, section, indent, card, rule, heading, chip, bar, dots, button, table, toneStyle };
+  return { ui, width, narrow, wide, tile, tiles, stackBar, squares, titleRule, t, line, hint, item, mark, row, col, section, indent, card, rule, heading, chip, bar, dots, button, table, toneStyle };
 }

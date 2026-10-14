@@ -324,3 +324,48 @@ test('the tab for findings is called Checks', () => {
 
 // The wire and the controller still agree on the 64-character hashes used above.
 test('fixtures stay valid wire data', () => { expect(H).toHaveLength(64); expect(() => snapshotWire(plainSnapshot())).not.toThrow(); });
+
+// A real audit is large: dozens of missing inputs, mostly without registered support. These tests use
+// that shape so a long list never takes over the screen and a wrapped line never strands its glyph.
+function largeAudit() {
+  const s = snapshot('real-audit', 'completed') as any;
+  const base = s.findings[0];
+  s.findings = Array.from({ length: 30 }, (_, i) => ({ ...base, platform: 'google', control_title: `Check number ${i}`,
+    evidence_status: i < 3 ? 'current' : 'missing', finding: { ...base.finding, control_id: `G${String(i).padStart(2, '0')}`, status: i % 3 === 0 ? 'fail' : 'unknown' } }));
+  s.workers[0] = { ...s.workers[0], status: 'completed', result_status: 'ok',
+    missing_inputs: Array.from({ length: 26 }, (_, i) => `Missing input number ${i} with a long description that is certain to wrap onto a second line on a narrow screen`),
+    recovery_hints: Array.from({ length: 12 }, (_, i) => `Pull export number ${i}`), stale_sources: [], contradictions: [] };
+  s.workflow_status = 'completed';
+  return s;
+}
+
+test('a long list of missing inputs is capped on the overview and keeps one way to the rest', () => {
+  const state = view('Run', largeAudit());
+  const shown = text(state, 72).text;
+  const listed = shown.split('\n').map(l => l.replace(/[│╭╮╰╯─]/g, '').trim()).filter(l => l.startsWith('▲ Google Ads: Missing input number'));
+  expect(listed.length).toBe(5);
+  expect(shown).toContain('See all 26 on Inputs');
+  expect(shown).toContain('8 more notes');
+  expect(buttons(state).filter(b => String(b.props.label) === 'See all 26 on Inputs').length).toBe(1);
+  expect(buttons(state).filter(b => String(b.props.label).includes('Missing input')).length).toBe(0);
+});
+
+test('a wrapped missing-input line keeps its glyph with its text', () => {
+  const lines = text(view('Inputs', largeAudit()), 60).text.split('\n').map(l => l.replace(/[│╭╮╰╯─]/g, '').trim());
+  expect(lines.filter(l => l === '▲').length).toBe(0);
+  expect(lines.filter(l => l.startsWith('▲ Google Ads: Missing input number')).length).toBe(26);
+});
+
+test('when most checks have no registered support it is said once, not on every line', () => {
+  const shown = text(view('Evidence', largeAudit()), 80).text;
+  expect(shown).toContain('27 of 30 checks have no registered source support yet');
+  expect(shown).not.toContain('· No support');
+});
+
+test('plain kind and value evidence reads as a sentence and other evidence stays as data', () => {
+  const s = snapshot('evidence-run', 'completed') as any;
+  s.findings[0].finding.evidence = [{ kind: 'input_field', value: 'keywords.json: 15 rows' }, { kind: 'x', rows: [1, 2] }];
+  const shown = text(view('Evidence', s, { context: { kind: 'finding', platform: s.findings[0].platform, controlId: s.findings[0].finding.control_id } }), 80).text;
+  expect(shown).toContain('evidence 1: input field: keywords.json: 15 rows');
+  expect(shown).toContain('evidence 2: {"kind":"x","rows":[1,2]}');
+});

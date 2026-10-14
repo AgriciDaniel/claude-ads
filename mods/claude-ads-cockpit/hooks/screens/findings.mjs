@@ -16,6 +16,10 @@ export function findings(kit, ctx) {
   const entries = snapshot.findings.map((item, index) => ({ item, index }));
   const anySelected = entries.some(e => selectedFinding(e.item));
   const compact = snapshot.findings.length > 6 && !anySelected && !state.details;
+  // When most checks have no registered support, saying so on every line is noise; say it once.
+  const noSupport = snapshot.findings.filter(f => f.evidence_status === 'missing').length;
+  const quiet = noSupport * 2 > snapshot.findings.length;
+  if (compact && quiet) out.push(kit.hint(`${noSupport} of ${snapshot.findings.length} checks have no registered source support yet. That is normal for most of the catalog. Open a check for details.`));
   if (compact) {
     // Many checks: one line each, grouped by platform, worst first. Open one for its full card.
     const order = [...new Set(snapshot.findings.map(f => f.platform))];
@@ -26,7 +30,7 @@ export function findings(kit, ctx) {
         kit.line([{ text: platformName(platform), bold: true }, { text: `${r.pass} pass`, tone: 'ok' }, { text: `${r.fail} fail`, tone: r.fail ? 'bad' : 'muted' }, { text: `${r.unknown} unknown`, tone: r.unknown ? 'warn' : 'muted' }], { gap: 2 }),
         ...byAttention(group).map(({ item }) => {
           const index = snapshot.findings.indexOf(item);
-          const old = item.evidence_status === 'current' ? '' : `  · ${say('support', item.evidence_status).word}`;
+          const old = item.evidence_status === 'current' || (quiet && item.evidence_status === 'missing') ? '' : `  · ${say('support', item.evidence_status).word}`;
           const label = `${item.finding.control_id}  ${item.control_title}${old}`;
           return kit.row([kit.mark(statusTone(item.finding.status)), kit.button(`finding-open-${index}`, oneLine(label, kit.width - 6), undefined, () => ctx.go('Evidence', { platform: item.platform, controlId: item.finding.control_id }), { plain: true })], { gap: 1 });
         }),
@@ -58,7 +62,9 @@ export function findings(kit, ctx) {
       kit.line([{ text: 'Support    ', dim: true }, `${plural(item.claim_ids.length, 'claim')}, ${plural(item.source_ids.length, 'source')}${oldCount ? ` (${oldCount} out of date)` : ''}`]),
     ];
     if (expanded) {
-      f.evidence.forEach((e, i) => body.push(kit.hint(`evidence ${i + 1}: ${JSON.stringify(e)}`)));
+      // Evidence is free-form data. A plain {kind, value} pair reads as a sentence; anything else stays as data.
+      const evidenceText = e => (e && typeof e === 'object' && typeof e.value === 'string' && typeof e.kind === 'string' ? `${e.kind.replace(/_/g, ' ')}: ${e.value}` : JSON.stringify(e));
+      f.evidence.forEach((e, i) => body.push(kit.hint(`evidence ${i + 1}: ${evidenceText(e)}`)));
       for (const claim of claims) body.push(kit.line([{ text: `claim ${claim.id}  `, dim: true }, { text: say('support', claim.effective_status).word, tone: say('support', claim.effective_status).tone }, { text: `  verified ${claim.last_verified ?? 'unknown'}, refresh due ${claim.refresh_due ?? 'unknown'}`, dim: true }]), kit.hint(claim.statement));
       for (const source of sources) body.push(kit.line([{ text: `source ${source.id}  `, dim: true }, { text: say('support', source.status).word, tone: say('support', source.status).tone }, { text: `  ${source.title}, retrieved ${source.retrieved_at ?? 'unknown'}, refresh due ${source.refresh_due ?? 'unknown'}`, dim: true }]));
     } else {

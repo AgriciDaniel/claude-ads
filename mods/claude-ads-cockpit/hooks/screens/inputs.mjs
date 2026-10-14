@@ -25,7 +25,7 @@ export function inputs(kit, ctx) {
   } else if (c.missing.length) {
     out.push(kit.card([
       kit.t('Steps are waiting for:', { bold: true }),
-      ...c.missing.map(m => kit.line([{ text: '▲ ', tone: 'warn' }, `${platformName(m.platform)}: ${m.text}`])),
+      ...c.missing.map(m => kit.item('▲', `${platformName(m.platform)}: ${m.text}`)),
     ], { tone: 'warn', key: 'input-needs' }));
   }
 
