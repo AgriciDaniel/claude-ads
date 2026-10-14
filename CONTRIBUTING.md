@@ -70,6 +70,11 @@ billing-blocked checks.
 - Workers return schema-valid results; one conductor owns final artifacts.
 - Agents receive least-privilege tools and no implicit mutation authority.
 
+The plugin keeps the name `claude-ads`. Current `claude plugin validate .` reports
+that names starting with `claude-` are reserved, and that one error is expected:
+Claude Code 2.1.296 still installs and runs the plugin. Treat any other validation
+error as a defect, and re-check this decision if a directory submission is planned.
+
 Add positive, near-miss, ambiguous, and collision cases for new routing surfaces.
 High-risk behavior also belongs in `evals/v2-behavior-evals.json`.
 

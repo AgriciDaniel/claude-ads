@@ -41,9 +41,11 @@ def test_every_routed_skill_exists_and_every_leaf_skill_is_reachable(repo_root: 
     assert leaves == routed, f"unreachable from ads/SKILL.md: {sorted(leaves - routed)}"
 
 
-def test_root_declares_argument_hint_and_promises_no_video_rendering(repo_root: Path):
+def test_root_keeps_name_and_description_only_and_promises_no_video_rendering(repo_root: Path):
     text = (repo_root / "ads/SKILL.md").read_text(encoding="utf-8")
-    assert re.search(r"^argument-hint: ", text, re.MULTILINE)
+    frontmatter = text.split("---")[1]
+    # CONTRIBUTING requires name and description only; claude.ai uploads also reject other keys such as argument-hint.
+    assert sorted(re.findall(r"^([a-z-]+):", frontmatter, re.MULTILINE)) == ["description", "name"]
     assert "No skill renders video" in text
     assert "Fable" not in text
 
