@@ -9,8 +9,10 @@ abstract: >
   contracts, lifecycle workflows, client reports, and capability-gated account
   changes for professional operators.
 authors:
-  - alias: AgriciDaniel
-    name-particle: ""
+  - given-names: Daniel
+    family-names: Agrici
+    alias: AgriciDaniel
+    website: "https://agricidaniel.com"
 repository-code: "https://github.com/AgriciDaniel/claude-ads"
 url: "https://github.com/AgriciDaniel/claude-ads"
 license: MIT
