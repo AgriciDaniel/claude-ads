@@ -1,11 +1,11 @@
 ---
 name: ads-setup
-description: "Set up a paid-media client, brand, account, data-source, privacy, and mutation-guardrail profile for Claude Ads. Use for onboarding, initial configuration, brand DNA, API tokens or credential profiles, environment-variable or keychain setup, connecting exports or read adapters, safe native or verified-local installation, curl-pipe-bash install requests, declaring KPIs, or preparing a new advertising project."
+description: "Set up a paid-media client, account, data-source, privacy, and mutation-guardrail profile for Claude Ads. Use for onboarding, initial configuration, API tokens or credential profiles, environment-variable or keychain setup, connecting exports or read adapters, safe native or verified-local installation, curl-pipe-bash install requests, declaring KPIs, or preparing a new advertising project."
 ---
 
 # Paid Media Setup
 
-1. Read the main `ads` contract.
+1. Read the main `ads` contract. Website-derived brand profiles belong to `ads-dna`.
 2. Collect business model, offer, geography, regulated categories, objective,
    conversion taxonomy, economics, active platforms, account IDs, date/time
    conventions, and reporting audience.

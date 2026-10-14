@@ -76,6 +76,24 @@ def build_parser() -> argparse.ArgumentParser:
     ingest = commands.add_parser("ingest-export", help="normalize a generic CSV export")
     ingest.add_argument("--platform", required=True)
     ingest.add_argument("path")
+
+    cockpit = commands.add_parser("cockpit", help="inspect runs through the optional local workbench")
+    cockpit_commands = cockpit.add_subparsers(dest="cockpit_command", required=True)
+    for name in ("doctor", "snapshot", "compare", "action", "demo"):
+        command = cockpit_commands.add_parser(name)
+        command.add_argument("--policy-root")
+        command.add_argument("--runs-root", required=name != "doctor")
+        if name in {"snapshot", "compare", "action"}:
+            command.add_argument("--run-id", required=True)
+        if name in {"snapshot", "compare"}:
+            command.add_argument("--as-of", help="explicit evaluation-date override, YYYY-MM-DD")
+        if name == "compare":
+            command.add_argument("--baseline-id", required=True)
+        if name == "action":
+            command.add_argument("--operation", required=True, choices=("validate-input", "validate-run", "render-report"))
+            command.add_argument("--expected-fingerprint", required=True)
+            command.add_argument("--input-id")
+            command.add_argument("--format", choices=("markdown", "html", "pdf"), default="markdown")
     return parser
 
 
@@ -83,7 +101,41 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
-        if args.command == "validate":
+        if args.command == "cockpit":
+            # Optional UI consumers and portable callers use the same backend.
+            from .cockpit import CockpitError, action, compare, create_demo, doctor, snapshot
+
+            try:
+                policy_root = resolve_policy_root(args.policy_root)
+            except PolicyRootError as exc:
+                raise CockpitError("Cannot resolve Cockpit policy resources; supply a valid --policy-root.") from exc
+            as_of = None
+            if getattr(args, "as_of", None):
+                try:
+                    as_of = date.fromisoformat(args.as_of)
+                    if as_of.isoformat() != args.as_of:
+                        raise ValueError("canonical date required")
+                except ValueError as exc:
+                    raise CockpitError("--as-of must be an ISO 8601 date.") from exc
+            if args.cockpit_command == "doctor":
+                payload = doctor(policy_root, args.runs_root)
+            elif args.cockpit_command == "snapshot":
+                payload = snapshot(args.runs_root, args.run_id, policy_root, as_of=as_of)
+            elif args.cockpit_command == "compare":
+                payload = compare(args.runs_root, args.run_id, args.baseline_id, policy_root, as_of=as_of)
+            elif args.cockpit_command == "demo":
+                payload = create_demo(args.runs_root, policy_root)
+            else:
+                # Exit 0 means a receipt was produced. Its outcome field says
+                # succeeded, failed or blocked; the launcher parses that JSON.
+                # Requests rejected before a receipt exists exit 2 below.
+                payload = action(
+                    args.runs_root, args.run_id, policy_root, args.operation,
+                    expected_fingerprint=args.expected_fingerprint,
+                    input_id=args.input_id, format=args.format,
+                )
+            _emit(payload)
+        elif args.command == "validate":
             load_contract(args.contract, args.path)
             _emit(
                 {
@@ -235,7 +287,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         ReportRenderError,
         ScoringError,
     ) as exc:
-        print(json.dumps({"status": "invalid", "error": str(exc)}, sort_keys=True), file=sys.stderr)
+        error = "Cockpit validation failed." if args.command == "cockpit" else str(exc)
+        print(json.dumps({"status": "invalid", "error": error}, sort_keys=True), file=sys.stderr)
+        return 2
+    except ValueError as exc:
+        if args.command != "cockpit":
+            raise
+        # Only public, bounded Cockpit diagnostics may cross the bridge.
+        from .cockpit import CockpitError
+
+        error = str(exc) if isinstance(exc, CockpitError) else "Cockpit validation failed."
+        print(json.dumps({"status": "invalid", "error": error}, sort_keys=True), file=sys.stderr)
+        return 2
+    except (OSError, RecursionError) as exc:
+        if args.command != "cockpit":
+            raise
+        print(json.dumps({"status": "invalid", "error": "Local Cockpit resources are unavailable."}, sort_keys=True), file=sys.stderr)
         return 2
     return 0
 

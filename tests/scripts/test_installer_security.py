@@ -1731,3 +1731,270 @@ def test_powershell_repeat_preserves_dropped_owned_file_for_uninstall(tmp_path):
     )
     assert uninstall.returncode == 0, uninstall.stdout + uninstall.stderr
     assert not installed_legacy.exists()
+
+
+# ---------------------------------------------------------------------------
+# Temporary-directory cleanup, path handling, and honest source wording
+# ---------------------------------------------------------------------------
+
+
+def _fake_git(tmp_path: Path, distribution: Path) -> tuple[Path, Path]:
+    """Install a fake `git clone` that copies a local distribution.
+
+    Returns the directory to prepend to PATH and the file that logs invocations.
+    """
+    directory = tmp_path / "fake-git-bin"
+    directory.mkdir()
+    log = tmp_path / "fake-git.log"
+    script = directory / "git"
+    script.write_text(
+        "#!/bin/sh\n"
+        'printf "%s\\n" "$*" >> "$FAKE_GIT_LOG"\n'
+        'if [ -n "$FAKE_GIT_FAIL" ]; then\n'
+        '  echo "fatal: simulated clone failure" >&2\n'
+        "  exit 128\n"
+        "fi\n"
+        "for last; do :; done\n"
+        'cp -R "$FAKE_GIT_SOURCE" "$last"\n',
+        encoding="utf-8",
+    )
+    script.chmod(0o755)
+    return directory, log
+
+
+def _run_installer(
+    script: str, tmp_path: Path, *args: str, **extra_env: str
+) -> subprocess.CompletedProcess[str]:
+    if os.name == "nt":
+        pytest.skip("Bash installer behavior is exercised on Linux and macOS runners")
+    return subprocess.run(
+        ["bash", str(ROOT / script), *args],
+        cwd=ROOT,
+        env={**os.environ, **extra_env},
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+@BASH_INSTALLER_ONLY
+@pytest.mark.parametrize("scenario", ["success", "collision", "clone-failure"])
+@pytest.mark.parametrize("source_mode", ["git", "local"])
+def test_bash_installer_removes_temp_dirs_on_every_exit_path(
+    tmp_path, scenario, source_mode
+):
+    if source_mode == "local" and scenario == "clone-failure":
+        pytest.skip("A clone failure only exists for --source=git")
+    distribution = _minimal_distribution(tmp_path / "distribution")
+    fake_bin, log = _fake_git(tmp_path, distribution)
+    scratch = tmp_path / "scratch-tmp"
+    scratch.mkdir()
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    if scenario == "collision":
+        # An unowned file makes main() return 1 after the plan directory exists.
+        (skills / "ads").mkdir(parents=True)
+        (skills / "ads/SKILL.md").write_text("user-owned\n", encoding="utf-8")
+    source_args = (
+        ["--source=git"]
+        if source_mode == "git"
+        else ["--source=local", f"--repo-dir={distribution}"]
+    )
+
+    result = _run_installer(
+        "install.sh", tmp_path, "--target=claude", "--no-deps", *source_args,
+        f"--skill-dir={skills}", f"--agent-dir={agents}",
+        PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        TMPDIR=str(scratch),
+        FAKE_GIT_LOG=str(log),
+        FAKE_GIT_SOURCE=str(distribution),
+        FAKE_GIT_FAIL="1" if scenario == "clone-failure" else "",
+    )
+
+    if scenario == "success":
+        assert result.returncode == 0, result.stdout + result.stderr
+    else:
+        assert result.returncode != 0
+    if source_mode == "git":
+        assert log.read_text(encoding="utf-8").startswith("clone --depth 1 ")
+    assert list(scratch.iterdir()) == [], "installer leaked temporary directories"
+    assert not list(skills.glob(".claude-ads-manifest.*"))
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_uninstall_removes_validation_dir_on_every_exit_path(tmp_path):
+    skills, agents = _install(tmp_path)
+    scratch = tmp_path / "scratch-tmp"
+    scratch.mkdir()
+    arguments = ("--target=claude", f"--skill-dir={skills}", f"--agent-dir={agents}")
+    manifest = skills / ".claude-ads-claude.manifest"
+    valid = manifest.read_text(encoding="utf-8")
+
+    # Failure after the validation directory exists.
+    manifest.write_text(valid + f"F\t{tmp_path.parent / 'outside.txt'}\n", encoding="utf-8")
+    failed = _run_installer("uninstall.sh", tmp_path, *arguments, TMPDIR=str(scratch))
+    assert failed.returncode != 0
+    assert list(scratch.iterdir()) == []
+
+    # Normal completion.
+    manifest.write_text(valid, encoding="utf-8")
+    ok = _run_installer("uninstall.sh", tmp_path, *arguments, TMPDIR=str(scratch))
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+    assert list(scratch.iterdir()) == []
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_git_source_failure_surfaces_git_error_and_is_unpinned(tmp_path):
+    distribution = _minimal_distribution(tmp_path / "distribution")
+    fake_bin, log = _fake_git(tmp_path, distribution)
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+
+    result = _run_installer(
+        "install.sh", tmp_path, "--target=claude", "--no-deps", "--source=git",
+        f"--skill-dir={skills}", f"--agent-dir={agents}",
+        PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        FAKE_GIT_LOG=str(log), FAKE_GIT_SOURCE=str(distribution), FAKE_GIT_FAIL="1",
+    )
+
+    assert result.returncode != 0
+    assert "simulated clone failure" in result.stderr
+    assert not skills.exists() and not agents.exists()
+    output = result.stdout + result.stderr
+    assert "unpinned" in output
+    assert "authenticated" not in output.lower()
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_expands_leading_tilde_instead_of_creating_tilde_dir(tmp_path):
+    distribution = _minimal_distribution(tmp_path / "distribution")
+    home = tmp_path / "home"
+    home.mkdir()
+    workdir = tmp_path / "workdir"
+    workdir.mkdir()
+
+    result = subprocess.run(
+        ["bash", str(ROOT / "install.sh"), "--target=claude", "--no-deps",
+         "--source=local", f"--repo-dir={distribution}",
+         "--skill-dir=~/custom/skills", "--agent-dir=~/custom/agents"],
+        cwd=workdir, env={**os.environ, "HOME": str(home)},
+        check=False, capture_output=True, text=True,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (home / "custom/skills/ads/SKILL.md").is_file()
+    assert (home / "custom/agents/legacy-agent.md").is_file()
+    assert not (workdir / "~").exists()
+
+    uninstall = subprocess.run(
+        ["bash", str(ROOT / "uninstall.sh"), "--target=claude",
+         "--skill-dir=~/custom/skills", "--agent-dir=~/custom/agents"],
+        cwd=workdir, env={**os.environ, "HOME": str(home)},
+        check=False, capture_output=True, text=True,
+    )
+    assert uninstall.returncode == 0, uninstall.stdout + uninstall.stderr
+    assert not (home / "custom/skills/ads/SKILL.md").exists()
+
+
+@BASH_INSTALLER_ONLY
+@pytest.mark.parametrize("script", ["install.sh", "uninstall.sh"])
+def test_bash_installers_reject_tilde_user_paths_without_mutation(tmp_path, script):
+    workdir = tmp_path / "workdir"
+    workdir.mkdir()
+    arguments = ["--target=claude", "--skill-dir=~someone/skills", f"--agent-dir={tmp_path / 'agents'}"]
+    if script == "install.sh":
+        arguments += ["--source=local", "--no-deps"]
+
+    result = subprocess.run(
+        ["bash", str(ROOT / script), *arguments],
+        cwd=workdir, check=False, capture_output=True, text=True,
+    )
+
+    assert result.returncode != 0
+    assert "Unsupported ~user path" in result.stderr
+    assert list(workdir.iterdir()) == []
+    assert not (tmp_path / "agents").exists()
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_rejects_only_dotdot_components_and_allows_spaces(tmp_path):
+    distribution = _minimal_distribution(tmp_path / "distribution")
+
+    def install(skills: str, agents: str) -> subprocess.CompletedProcess[str]:
+        return _run_installer(
+            "install.sh", tmp_path, "--target=claude", "--no-deps",
+            "--source=local", f"--repo-dir={distribution}",
+            f"--skill-dir={skills}", f"--agent-dir={agents}",
+        )
+
+    for rejected in (
+        f"{tmp_path}/a/../b",
+        f"{tmp_path}/a/..",
+        "..",
+        "../skills",
+    ):
+        result = install(rejected, str(tmp_path / "agents"))
+        assert result.returncode != 0, rejected
+        assert "Invalid --skill-dir" in result.stderr, rejected
+    assert not (tmp_path / "agents").exists()
+
+    legitimate_skills = tmp_path / "my..skills v1..2" / "with space"
+    legitimate_agents = tmp_path / "agents..dir"
+    result = install(str(legitimate_skills), str(legitimate_agents))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (legitimate_skills / "ads/SKILL.md").is_file()
+
+    uninstall = _run_installer(
+        "uninstall.sh", tmp_path, "--target=claude",
+        f"--skill-dir={legitimate_skills}", f"--agent-dir={legitimate_agents}",
+    )
+    assert uninstall.returncode == 0, uninstall.stdout + uninstall.stderr
+    assert not (legitimate_skills / "ads/SKILL.md").exists()
+
+    traversal = _run_installer(
+        "uninstall.sh", tmp_path, "--target=claude",
+        f"--skill-dir={tmp_path}/a/../b", f"--agent-dir={legitimate_agents}",
+    )
+    assert traversal.returncode != 0
+    assert "Invalid --skill-dir" in traversal.stderr
+
+
+@BASH_INSTALLER_ONLY
+def test_bash_installer_banner_template_count_is_derived_from_files(tmp_path):
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+    result = _run_installer(
+        "install.sh", tmp_path, "--target=claude", "--source=local", "--no-deps",
+        f"--skill-dir={skills}", f"--agent-dir={agents}",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    expected = len(list((ROOT / "skills/ads-plan/assets").glob("*.md")))
+    assert expected > 0
+    assert f"{expected} industry templates" in result.stdout
+
+    minimal = _minimal_distribution(tmp_path / "distribution")
+    bare = _run_installer(
+        "install.sh", tmp_path, "--target=claude", "--source=local", "--no-deps",
+        f"--repo-dir={minimal}", f"--skill-dir={tmp_path / 'skills2'}",
+        f"--agent-dir={tmp_path / 'agents2'}",
+    )
+    assert bare.returncode == 0, bare.stdout + bare.stderr
+    assert "industry templates" not in bare.stdout
+
+
+def test_installer_wording_does_not_claim_signatures_or_authenticated_git():
+    for script in ("install.sh", "install.ps1"):
+        text = (ROOT / script).read_text(encoding="utf-8")
+        lowered = text.lower()
+        assert "authenticated git" not in lowered, script
+        assert "signed release archive" not in lowered, script
+        assert "12 industry templates" not in lowered, script
+        assert "unpinned" in lowered, script
+        assert "SHA256SUMS" in text, script
+
+
+def test_powershell_installer_surfaces_git_clone_error_text():
+    text = (ROOT / "install.ps1").read_text(encoding="utf-8")
+    assert "git clone --depth 1 $RepoUrl" in text
+    assert "Out-Null" not in "".join(
+        line for line in text.splitlines() if "git clone" in line
+    )
+    assert "Git clone failed (exit code $GitExitCode): $GitText" in text
+    assert "$TemplateCount industry templates" in text

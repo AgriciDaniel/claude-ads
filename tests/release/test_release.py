@@ -256,6 +256,16 @@ def test_sensitive_artifact_ignore_patterns_are_present() -> None:
         "credentials*",
         "secrets*",
         "config.local.*",
+        ".audit-venv/",
+        "venv/",
+        "google-ads.yaml",
+        "*.p8",
+        "token.json",
+        ".netrc",
+        ".npmrc",
+        ".mypy_cache/",
+        ".ruff_cache/",
+        ".coverage",
     } <= patterns
 
 

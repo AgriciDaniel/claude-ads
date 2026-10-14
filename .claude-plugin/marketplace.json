@@ -57,6 +57,24 @@
         "cursor",
         "multi-host"
       ]
+    },
+    {
+      "name": "ads-cockpit",
+      "source": "./mods/claude-ads-cockpit",
+      "description": "Optional local Claude Ads workbench for runs, evidence, inputs, comparison and report receipts. Enabled separately.",
+      "version": "0.1.0",
+      "author": {
+        "name": "AI Marketing Hub"
+      },
+      "repository": "https://github.com/AgriciDaniel/claude-ads",
+      "license": "MIT",
+      "category": "marketing",
+      "tags": [
+        "advertising",
+        "local-workbench",
+        "evidence",
+        "mods"
+      ]
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 name: ads-meta
-description: "Audit Meta Ads measurement, Pixel and Conversions API, attribution, Facebook and Instagram creative, audiences, placements, automation, budgets, account structure, and policy. Use for Meta Ads, Facebook Ads, Instagram Ads, Advantage+, Pixel, CAPI, Events Manager, creative fatigue, or Meta campaign optimization."
+description: "Audit Meta Ads measurement, Pixel and Events Manager, attribution, Facebook and Instagram creative, audiences, placements, automation, budgets, account structure, and policy. Use for Meta Ads, Facebook Ads, Instagram Ads, Advantage+, Pixel, Events Manager, or Meta account structure. Read-only; use ads-server-side-tracking for server-side events and ads-optimize to change campaigns."
 ---
 
 # Meta Ads Audit

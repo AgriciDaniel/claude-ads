@@ -55,7 +55,7 @@ LEGACY_AGENT_PATTERNS = {
         r"\b(?:banana|gemini|openai|stability|replicate)\b", re.IGNORECASE
     ),
     "pinned model": re.compile(r"^model\s*:", re.MULTILINE),
-    "pinned tool list": re.compile(r"^(?:tools|maxTurns)\s*:", re.MULTILINE),
+    "pinned turn limit": re.compile(r"^maxTurns\s*:", re.MULTILINE),
 }
 
 FORBIDDEN_PLAN_PHRASES = (

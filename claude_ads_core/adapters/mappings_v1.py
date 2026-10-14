@@ -436,7 +436,7 @@ PROFILES: dict[str, NativeExportProfile] = {
         None,
         ("date", "account_id", "account_name", "currency", "campaign_id", "campaign_name", "campaign_status", "creative_id", "creative_name", "conversion_action", "conversions", "budget", "spend"),
         ("x-conversion-tracking",),
-        ("https://business.x.com/en/help/campaign-measurement-and-analytics/conversion-tracking-for-websites/about-conversion-tracking",),
+        ("https://help.x.com/en/business-and-advertising/about-conversion-tracking",),
         "The curated X source covers website conversion tracking, not a current native reporting schema; accepting guessed report headers would be unsafe.",
     ),
 }

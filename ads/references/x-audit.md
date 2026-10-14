@@ -48,7 +48,7 @@ unscored opportunities.
 
 ## Registered official evidence
 
-- `x-conversion-tracking`: [X website conversion tracking](https://business.x.com/en/help/campaign-measurement-and-analytics/conversion-tracking-for-websites/about-conversion-tracking)
+- `x-conversion-tracking`: [X website conversion tracking](https://help.x.com/en/business-and-advertising/about-conversion-tracking)
 
 Official sources override this summary when they change. Unsupported controls stay
 `unknown`; practitioner material may supplement but not replace official evidence.

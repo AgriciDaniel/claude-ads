@@ -8,6 +8,45 @@ body:
       value: |
         Thanks for taking the time to report a bug! Please fill in as much detail as you can.
 
+  - type: input
+    id: version
+    attributes:
+      label: Claude Ads Version
+      description: Run `python -m claude_ads_core --version`, or paste the plugin version from your host
+      placeholder: "e.g. the output of the version command"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Install Method
+      options:
+        - Claude Code plugin (marketplace)
+        - install.sh with --source=local
+        - install.sh with --source=git
+        - install.ps1
+        - Release archive
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: host
+    attributes:
+      label: Host
+      description: The CLI or IDE that runs Claude Ads. Hosts other than Claude Code are experimental.
+      options:
+        - Claude Code
+        - OpenAI Codex CLI
+        - Gemini CLI
+        - Cursor
+        - Windsurf
+        - Goose
+        - Other
+    validations:
+      required: true
+
   - type: dropdown
     id: os
     attributes:
@@ -32,7 +71,7 @@ body:
     id: command
     attributes:
       label: Command That Failed
-      description: The exact Claude Code command you ran
+      description: The exact command you ran
       placeholder: "e.g. /ads google"
     validations:
       required: true
@@ -41,7 +80,7 @@ body:
     id: error
     attributes:
       label: Full Error Output
-      description: Copy and paste the complete error from your terminal
+      description: Copy and paste the complete error from your terminal. Remove credentials, tokens, and client data first.
       render: shell
     validations:
       required: true

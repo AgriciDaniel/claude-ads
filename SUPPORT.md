@@ -11,7 +11,7 @@
 
 ## Before Opening an Issue
 
-1. Check the [README](README.md); installation, usage, and FAQ cover the most common questions
+1. Check the [README](README.md); the Quickstart, Installation, and Commands sections cover the most common questions
 2. Search [existing issues](https://github.com/AgriciDaniel/claude-ads/issues) to avoid duplicates
 3. Include your OS, Python version, the command that failed, and the full error output
 

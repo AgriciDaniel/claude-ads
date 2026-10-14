@@ -1,6 +1,6 @@
 ---
 name: ads-reddit
-description: "Audit Reddit Ads measurement, campaign structure, community and interest targeting, creative-native fit, catalog advertising, budgets, brand safety, and reporting. Use for Reddit Ads, promoted posts, conversation ads, community targeting, Reddit Pixel, Reddit Conversions API, or Reddit dynamic product ads."
+description: "Audit Reddit Ads measurement, campaign structure, community and interest targeting, creative-native fit, catalog advertising, budgets, brand safety, and reporting. Use for Reddit Ads, conversation ads, community targeting, Reddit Pixel, Reddit Conversions API, or Reddit dynamic product ads."
 ---
 
 # Reddit Ads Audit

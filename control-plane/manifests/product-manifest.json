@@ -27,5 +27,24 @@
     "control-plane/PRODUCT_BOUNDARIES.md",
     "control-plane/PUBLISHING_POLICY.md",
     "control-plane/RELEASE_REQUIREMENTS.md"
+  ],
+  "optional_components": [
+    {
+      "id": "ads-cockpit",
+      "display_name": "Claude Ads Cockpit",
+      "version": "0.1.0",
+      "source": "mods/claude-ads-cockpit",
+      "default_enabled": false,
+      "status": "development-candidate",
+      "runtime": "claude-code-mods",
+      "command": "/ads-cockpit",
+      "machine_contracts": [
+        "cockpit-index",
+        "cockpit-snapshot",
+        "cockpit-action-receipt"
+      ],
+      "mutation_authority": "local-validation-and-report-output-only",
+      "native_acceptance": "pending"
+    }
   ]
 }

@@ -4,7 +4,7 @@ set -euo pipefail
 # Claude Ads Installer
 # Wraps everything in main() to prevent partial execution on network failure.
 #
-# Default target is Claude Code. Cross-host targets are EXPERIMENTAL — they
+# Default target is Claude Code. Cross-host targets are EXPERIMENTAL: they
 # install the same skill artifacts under each host's expected directory, but
 # the host's own runtime conventions may differ. Pin path overrides via
 # --skill-dir / --agent-dir if the auto-detected paths are wrong for your
@@ -21,11 +21,36 @@ set -euo pipefail
 #   bash install.sh --source=local --no-deps     # install this checkout, skip Python deps
 #
 # All target keys are validated against a strict whitelist (no shell injection
-# possible via --target=...). Custom --skill-dir paths are validated against
-# `;&|$()<>` ` `, leading dashes, `..` segments, and UNC-style paths.
+# possible via --target=...). Custom --skill-dir and --agent-dir paths are
+# validated against shell metacharacters (`;&|$()<>` and backtick), backslashes,
+# control characters (newline, carriage return, tab), leading dashes, `..` path
+# components, and UNC-style paths. Spaces are allowed because every path is
+# quoted and a user home directory may legitimately contain them. A leading `~`
+# or `~/` is expanded to $HOME because bash does not expand a tilde after `=`.
+#
+# --source=git clones the default branch HEAD of the public repository and is
+# NOT pinned to a release. Releases publish a zip, SHA256SUMS, an SBOM and a
+# manifest (no signatures); see the README for the checksum recipe.
 
 REPO_URL="https://github.com/AgriciDaniel/claude-ads"
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+
+# Temporary paths are globals so the EXIT trap can see them on every exit path
+# (normal return, `return 1` from main, and `exit 1`). Locals declared in main()
+# are out of scope when the trap fires.
+TEMP_DIR=""
+MANIFEST_TMP=""
+PLAN_DIR=""
+
+cleanup() {
+    local path
+    for path in "$TEMP_DIR" "$MANIFEST_TMP" "$PLAN_DIR"; do
+        [ -n "$path" ] || continue
+        rm -rf -- "$path"
+    done
+    return 0
+}
+trap cleanup EXIT
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Target whitelist + path mapping
@@ -34,12 +59,12 @@ SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 # Keep this table the SINGLE source of truth. When a new host CLI is added,
 # update only this case statement plus the help text.
 #
-# claude    — Claude Code (VERIFIED, GA)
-# codex     — OpenAI Codex CLI (EXPERIMENTAL, verify before relying on)
-# cursor    — Cursor IDE (EXPERIMENTAL, extension model differs)
-# windsurf  — Windsurf IDE (EXPERIMENTAL)
-# gemini    — Gemini CLI (EXPERIMENTAL)
-# goose     — Goose CLI (EXPERIMENTAL)
+# claude    : Claude Code (VERIFIED, GA)
+# codex     : OpenAI Codex CLI (EXPERIMENTAL, verify before relying on)
+# cursor    : Cursor IDE (EXPERIMENTAL, extension model differs)
+# windsurf  : Windsurf IDE (EXPERIMENTAL)
+# gemini    : Gemini CLI (EXPERIMENTAL)
+# goose     : Goose CLI (EXPERIMENTAL)
 
 resolve_target_paths() {
     local target="$1"
@@ -98,13 +123,34 @@ validate_install_path() {
     case "$path" in -*) return 1 ;; esac
     # Reject shell metacharacters
     case "$path" in *[\;\&\|\$\(\)\<\>\`\\]*) return 1 ;; esac
-    # Reject parent-traversal segments
-    case "$path" in *..*) return 1 ;; esac
+    # Reject parent-traversal components. Names that merely contain two dots,
+    # such as `my..skills` or `v1..2`, are legitimate.
+    case "$path" in ..|../*|*/..|*/../*) return 1 ;; esac
     # Reject UNC-style paths (Windows-ish input slipping through bash)
     case "$path" in //*|\\\\*) return 1 ;; esac
     # Manifest records are tab/newline delimited.
     case "$path" in *$'\n'*|*$'\r'*|*$'\t'*) return 1 ;; esac
     return 0
+}
+
+# Bash does not expand a tilde that follows `=` (as in `--skill-dir=~/x`), so a
+# literal `~` directory would be created. Expand a leading `~` or `~/` to $HOME.
+# Other tilde forms (`~user/x`) are not supported and are rejected by the caller.
+expand_home_path() {
+    local value="$1"
+    case "$value" in
+        \~) printf '%s' "$HOME" ;;
+        \~/*) printf '%s' "${HOME}/${value#\~/}" ;;
+        *) printf '%s' "$value" ;;
+    esac
+}
+
+path_uses_unsupported_tilde() {
+    case "$1" in
+        \~|\~/*) return 1 ;;
+        \~*) return 0 ;;
+        *) return 1 ;;
+    esac
 }
 
 validate_runtime_resource_path() {
@@ -139,8 +185,10 @@ Targets (default: claude):
 
 Overrides:
   --skill-dir=<path>   Override the target's default skill install root
+                       (a leading ~ or ~/ is expanded to your home directory)
   --agent-dir=<path>   Override the target's default agent install root
-  --source=<mode>      auto uses this checkout when available, otherwise authenticated Git
+  --source=<mode>      auto uses this checkout when available, otherwise git
+                       git clones the default branch HEAD (unpinned, not a release)
   --repo-dir=<path>    Local checkout to install (implies --source=local)
   --no-deps            Do not create the verified managed Python environment
 
@@ -151,8 +199,10 @@ Examples:
   bash install.sh --target=claude --skill-dir=~/custom/skills
 
 Security:
-  Prefer a host-native plugin install or a signed release archive with a
-  verified SHA-256 checksum. Never pipe a remote installer directly to a shell.
+  Prefer a host-native plugin install or a tagged release archive with a
+  verified SHA-256 checksum (releases publish SHA256SUMS; they are not signed).
+  --source=git is unpinned: it installs whatever the default branch holds now.
+  Never pipe a remote installer directly to a shell.
 
 EOF
 }
@@ -236,6 +286,15 @@ main() {
     fi
 
     # Apply path overrides (with strict validation)
+    if path_uses_unsupported_tilde "$SKILL_DIR_OVERRIDE" \
+        || path_uses_unsupported_tilde "$AGENT_DIR_OVERRIDE" \
+        || path_uses_unsupported_tilde "$REPO_DIR"; then
+        echo "✗ Unsupported ~user path. Use an absolute path or a path starting with ~/" >&2
+        exit 1
+    fi
+    SKILL_DIR_OVERRIDE=$(expand_home_path "$SKILL_DIR_OVERRIDE")
+    AGENT_DIR_OVERRIDE=$(expand_home_path "$AGENT_DIR_OVERRIDE")
+    REPO_DIR=$(expand_home_path "$REPO_DIR")
     if [ -n "$SKILL_DIR_OVERRIDE" ]; then
         validate_install_path "$SKILL_DIR_OVERRIDE" || {
             echo "✗ Invalid --skill-dir: contains forbidden characters or traversal" >&2
@@ -264,9 +323,6 @@ main() {
     local MANIFEST_PATH="${SKILL_BASE}/.claude-ads-${TARGET}.manifest"
     local POWERSHELL_MANIFEST_PATH="${MANIFEST_PATH}.json"
     local SOURCE_DIR=""
-    local TEMP_DIR=""
-    local MANIFEST_TMP=""
-    trap 'rm -rf "${TEMP_DIR:-}" "${MANIFEST_TMP:-}" "${PLAN_DIR:-}"' EXIT
 
     case "$SOURCE_MODE" in
         auto)
@@ -345,13 +401,13 @@ print("|".join((sys.implementation.name, f"{sys.version_info.major}.{sys.version
     echo "════════════════════════════════════════"
     echo ""
 
-    # Resolve distribution source. Private Git installs use the operator's
-    # existing credential helper/SSH setup; credentials are never accepted as
-    # command arguments or embedded into the URL.
+    # Resolve distribution source. Git installs use the operator's existing
+    # Git configuration; credentials are never accepted as command arguments or
+    # embedded into the URL. The clone is NOT pinned to a release tag.
     if [ "$SOURCE_MODE" = "git" ]; then
-        command -v git >/dev/null 2>&1 || { echo "✗ Git is required for --source=git."; exit 1; }
+        command -v git >/dev/null 2>&1 || { echo "✗ Git is required for --source=git." >&2; exit 1; }
         TEMP_DIR=$(mktemp -d)
-        echo "↓ Downloading Claude Ads with authenticated Git..."
+        echo "↓ Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
         git clone --depth 1 "${REPO_URL}" "${TEMP_DIR}/claude-ads"
         SOURCE_DIR="${TEMP_DIR}/claude-ads"
     fi
@@ -390,7 +446,7 @@ print("|".join((sys.implementation.name, f"{sys.version_info.major}.{sys.version
     # Build and validate the complete source and destination plan before the
     # first install-root mutation. The plan is plain tab-delimited data and is
     # never evaluated as shell input.
-    local PLAN_DIR FILE_PLAN OUTPUT_PLAN DIR_PLAN DESTINATION_KEYS
+    local FILE_PLAN OUTPUT_PLAN DIR_PLAN DESTINATION_KEYS
     local PRIOR_FILES PRIOR_DIRS PRIOR_RECURSIVE PRIOR_BYTECODE PRIOR_ALL
     local CURRENT_FILES CURRENT_DIRS CURRENT_RECURSIVE CURRENT_BYTECODE
     PLAN_DIR=$(mktemp -d)
@@ -830,7 +886,7 @@ PYTHON
     MANIFEST_TMP=""
     echo "✓ Ownership manifest: ${MANIFEST_PATH}"
 
-    # Install Python dependencies — only for hosts that explicitly support
+    # Install Python dependencies, but only for hosts that explicitly support
     # Python execution (claude, codex). Other targets skip the pip step.
     echo ""
     if [ "${ALLOW_PIP}" = "1" ] && [ "$INSTALL_DEPS" = "1" ]; then
@@ -864,7 +920,7 @@ PYTHON
     elif [ "$INSTALL_DEPS" = "0" ]; then
         echo "ℹ Skipping Python dependencies (--no-deps)."
     else
-        echo "ℹ Skipping Python dependencies — ${HOST_LABEL} host runtime may not execute Python skills directly."
+        echo "ℹ Skipping Python dependencies: ${HOST_LABEL} host runtime may not execute Python skills directly."
         echo "  Python helpers require the packaged exact-hash lock on a supported CPython wheel target."
     fi
 
@@ -887,7 +943,13 @@ PYTHON
     echo "    • ${SUB_SKILL_COUNT} sub-skills (platform + lifecycle + functional + creative)"
     echo "    • ${AGENT_COUNT} agents"
     echo "    • ${REFERENCE_COUNT} reference files"
-    echo "    • 12 industry templates"
+    TEMPLATE_COUNT=0
+    if [ -d "${SOURCE_DIR}/skills/ads-plan/assets" ]; then
+        TEMPLATE_COUNT=$(find "${SOURCE_DIR}/skills/ads-plan/assets" -maxdepth 1 -name '*.md' -type f | wc -l | tr -d ' ')
+    fi
+    if [ "$TEMPLATE_COUNT" -gt 0 ]; then
+        echo "    • ${TEMPLATE_COUNT} industry templates"
+    fi
     echo ""
     echo "Usage:"
     echo "  1. Start your host CLI"

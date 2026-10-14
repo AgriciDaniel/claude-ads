@@ -26,8 +26,10 @@
 .EXAMPLE
     .\install.ps1 -SkillDir C:\Custom\Skills
 .NOTES
-    Prefer a host-native plugin install or a signed release archive after
-    verifying its SHA-256 checksum. Never pipe remote content to PowerShell.
+    Prefer a host-native plugin install or a tagged release archive after
+    verifying its SHA-256 checksum (releases publish SHA256SUMS and are not
+    signed). -Source git clones the default branch HEAD and is NOT pinned to a
+    release. Never pipe remote content to PowerShell.
 #>
 
 param(
@@ -113,7 +115,7 @@ function Test-InstallPath {
     param([string]$Path)
     if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
     if ($Path -match '[\;\&\|\$\(\)\<\>\`]') { return $false }
-    if ($Path -match '\.\.') { return $false }
+    if ($Path -match '(^|[\\/])\.\.($|[\\/])') { return $false }   # parent-traversal components only
     if ($Path -match '^[-]') { return $false }
     if ($Path -match '^(\\\\|//)') { return $false }   # UNC paths
     return $true
@@ -427,7 +429,8 @@ function Main {
     Write-Host ""
 
     # Prefer the current release/checkout when this script ships with the
-    # distribution. Standalone installers use the operator's authenticated Git.
+    # distribution. Standalone installers clone the default branch HEAD with the
+    # operator's Git; the clone is not pinned to a release tag.
     $SourceDir = $null
     if ($RepoDir) { $Source = 'local' }
     if ($Source -eq 'auto') {
@@ -473,11 +476,15 @@ function Main {
     try {
         if ($Source -eq 'git') {
             $TempDir = Join-Path $env:TEMP "claude-ads-install-$(Get-Random)"
-            Write-Host "Downloading Claude Ads with authenticated Git..."
+            Write-Host "Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
             $ErrorActionPreference = "Continue"
-            git clone --depth 1 $RepoUrl "$TempDir\claude-ads" 2>&1 | Out-Null
+            $GitOutput = & git clone --depth 1 $RepoUrl "$TempDir\claude-ads" 2>&1
+            $GitExitCode = $LASTEXITCODE
             $ErrorActionPreference = "Stop"
-            if ($LASTEXITCODE -ne 0) { throw "Git clone failed" }
+            if ($GitExitCode -ne 0) {
+                $GitText = (@($GitOutput) | ForEach-Object { "$_" }) -join [Environment]::NewLine
+                throw "Git clone failed (exit code $GitExitCode): $GitText"
+            }
             $SourceDir = "$TempDir\claude-ads"
         }
 
@@ -834,11 +841,15 @@ function Main {
         $SubSkillCount = @(Get-ChildItem "$SourceDir\skills" -Directory | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") }).Count
         $AgentCount = @(Get-ChildItem "$SourceDir\agents\*.md" -File).Count
         $ReferenceCount = @(Get-ChildItem "$SourceDir\ads\references\*.md" -File).Count
+        $TemplateDir = Join-Path $SourceDir "skills\ads-plan\assets"
+        $TemplateCount = if (Test-Path -LiteralPath $TemplateDir -PathType Container) {
+            @(Get-ChildItem -LiteralPath $TemplateDir -Filter "*.md" -File).Count
+        } else { 0 }
         Write-Host "    - 1 main skill (ads orchestrator)"
         Write-Host "    - $SubSkillCount sub-skills (platform + lifecycle + functional + creative)"
         Write-Host "    - $AgentCount agents"
         Write-Host "    - $ReferenceCount reference files"
-        Write-Host "    - 12 industry templates"
+        if ($TemplateCount -gt 0) { Write-Host "    - $TemplateCount industry templates" }
         Write-Host ""
         Write-Host "Usage:"
         Write-Host "  1. Start your host CLI"

@@ -1,7 +1,7 @@
 # Creative Specification Resolution
 
-**Verified:** 2026-08-25
-**Refresh due:** 2026-09-24
+**Verified:** 2026-10-07 for the retained RSA facts (`CLM-0100`, `CLM-0101`); the Meta Reels entry point was rechecked 2026-10-12; the Amazon and Reddit entries could not be rechecked 2026-10-12 and stay unverified
+**Refresh due:** 2026-11-06
 **Evidence status:** source index and validation workflow, not a universal spec sheet
 
 Creative requirements vary by format, placement, objective, geography, account
@@ -27,17 +27,17 @@ values, and request a current preview or API validation.
 
 | Platform | First-party source | Scope |
 | --- | --- | --- |
-| Google / YouTube | `google-rsa-official` — [Responsive search ads](https://support.google.com/google-ads/answer/7684791) and [Google Ads asset requirements](https://support.google.com/adspolicy/answer/6368661) | Search text and general asset policy |
-| Meta | `meta-video-ads-official`: [Meta Reels ads](https://www.facebook.com/business/ads/facebook-instagram-reels-ads) | Reels creative guidance and format discovery |
+| Google / YouTube | `google-rsa-official`: [Responsive search ads](https://support.google.com/google-ads/answer/7684791) and [Google Ads asset requirements](https://support.google.com/adspolicy/answer/6368661) | Search text and general asset policy |
+| Meta | `meta-video-ads-official`: [Meta Reels ads](https://www.facebook.com/business/ads/facebook-instagram-reels-ads) | Reels creative guidance and format discovery (page loaded 2026-10-12; it carries vendor performance claims that are not used here) |
 | LinkedIn | `linkedin-ads-guide-official`: [LinkedIn Ads Guide](https://business.linkedin.com/advertise/ads/ads-guide) | Current format entry points |
 | TikTok | `tiktok-ad-format-policy-official`: [Ad format and functionality](https://ads.tiktok.com/resources/help/article/tiktok-ads-policy-ad-format-and-functionality) | Creative and editorial requirements |
 | Microsoft | `microsoft-ad-types-official`: [ResponsiveSearchAd schema](https://learn.microsoft.com/en-us/advertising/campaign-management-service/responsivesearchad?view=bingads-13) | Current v13 responsive-search-ad behavior |
 | Apple | `apple-ads-creative-official`: [Apple Ads resources](https://ads.apple.com/app-store/resources) | Apple Ads resources and creative entry points |
-| Amazon | `amazon-creative-acceptance-official`: [General requirements](https://advertising.amazon.com/help/GDG2CCTRU55BYY2Y) | Amazon Ads general creative requirements |
-| Reddit | `reddit-ads-help-official` — [Reddit Ads Help](https://business.reddithelp.com/s/) | Current Reddit help and policy discovery |
-| Pinterest | `pinterest-ad-specs-official` — [Pinterest ad specs](https://help.pinterest.com/en/business/article/pinterest-product-specs) | Pinterest formats and assets |
-| Snapchat | `snap-creative-specs-official` — [Snap creative specifications](https://forbusiness.snapchat.com/advertising/ad-formats) | Snap ad-format entry point |
-| X | `x-creative-specs-official` — [X Ads creative specs](https://business.x.com/en/help/campaign-setup/creative-ad-specifications) | X formats and assets |
+| Amazon | `amazon-creative-acceptance-official`: [General requirements](https://advertising.amazon.com/help/GDG2CCTRU55BYY2Y) | Amazon Ads general creative requirements (page rendered only a site shell on 2026-10-12, so bind each rule to a directly readable Amazon page) |
+| Reddit | `reddit-ads-help-official`: [Reddit Ads Help](https://business.reddithelp.com/s/) | Current Reddit help and policy discovery (the help root rendered only a loading shell on 2026-10-12, so use topic-specific pages) |
+| Pinterest | `pinterest-ad-specs-official`: [Pinterest ad specs](https://help.pinterest.com/en/business/article/pinterest-product-specs) | Pinterest formats and assets |
+| Snapchat | `snap-creative-specs-official`: [Snap creative specifications](https://forbusiness.snapchat.com/advertising/ad-formats) | Snap ad-format entry point |
+| X | `x-creative-specs-official`: [X Ads creative specs](https://help.x.com/en/business-and-advertising/creative-ad-specifications) | X formats and assets |
 
 These pages are discovery points, not proof that every format is available in a
 given account. Re-check the active UI/API before emitting a pass or a mutation.

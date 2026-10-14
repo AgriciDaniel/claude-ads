@@ -88,9 +88,9 @@ def test_remediated_prompts_have_explicit_leaf_description_triggers(skill_descri
         "ads-landing": ("redirects", "private"),
         "ads-optimize": ("delete", "campaigns"),
         "ads-audit": ("partial audits", "authentication", "beta-feature"),
-        "ads-research": ("refresh_due", "tools or sources are unavailable", "release-current"),
+        "ads-research": ("refresh_due", "stale api or platform claims", "release-current"),
         "ads-setup": ("curl-pipe-bash", "api tokens", "keychain"),
-        "ads-validate": ("stale claims with missing tool access", "uninstall", "ownership-manifest", "unrelated ads-*"),
+        "ads-validate": ("uninstall", "ownership-manifest", "unrelated ads-*"),
         "ads-google": ("negative-keyword", "search terms reports", "broad negatives"),
         "ads-attribution": ("meta and google conversions", "incompatible"),
     }

@@ -20,6 +20,25 @@ operation pass approval, idempotency, verification, audit, and rollback gates.
 > [AI Marketing Hub Pro](https://www.skool.com/ai-marketing-hub-pro) members
 > get early access and direct collaboration.
 
+> [!IMPORTANT]
+> **Status: development candidate.** Claude Ads is not release-ready until every
+> gate in [control-plane/RELEASE_REQUIREMENTS.md](control-plane/RELEASE_REQUIREMENTS.md)
+> passes in a fresh verification context.
+>
+> - All twelve account-health scoring profiles are disabled, so no health score is
+>   produced. Audits report findings, unknowns, and evidence coverage instead.
+> - The Cockpit companion is optional and not yet natively accepted; see its
+>   [compatibility and acceptance limits](docs/cockpit/compatibility.md).
+> - Account changes stay drafts unless the full mutation gate passes.
+
+## Quickstart
+
+1. Install (see [Installation](#installation)): `/plugin marketplace add agricidaniel/claude-ads`, then `/plugin install claude-ads@ai-marketing-hub-claude-ads`.
+2. Run `/ads setup` and answer the intake: business model, objective, primary conversion, monthly spend, active platforms, and who may approve changes. Never paste API keys or tokens.
+3. Bring evidence: an account export (CSV or JSON), screenshots, or a pasted metrics summary with its date range, currency, and timezone.
+4. Run `/ads audit google` (or `/ads audit all`) for a source-grounded audit: JSON bundle, then Markdown or HTML, with missing data and unknowns stated.
+5. Run `/ads report` to re-render a prior run and `/ads next` to see the highest-priority blocker.
+
 <p align="center">
   <img src="assets/diagrams/how-it-works.svg" alt="Validated inputs flow through bounded workers into schema-valid findings and deterministic reports" width="100%">
 </p>
@@ -72,6 +91,15 @@ Standalone installs use `/ads`. Claude Code plugins are namespaced and use
 
 Platform shortcuts such as `/ads google`, `/ads meta`, `/ads amazon`, and
 `/ads reddit` route to the matching platform audit.
+
+Claude Ads Cockpit is a separately enabled companion, version 0.1.0, with the
+runtime plugin ID `ads-cockpit`. `/ads-cockpit` opens a local workbench for run
+states, evidence, missing inputs, comparisons, and report receipts. Its isolated
+synthetic demo is intended for walkthroughs. Explicit actions can validate inputs
+or runs and render Markdown, HTML, or conditional PDF reports. Task completion
+counts remain separate from health scores, and every scoring profile in the
+scoring manifest stays disabled. See the [Cockpit guide](docs/cockpit/user-guide.md) and
+[compatibility and acceptance limits](docs/cockpit/compatibility.md).
 
 ## Demo
 
@@ -130,6 +158,18 @@ bash install.sh --target=codex --source=local
 bash install.sh --target=gemini --source=local --no-deps
 ```
 
+> [!WARNING]
+> **EXPERIMENTAL:** Only Claude Code is verified. The Codex, Gemini, Cursor,
+> Windsurf, and Goose targets install the same skill artifacts under each host's
+> expected directory, but that host's runtime conventions may differ. Confirm the
+> result in your host, and pin the install locations with `--skill-dir` and
+> `--agent-dir` if the auto-detected paths are wrong. The installer creates the
+> managed Python environment only for the `claude` and `codex` targets.
+
+`--source=git` (the default when the installer is run outside a checkout) clones
+the default branch HEAD, which is unpinned and is not a verified release. Prefer
+`--source=local` from a checkout you have reviewed, or a release archive.
+
 PowerShell uses the same managed ownership model:
 
 ```powershell
@@ -137,6 +177,19 @@ git clone https://github.com/AgriciDaniel/claude-ads.git
 Set-Location claude-ads
 .\install.ps1 -Source local
 ```
+
+Verify a release archive before using it. Each GitHub release publishes the zip,
+`release-manifest.json`, `sbom.cdx.json`, and a `SHA256SUMS` file. Releases are
+checksummed, not signed, so a checksum confirms the files match what the release
+published and is not an independent proof of origin. Download all four files into
+one empty directory, then run:
+
+```bash
+sha256sum -c SHA256SUMS      # macOS: shasum -a 256 -c SHA256SUMS
+```
+
+Every line must report `OK` before you unzip and run `bash install.sh --source=local`
+from the extracted folder.
 
 Managed dependencies support CPython 3.11 and 3.12 on the declared Linux,
 macOS, and Windows wheel matrix. Unsupported interpreters fail before the
@@ -154,6 +207,11 @@ bash uninstall.sh --target=claude
 ```
 
 The PowerShell equivalent is `uninstall.ps1`.
+
+The Bash and PowerShell skill installers do not enable or load Cockpit. Its
+optional plugin has its own marketplace entry and curated archive, and requires
+an explicitly bound trusted core and Python executable. Installing the main
+skill alone preserves the existing experience.
 
 ## Architecture
 

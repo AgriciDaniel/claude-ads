@@ -9,6 +9,20 @@ set -euo pipefail
 #
 # Removes only files and directories recorded by install.sh's ownership
 # manifest. Unrelated ads-* skills and agents are never discovered by glob.
+#
+# A leading `~` or `~/` in --skill-dir or --agent-dir is expanded to $HOME,
+# because bash does not expand a tilde after `=`. Paths may contain spaces; the
+# `..` check rejects parent-traversal components only.
+
+# Global so the EXIT trap can see it on every exit path; a local declared in
+# main() is out of scope once main returns.
+VALIDATION_DIR=""
+
+cleanup() {
+    [ -n "$VALIDATION_DIR" ] || return 0
+    rm -rf -- "$VALIDATION_DIR"
+}
+trap cleanup EXIT
 
 resolve_target_paths() {
     local target="$1"
@@ -29,10 +43,27 @@ validate_install_path() {
     [ -z "$path" ] && return 1
     case "$path" in -*) return 1 ;; esac
     case "$path" in *[\;\&\|\$\(\)\<\>\`\\]*) return 1 ;; esac
-    case "$path" in *..*) return 1 ;; esac
+    case "$path" in ..|../*|*/..|*/../*) return 1 ;; esac
     case "$path" in //*|\\\\*) return 1 ;; esac
     case "$path" in *$'\n'*|*$'\r'*|*$'\t'*) return 1 ;; esac
     return 0
+}
+
+expand_home_path() {
+    local value="$1"
+    case "$value" in
+        \~) printf '%s' "$HOME" ;;
+        \~/*) printf '%s' "${HOME}/${value#\~/}" ;;
+        *) printf '%s' "$value" ;;
+    esac
+}
+
+path_uses_unsupported_tilde() {
+    case "$1" in
+        \~|\~/*) return 1 ;;
+        \~*) return 0 ;;
+        *) return 1 ;;
+    esac
 }
 
 is_owned_path() {
@@ -82,6 +113,12 @@ main() {
         exit 1
     fi
 
+    if path_uses_unsupported_tilde "$SKILL_DIR_OVERRIDE" || path_uses_unsupported_tilde "$AGENT_DIR_OVERRIDE"; then
+        echo "✗ Unsupported ~user path. Use an absolute path or a path starting with ~/" >&2
+        exit 1
+    fi
+    SKILL_DIR_OVERRIDE=$(expand_home_path "$SKILL_DIR_OVERRIDE")
+    AGENT_DIR_OVERRIDE=$(expand_home_path "$AGENT_DIR_OVERRIDE")
     if [ -n "$SKILL_DIR_OVERRIDE" ]; then
         validate_install_path "$SKILL_DIR_OVERRIDE" || { echo "✗ Invalid --skill-dir" >&2; exit 1; }
         SKILL_BASE="$SKILL_DIR_OVERRIDE"
@@ -104,7 +141,7 @@ main() {
         exit 1
     fi
 
-    local VALIDATION_DIR VALID_FILES VALID_DIRS VALID_RECURSIVE VALID_BYTECODE VALID_ALL
+    local VALID_FILES VALID_DIRS VALID_RECURSIVE VALID_BYTECODE VALID_ALL
     VALIDATION_DIR=$(mktemp -d)
     VALID_FILES="${VALIDATION_DIR}/files"
     VALID_DIRS="${VALIDATION_DIR}/directories"
@@ -112,7 +149,6 @@ main() {
     VALID_BYTECODE="${VALIDATION_DIR}/bytecode"
     VALID_ALL="${VALIDATION_DIR}/all"
     : > "$VALID_FILES"; : > "$VALID_DIRS"; : > "$VALID_RECURSIVE"; : > "$VALID_BYTECODE"; : > "$VALID_ALL"
-    trap 'rm -rf "${VALIDATION_DIR:-}"' EXIT
 
     assert_safe_recursive_links() {
         local tree="$1" links link target

@@ -1,6 +1,6 @@
 ---
 name: ads-tiktok
-description: "Audit TikTok Ads measurement, Pixel and Events API, mobile-first creative, audiences, Smart+, Shop and commerce campaigns, bidding, budgets, pacing, attribution, and policy. Use for TikTok Ads, TikTok Pixel, Events API, Smart+, TikTok Shop Ads, GMV Max, Spark Ads, or TikTok campaign optimization."
+description: "Audit TikTok Ads measurement, Pixel, mobile-first creative, audiences, Smart+, Shop and commerce campaigns, bidding, budgets, pacing, attribution, and policy. Use for TikTok Ads, TikTok Pixel, Smart+, TikTok Shop Ads, GMV Max, or Spark Ads. Read-only; use ads-server-side-tracking for server-side events and ads-optimize to change campaigns."
 ---
 
 # TikTok Ads Audit

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 from datetime import date, datetime, timezone
 import hashlib
 import importlib.util
@@ -40,6 +41,8 @@ PACKAGE_FILES = {
     "SECURITY.md",
     "SUPPORT.md",
     "THIRD_PARTY_NOTICES.md",
+    "docs/cockpit/user-guide.md",
+    "docs/cockpit/compatibility.md",
     "install.ps1",
     "install.sh",
     "pyproject.toml",
@@ -67,12 +70,16 @@ TEXT_SUFFIXES = {
     ".csv",
     ".html",
     ".json",
+    ".js",
+    ".mjs",
     ".lock",
     ".md",
     ".ps1",
     ".py",
     ".sh",
     ".svg",
+    ".ts",
+    ".tsx",
     ".toml",
     ".txt",
     ".yaml",
@@ -187,12 +194,32 @@ def tracked_files(root: Path) -> list[str]:
     return sorted(path for path in paths if path)
 
 
+def _companion_package_files() -> set[str]:
+    """Read the companion's sole curated allowlist without executing its code."""
+    helper = Path(__file__).with_name("package_cockpit.py")
+    if not helper.is_file():
+        return set()
+    for node in ast.parse(helper.read_text(encoding="utf-8")).body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "RUNTIME_FILES"
+            for target in node.targets
+        ):
+            names = ast.literal_eval(node.value)
+            if not isinstance(names, tuple) or any(
+                not isinstance(name, str) or validate_portable_path(name) for name in names
+            ):
+                raise ReleaseError("companion runtime allowlist is invalid")
+            return {"mods/claude-ads-cockpit/" + name for name in names}
+    raise ReleaseError("companion runtime allowlist is missing")
+
+
 def package_files(paths: list[str]) -> list[str]:
     """Select the explicitly public-safe product surface from tracked files."""
+    companion_paths = _companion_package_files()
     return [
         path
         for path in paths
-        if (path in PACKAGE_FILES or any(path.startswith(prefix) for prefix in PACKAGE_PREFIXES))
+        if (path in PACKAGE_FILES or path in companion_paths or any(path.startswith(prefix) for prefix in PACKAGE_PREFIXES))
         and not any(path.startswith(prefix) for prefix in PACKAGE_EXCLUDED_PREFIXES)
     ]
 
@@ -277,12 +304,36 @@ def _audit_manifest_consistency(root: Path, tracked: set[str]) -> list[str]:
     plugin = json.loads((root / plugin_path).read_text(encoding="utf-8"))
     marketplace = json.loads((root / marketplace_path).read_text(encoding="utf-8"))
     entries = marketplace.get("plugins") if isinstance(marketplace, dict) else None
-    if not isinstance(entries, list) or len(entries) != 1 or not isinstance(entries[0], dict):
-        return ["marketplace manifest must contain exactly one plugin object"]
-    entry = entries[0]
+    if not isinstance(entries, list) or not entries or any(not isinstance(item, dict) for item in entries):
+        return ["marketplace manifest must contain plugin objects"]
+    if any(not isinstance(item.get("name"), str) or not item["name"] for item in entries):
+        return ["marketplace plugin names must be nonempty strings"]
+    by_name = {item.get("name"): item for item in entries}
+    if len(by_name) != len(entries) or plugin.get("name") not in by_name:
+        return ["marketplace plugin names must be unique and include the primary plugin"]
+    if set(by_name) - {plugin.get("name"), "ads-cockpit"}:
+        return ["marketplace contains an unreviewed optional plugin"]
+    entry = by_name[plugin["name"]]
     for field in ("name", "version", "license", "repository"):
         if plugin.get(field) != entry.get(field):
             errors.append(f"plugin and marketplace disagree on {field!r}")
+    if "ads-cockpit" in by_name:
+        companion_entry = by_name["ads-cockpit"]
+        companion_path = "mods/claude-ads-cockpit/.claude-plugin/plugin.json"
+        if "scripts/package_cockpit.py" not in tracked:
+            errors.append("companion packaging allowlist is missing from the audited files")
+        if companion_entry.get("source") != "./mods/claude-ads-cockpit":
+            errors.append("companion marketplace source must be the reviewed local plugin root")
+        if companion_path not in tracked:
+            errors.append("companion marketplace source manifest is missing from the audited files")
+        else:
+            companion = json.loads((root / companion_path).read_text(encoding="utf-8"))
+            for field in ("name", "version", "license", "repository"):
+                if companion.get(field) != companion_entry.get(field):
+                    errors.append(f"companion and marketplace disagree on {field!r}")
+        for relative in sorted(_companion_package_files()):
+            if relative not in tracked:
+                errors.append(f"companion runtime resource is missing from the audited files: {relative}")
     for skill_root in plugin.get("skills", []):
         if not isinstance(skill_root, str):
             errors.append("plugin skills entries must be strings")
@@ -295,10 +346,13 @@ def _audit_manifest_consistency(root: Path, tracked: set[str]) -> list[str]:
     return errors
 
 
-def audit_repository(root: Path) -> list[str]:
-    """Audit tracked repository files without changing the repository."""
+def audit_repository(root: Path, *, include_untracked: bool = False) -> list[str]:
+    """Audit product files, optionally including new nonignored task files."""
     errors: list[str] = []
     tracked = tracked_files(root)
+    if include_untracked:
+        created = _git(root, "ls-files", "--others", "--exclude-standard", "-z").decode("utf-8").split("\0")
+        tracked = sorted(set(tracked) | {path for path in created if path})
     folded: dict[str, str] = {}
     skill_names: dict[str, str] = {}
 
@@ -2216,7 +2270,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", help="repository root (defaults to script parent)")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("audit", help="audit tracked repository files")
+    audit_parser = subparsers.add_parser("audit", help="audit repository files")
+    audit_parser.add_argument("--include-untracked", action="store_true", help="also validate new nonignored task files")
     package_parser = subparsers.add_parser("package", help="build deterministic artifacts")
     package_parser.add_argument("--output-dir", default="dist")
     verify_parser = subparsers.add_parser("verify", help="verify built artifacts")
@@ -2242,10 +2297,11 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "audit":
-            errors = audit_repository(root)
+            errors = audit_repository(root, include_untracked=args.include_untracked)
             if errors:
                 raise ReleaseError("repository audit failed:\n- " + "\n- ".join(errors))
-            print(f"release audit passed ({len(tracked_files(root))} tracked files)")
+            scope = "tracked and new nonignored files" if args.include_untracked else "tracked files"
+            print(f"release audit passed ({scope})")
         elif args.command == "package":
             artifacts = build_release(root, (root / args.output_dir).resolve())
             verify_release((root / args.output_dir).resolve(), _git(root, "rev-parse", "HEAD").decode("ascii").strip(), root)

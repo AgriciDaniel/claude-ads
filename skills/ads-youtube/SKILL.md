@@ -1,6 +1,6 @@
 ---
 name: ads-youtube
-description: "Audit YouTube Ads campaign setup, video and Demand Gen inventory, Shorts, in-stream, CTV, creative, audiences, brand safety, bidding, and measurement. Use for YouTube Ads, video ads, pre-roll, bumper ads, skippable in-stream, Shorts ads, Demand Gen, VAC migration, CTV, or YouTube campaign optimization."
+description: "Audit YouTube Ads campaign setup, video inventory, Shorts, in-stream, CTV, creative, audiences, brand safety, bidding, and measurement. Use for YouTube Ads, video ads, pre-roll, bumper ads, skippable in-stream, Shorts ads, VAC migration, or CTV. Read-only; use ads-google for Google-managed campaign types and ads-optimize to change campaigns."
 ---
 
 # YouTube Ads Audit

@@ -1,0 +1,87 @@
+{
+  "accounts": [
+    {
+      "account_key": "1fbd04eea71e05cdf0fe94d4f57a24169b04c1ac035f962d75dd052e1134e1ed",
+      "currency": "USD",
+      "platform": "google",
+      "window": {
+        "end": "2026-10-07",
+        "start": "2026-10-01"
+      }
+    }
+  ],
+  "artifact_type": "cockpit-snapshot",
+  "artifacts": [
+    {
+      "kind": "audit-worker-result",
+      "path": "worker.json",
+      "sha256": "1cf8f9176c1fbc0aa497674c2119d90b710ec723496b5e13a5d913cd56a2c7d7",
+      "size": 181
+    },
+    {
+      "kind": "report-bundle",
+      "path": "report.json",
+      "sha256": "4320ff30ee938f9dd06575e44ce24904a5be57c90fa4cce5e04574a54bc2fc3e",
+      "size": 1504
+    }
+  ],
+  "claims": [],
+  "comparison": null,
+  "completeness": "complete",
+  "evaluated_at": "2026-10-08T23:59:59Z",
+  "findings": [],
+  "fingerprint": "79f0a7f0e9e333178221c519cacfec8c78fa2b6b45121668c19ab75be87f36ad",
+  "inputs": [
+    {
+      "contract": "account-snapshot",
+      "details": [
+        "Declared contract validated locally"
+      ],
+      "id": "account",
+      "kind": "json",
+      "path": "account.json",
+      "platform": "google",
+      "sha256": "6d8baaca247aa0c870719cfb453ff6acb8a64a141779c0294d6d76561951dce4",
+      "validation": "valid"
+    }
+  ],
+  "limitations": [
+    "Evidence freshness evaluates dated ledgers; no live verification was performed",
+    "Local checks do not establish advertising truth or release readiness",
+    "Evaluation-date override: 2026-10-08"
+  ],
+  "permitted_actions": [
+    "validate-input",
+    "validate-run",
+    "render-report"
+  ],
+  "phase": "Synthetic fixture",
+  "policy_fingerprint": "30d003aa426b81ee162b9461cf96fba2c04909b23325de2122057c2e0c8b1ec6",
+  "privacy_class": "public",
+  "run_id": "synthetic-run",
+  "schema_version": "1.0.0",
+  "scoring": [
+    {
+      "evidence_coverage": 0.0,
+      "health_score": null,
+      "platform": "google",
+      "profile_status": "disabled",
+      "status": "insufficient_evidence"
+    }
+  ],
+  "sources": [],
+  "workers": [
+    {
+      "contradictions": [],
+      "id": "google",
+      "missing_inputs": [],
+      "platform": "google",
+      "recovery_hints": [],
+      "result_status": "ok",
+      "stale_sources": [],
+      "status": "completed"
+    }
+  ],
+  "workflow_status": "completed",
+  "receipts": []
+}

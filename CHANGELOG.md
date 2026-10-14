@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Optional Claude Ads Cockpit companion (`ads-cockpit`, not enabled by default):
+  a local workbench for reading a registered run, its evidence and inputs,
+  comparing a baseline, and recording validation and report receipts. Includes
+  strict snapshot, index and receipt contracts, a `cockpit` core CLI, an isolated
+  synthetic demo, and a separate packaging path. All scoring profiles stay
+  disabled. Native host acceptance is pending.
+
+### Changed
+
+* Refresh platform references and evidence ledgers as of 2026-10-12: Apple Campaign
+  Management API sunset (2027-01-26), Meta Marketing API v26.0, LinkedIn versions
+  202609 and 202511, Google Ads developer-token sunset, Demand Gen and AI Max
+  timing, EU AI Act Article 50 transition, Reddit objective enums, Meta and Pinterest
+  MCP servers, and a clearer consent-mode threshold caveat.
+* Route every `/ads` command to a named skill, give each contested trigger phrase one
+  owner, and restrict the copy, strategy and format agents to read-only tools.
+* Installers clean up temporary directories on every exit path, expand a leading `~`,
+  and describe git installs as unpinned and releases as checksummed, not signed.
+* README gains a status box, a quickstart and an experimental caveat for non-Claude
+  hosts. CI runner and installer-test changes from 2.0.2 follow-up work are covered
+  by the existing hardening entries.
+
 ### Fixed
 
 * Separate positive Google keyword inventory from ad-group, campaign, shared-list,

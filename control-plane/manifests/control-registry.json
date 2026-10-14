@@ -1749,7 +1749,7 @@
     {
       "platform": "google",
       "control_id": "G-DG2",
-      "intent": "VAC migration status",
+      "intent": "Video Action Campaign upgrade reporting continuity",
       "disposition": "conditional_watchlist",
       "source_claim_ids": [],
       "control_definition": {
@@ -7732,7 +7732,7 @@
     {
       "platform": "youtube",
       "control_id": "YT-S02",
-      "intent": "Migrated or legacy Video Action Campaign state and incompatible settings are reviewed.",
+      "intent": "Historical reporting continuity for upgraded Video Action Campaigns, including original campaigns kept as removed or paused, and incompatible settings are reviewed.",
       "disposition": "conditional_watchlist",
       "source_claim_ids": [],
       "control_definition": {

@@ -30,7 +30,12 @@ CORE_CONTRACT_NAMES = (
     "finding",
     "report-bundle",
 )
-CONTRACT_NAMES = CORE_CONTRACT_NAMES + WORKFLOW_CONTRACT_NAMES
+COCKPIT_CONTRACT_NAMES = (
+    "cockpit-index",
+    "cockpit-snapshot",
+    "cockpit-action-receipt",
+)
+CONTRACT_NAMES = CORE_CONTRACT_NAMES + WORKFLOW_CONTRACT_NAMES + COCKPIT_CONTRACT_NAMES
 PLATFORMS = {
     "google",
     "meta",
@@ -68,7 +73,10 @@ def _require_string(value: Any, path: str, *, nonempty: bool = True) -> str:
 def _require_number(value: Any, path: str, *, minimum: float | None = None) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ContractError(f"{path} must be a number")
-    result = float(value)
+    try:
+        result = float(value)
+    except OverflowError as exc:
+        raise ContractError(f"{path} must be finite") from exc
     if not math.isfinite(result):
         raise ContractError(f"{path} must be finite")
     if minimum is not None and result < minimum:
@@ -345,6 +353,15 @@ _VALIDATORS: dict[str, Callable[[Mapping[str, Any]], None]] = {
 def validate_contract(name: str, payload: Any) -> None:
     """Validate *payload* against the supported semantic v1 contract."""
 
+    if name in COCKPIT_CONTRACT_NAMES:
+        # Keep the optional projection's validator out of core import cycles.
+        from .cockpit_contracts import validate_cockpit_contract
+
+        try:
+            validate_cockpit_contract(name, payload)
+        except ValueError as exc:
+            raise ContractError(str(exc)) from exc
+        return
     if name in WORKFLOW_CONTRACT_NAMES:
         try:
             validate_workflow_contract(name, payload)

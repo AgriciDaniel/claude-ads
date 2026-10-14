@@ -1,5 +1,6 @@
 # Public runtime resources. Paths are relative to the installed skill root.
 # Private reviews, model runs, tracker snapshots, and repository-only evidence are excluded.
+control-plane/COCKPIT.md
 control-plane/PRODUCT_BOUNDARIES.md
 control-plane/PUBLISHING_POLICY.md
 control-plane/README.md

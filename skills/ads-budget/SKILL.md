@@ -1,6 +1,6 @@
 ---
 name: ads-budget
-description: "Plan and review paid-media budgets, bidding, pacing, marginal return, forecasts, CPA, ROAS, MER, LTV:CAC, constraints, and allocation across supported platforms. Use for ad budget allocation, media budget, bidding strategy, scaling, spend pacing, budget forecast, ROAS target, or investment tradeoffs."
+description: "Plan and review paid-media budgets, bidding, pacing, marginal return, targets, constraints, and allocation across supported platforms. Use for ad budget allocation, media budget, bidding strategy, scaling, spend pacing, ROAS target, or investment tradeoffs. Use ads-math for calculations and forecasts."
 ---
 
 # Budget and Bidding

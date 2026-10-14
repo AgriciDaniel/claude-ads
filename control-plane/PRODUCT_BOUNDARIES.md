@@ -23,6 +23,12 @@ read-only by default.
   and regulatory review.
 - Canonical machine output: versioned JSON. Human formats are renderings of the
   same run bundle.
+- Optional companion: Claude Ads Cockpit (`ads-cockpit`) projects validated
+  local runs, evidence and comparisons. Its explicit local actions validate
+  registered inputs or runs and render reports with receipts. It is separately
+  enabled, does not confer account authority, and retains disabled scoring.
+  Native terminal and Desktop acceptance must be recorded separately from
+  automated element-tree tests.
 
 ## Non-promises
 

@@ -261,3 +261,24 @@ def test_script_and_reference_forbid_implicit_provider_model_selection(repo_root
         assert forbidden not in script
     assert "does not promise a default image provider, model" in normalized_reference
     assert "must not select, upgrade, or substitute" in normalized_reference
+
+
+def test_openai_request_omits_response_format_which_gpt_image_models_reject(monkeypatch):
+    """GPT image models always return base64; the legacy response_format parameter is unsupported."""
+    import types
+
+    seen = {}
+
+    class _Images:
+        def generate(self, **kwargs):
+            seen.update(kwargs)
+            item = types.SimpleNamespace(b64_json=base64.b64encode(_VALID_PNG).decode())
+            return types.SimpleNamespace(data=[item])
+
+    class _Client:
+        def __init__(self, api_key):
+            self.images = _Images()
+
+    monkeypatch.setitem(sys.modules, "openai", types.SimpleNamespace(OpenAI=_Client))
+    assert generate_image.generate_openai("a prompt", 1024, 1024, "test-key", "gpt-image-1") == _VALID_PNG
+    assert "response_format" not in seen and seen["size"] == "1024x1024" and seen["model"] == "gpt-image-1"

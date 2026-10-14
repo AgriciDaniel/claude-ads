@@ -1,7 +1,7 @@
 # Meta Ads Ranking Architecture
 
-**Verified:** 2026-08-26
-**Refresh due:** 2026-09-25
+**Verified:** 2026-10-07
+**Refresh due:** 2026-11-06
 **Evidence status:** first-party architecture awareness; not an optimization threshold
 
 This reference retains only architecture that Meta has described in current

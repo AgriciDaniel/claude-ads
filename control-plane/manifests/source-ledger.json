@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-10-07",
+  "generated_at": "2026-10-12",
   "sources": [
     {
       "id": "claude-ads-v181-tree",
@@ -128,7 +128,7 @@
       "claim_ids": [
         "CLM-0008"
       ],
-      "notes": "2026-10-07: Substantive public browser page updated 2026-09-28 verified: website, app, business messaging, and offline events can operate alongside Pixel. Current setup diagnostics must verify receipt, matching, and deduplication; consent is implementation-specific."
+      "notes": "2026-10-07: Public browser page, reported at that review as updated 2026-09-28, lists website, app, business messaging, and offline events. 2026-10-12 correction: the Pixel redundancy wording and the event_id and event_name deduplication rules are on the separate deduplication page (meta-capi-deduplication-official), not on this overview; the overview text retrieved 2026-10-12 only says to confirm that events are received, deduplicated, and matched correctly in the Verify step. Current setup diagnostics must verify receipt, matching, and deduplication; consent is implementation-specific."
     },
     {
       "id": "google-ads-api-official",
@@ -168,15 +168,15 @@
       "locator": "https://learn.microsoft.com/en-us/linkedin/marketing/conversions/conversions-usecase",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-07",
-      "refresh_due": "2026-11-06",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "high",
       "license": "LinkedIn API Terms and Microsoft documentation terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [
         "CLM-0009"
       ],
-      "notes": "2026-10-07 review verified: Use case 1: lists Insight Tag, Conversions API, and CSV as the three main conversion types. Use case 1: recommends Insight Tag plus Conversions API and states that duplicate browser/server events with the same event ID are counted once, with the Insight Tag event retained. Use case 3: Campaign Manager signal-quality status validates receipt and identity matching. Canonical URL redirected to the 2026-09 view. Recheck the 202510 sunset after 2026-10-15."
+      "notes": "2026-10-12 verification of this exact locator (canonical view li-lms-2026-09, page updated 2026-08-17): Use case 1 lists Insight Tag, Conversions API, and CSV as the three main conversion types, recommends Insight Tag plus Conversions API, and states that a conversion received from both with the same event id is counted once, with the Insight Tag event retained. Use case 3: Campaign Manager signal-quality status validates receipt and identity matching. The page carries the 202510 sunset deprecation notice. Recheck after 2026-10-15."
     },
     {
       "id": "meta-marketing-api-official",
@@ -184,13 +184,13 @@
       "locator": "https://developers.facebook.com/docs/marketing-apis/",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-09-10",
-      "refresh_due": "2026-10-10",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "low",
       "license": "Meta Platform Terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [],
-      "notes": "2026-10-07: General Marketing API overview did not expose substantive content after text retrieval and a normal public browser render. Prior dates retained. Discovery-only source, not required support for CLM-0008; the separately verified Conversions API page supplies that claim."
+      "notes": "2026-10-12: The overview page returned substantive but navigation-dominated text on a plain HTTP retrieval (it describes endpoints for campaign creation, management, audiences, insights, and related APIs); a text-extraction fetch still returned only the page title. Confidence stays low. Discovery-only source, not required support for CLM-0008 or CLM-0221; version lifecycle facts come from the dedicated Graph API version sources."
     },
     {
       "id": "tiktok-events-api-official",
@@ -312,13 +312,13 @@
       "locator": "https://business-api.tiktok.com/portal",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-09-10",
-      "refresh_due": "2026-10-10",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "low",
       "license": "TikTok for Business developer terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [],
-      "notes": "2026-10-07 review partial: Official portal search rendering exposes Marketing API collections for campaign management, creative assets, audiences, reporting, and measurement. Direct page retrieval returned no substantive lines, and the portal did not support the specific website-measurement wording in CLM-0010. The source itself can be dated as partially checked, but it must not advance CLM-0010."
+      "notes": "2026-10-12 verification in a rendered browser session: the TikTok API for Business portal loads (copyright 2026) and lists Marketing API collections for Campaign Management, Creative Assets & Tools, Audience Management, Business Center, Data Insights, Ad Measurement and Catalog & TikTok Store, plus Organic and Business Messaging APIs. It is a portal overview, not a version or deprecation source; no claim depends on it."
     },
     {
       "id": "microsoft-advertising-api-official",
@@ -342,15 +342,17 @@
       "locator": "https://developer.apple.com/documentation/apple_ads/using-apple-search-ads-api-functionality.md",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-07",
-      "refresh_due": "2026-11-06",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "high",
       "license": "Apple Developer documentation terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [
-        "CLM-0013"
+        "CLM-0013",
+        "CLM-0220",
+        "CLM-0206"
       ],
-      "notes": "2026-10-07 verification: Official public Markdown version retrieved over HTTPS; JSON request/response and API v5 resource operations reviewed. No authenticated access or live capability implied."
+      "notes": "2026-10-12 verification: Official public Markdown version retrieved over HTTPS. A deprecation banner on the page states that the Apple Ads Campaign Management API is deprecated and will be sunset on January 26, 2027, and names the Apple Ads Platform API as its replacement. JSON request/response and API v5 resource operations reviewed. No authenticated access or live capability implied."
     },
     {
       "id": "amazon-ads-api-official",
@@ -487,13 +489,13 @@
       "locator": "https://www.facebook.com/business/ads/facebook-instagram-reels-ads",
       "source_type": "official-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-09-10",
-      "refresh_due": "2026-10-10",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "low",
       "license": "Meta terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [],
-      "notes": "2026-10-07 review blocked: The page redirected to Facebook login and returned a temporary-block notice instead of Reels guidance. Do not use this run to date Meta Reels specifications."
+      "notes": "2026-10-12 review: The page loaded Reels creative guidance (title Instagram & Facebook Reels: Create Short Video Ads; vertical 9:16 video with sound and keeping key elements in the Reels safe space) with only a sign-in prompt at the bottom. Retrieval dates advance for discovery only. The page cites a Meta-reported performance comparison that is vendor evidence and not used; no creative specification is entered as a claim."
     },
     {
       "id": "linkedin-ads-guide-official",
@@ -559,13 +561,13 @@
       "locator": "https://advertising.amazon.com/help/GDG2CCTRU55BYY2Y",
       "source_type": "official-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-09-10",
-      "refresh_due": "2026-10-10",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "low",
       "license": "Amazon terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [],
-      "notes": "2026-10-07 review blocked: The exact ledger URL returned only the site shell and exposed no reviewable policy text. Official search-rendered alternatives identify an ad specifications hub and a General requirements page updated July 22, 2026, but direct page content did not render sufficiently for an exact replacement review. Do not advance this source or any dependent claim date. A fresh verifier should retrieve the exact page or bind each creative rule to a directly readable, placement-specific Amazon Ads policy or specification page."
+      "notes": "2026-10-12 verification in a rendered browser session: the locator redirects to the Amazon Ads Support Center 'General requirements' page (https://advertising.amazon.com/help/G4U9JBZH3664JWX2), updated 22 July 2026. It lists general advertiser requirements (accuracy, legal compliance, AI-generated content must not mislead, claims substantiation). It states no creative size or format limits; check the ad specifications pages directly before citing any specification. No claim depends on this source."
     },
     {
       "id": "reddit-ads-help-official",
@@ -573,13 +575,13 @@
       "locator": "https://business.reddithelp.com/s/",
       "source_type": "official-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-08-25",
-      "refresh_due": "2026-09-24",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "low",
       "license": "Reddit terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [],
-      "notes": "2026-10-07 review blocked: The exact help-center root rendered only a loading or CSS-error shell, so it could not support a fresh source date. The directly readable Editorial Requirements page requires coherent creative and landing-page alignment, and includes capitalization and landing-page quality rules. The official free-form specification page is a more precise candidate for placement-specific format claims, but exact creative limits should be checked directly before entry into the ledger. Do not advance the broad help-root source. Replace broad citations with directly readable, topic-specific Reddit policy and specification URLs after exact limit verification."
+      "notes": "2026-10-12 verification in a rendered browser session: the help-center home loads (copyright 2026) with the categories Get Started, Configure Signals, Advertise, Measure and Legal & Notices and featured ad specification articles. It carries no policy claim and no claim depends on it; cite topic-specific articles for any specific limit. Plain HTTP fetch still returns only a shell."
     },
     {
       "id": "pinterest-ad-specs-official",
@@ -661,15 +663,15 @@
       "locator": "https://support.google.com/google-ads/answer/10548233",
       "source_type": "official-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-07",
-      "refresh_due": "2026-11-06",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "high",
       "license": "Google Help terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [
         "CLM-0104"
       ],
-      "notes": "2026-10-07 verification: Eligibility checked: daily 700 ad clicks over seven days per country/domain grouping, subject to implementation and training conditions."
+      "notes": "2026-10-12 verification: The page states a daily ad click threshold of 700 ad clicks over a 7 day period, per country and domain grouping. Other Google pages word the threshold differently (see CLM-0104); Google has not reconciled them."
     },
     {
       "id": "google-consent-modeling-improvement-official",
@@ -791,15 +793,15 @@
       "source_type": "first-party-blog",
       "authority_tier": 1,
       "published_at": "2026-02-02",
-      "retrieved_at": "2026-10-07",
-      "refresh_due": "2026-11-06",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "high",
       "license": "Amazon terms; citation only",
       "redistribution": "metadata-only",
       "claim_ids": [
         "CLM-0112"
       ],
-      "notes": "2026-10-07 review verified: The announcement describes an open-beta Amazon Ads MCP server that translates natural-language instructions into structured Amazon Ads API calls. It states that the beta is available globally to Amazon Ads partners with active API credentials. The source and CLM-0112 retrieval dates may advance to 2026-10-07. Preserve the February 2, 2026 publication date and the active-API-credential eligibility condition."
+      "notes": "2026-10-12 verification: Announcement dated February 2, 2026 describes an open-beta Amazon Ads MCP server that translates natural-language instructions into structured Amazon Ads API calls. The beta is available globally to Amazon Ads partners with active API credentials, not to all advertisers, and the server gives agents access to write actions such as creating, updating, or deleting campaigns."
     },
     {
       "id": "tiktok-ads-mcp-official",
@@ -998,7 +1000,7 @@
       "claim_ids": [
         "CLM-0206"
       ],
-      "notes": "2026-10-07 verification: Official Markdown API v5 campaign reporting examples checked: campaign metadata, daily localSpend, installs, explicit timezone and selector/report options."
+      "notes": "2026-10-07 verification: Official Markdown API v5 campaign reporting examples checked: campaign metadata, daily localSpend, installs, explicit timezone and selector/report options. 2026-10-12 recheck: the endpoint page lists API v5 (POST /api/v5/reports/campaigns) and shows no separate deprecation banner of its own; the Campaign Management API entry point (apple-ads-api-official) records the sunset on January 26, 2027, so this endpoint is scoped to end on that date."
     },
     {
       "id": "reddit-ads-reporting-v3-official",
@@ -1104,15 +1106,15 @@
       "locator": "https://developers.google.com/google-ads/api/docs/deprecations",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-07",
-      "refresh_due": "2026-11-06",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "high",
       "license": "First-party terms; citation and original summary only",
       "redistribution": "metadata-only",
       "claim_ids": [
         "CLM-0215"
       ],
-      "notes": "2026-10-07 verification: September 23 Smart Campaign creation and September 30 manual Search language targeting changes; existing Smart Campaigns and other PMax channels distinguished."
+      "notes": "2026-10-12 verification: Smart Campaign creation ends September 23, 2026 while existing campaigns continue serving and can be updated. The manual language criteria change is dated September 2026 on the page with no day; the page's own metadata reads Last updated 2026-09-30 UTC, which is not a confirmed effective date. Existing Smart Campaigns and other Performance Max channels are distinguished. The page links the Smart Campaign to Performance Max conversion guide but does not describe it."
     },
     {
       "id": "microsoft-ads-soap-rest-migration-official",
@@ -1136,23 +1138,23 @@
       "locator": "https://ads-api.reddit.com/docs/v3/history",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-07",
-      "refresh_due": "2026-11-06",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
       "confidence": "high",
       "license": "First-party terms; citation and original summary only",
       "redistribution": "metadata-only",
       "claim_ids": [
         "CLM-0216"
       ],
-      "notes": "2026-10-07 verification: September 23 enhancement-field removal and September 30 onsite lead-form retirement effective; December 8 hourly-report limits remain scheduled."
+      "notes": "2026-10-12 verification: Page notices list December 8, 2026 hourly-report limits and September 21, 2026 new campaign objective enums. September 21: BRAND_AWARENESS and SALES objectives creatable, use_catalog added for catalog-backed SALES, legacy enums still supported, and campaigns created with new objectives return new enum values (a breaking change for integrations that map objective values). October 1: SALES and LEAD_GENERATION objectives added in Create Campaign for Max campaigns. September 23 enhancement-field removal and September 30 onsite lead-form retirement effective. December 8: Get A Report requests using HOUR for a range longer than 7 days or unsupported breakdown combinations return 400 Bad Request."
     },
     {
       "id": "linkedin-marketing-api-changes-official",
       "title": "LinkedIn Marketing API recent changes",
-      "locator": "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2026-07",
+      "locator": "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2026-09",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-07",
+      "retrieved_at": "2026-10-12",
       "refresh_due": "2026-10-15",
       "confidence": "high",
       "license": "First-party terms; citation and original summary only",
@@ -1160,7 +1162,7 @@
       "claim_ids": [
         "CLM-0217"
       ],
-      "notes": "2026-10-07 verification: Version 202510 scheduled sunset October 15, 2026. Recheck on the effective date before claiming removal."
+      "notes": "2026-10-12 verification: Page updated 2026-09-16 and defaulting to version 202609 (Latest). Version Sunset list: 202510 on October 15, 2026 and 202511 on November 16, 2026. Reminder: from August 31, 2026 LinkedIn stops supporting legacy Geo for ads targeting and campaign creation using it fails with a 400 INVALID_VALUE_FOR_FIELD error. Part of a long page was not read. Recheck on the effective date before claiming removal."
     },
     {
       "id": "google-ads-negative-keywords-official",
@@ -1380,6 +1382,364 @@
       ],
       "notes": "2026-10-07: Substantive public browser-rendered official documentation verified. Exact v1.3 metrics include campaign_name, ad_name, spend, and conversion. conversion counts the selected optimization event; the native projection does not equate it with other conversion definitions.",
       "version": "v1.3"
+    },
+    {
+      "id": "claude-code-mods-overview-official",
+      "title": "Claude Code Mods overview and supported drawing surfaces",
+      "locator": "https://code.claude.com/docs/en/plugins/mods/overview",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-08",
+      "refresh_due": "2026-11-07",
+      "confidence": "high",
+      "license": "Anthropic documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0300"
+      ],
+      "notes": "2026-10-08 verification: Documented terminal and Desktop Code-tab drawing support and nonvisual runtime distinction. Documentation only, not native Cockpit acceptance."
+    },
+    {
+      "id": "claude-code-mods-api-official",
+      "title": "Claude Code Mods API",
+      "locator": "https://code.claude.com/docs/en/plugins/mods/api",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-08",
+      "refresh_due": "2026-11-07",
+      "confidence": "high",
+      "license": "Anthropic documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0301"
+      ],
+      "notes": "2026-10-08 verification: Documented command, state, local-process and timer APIs. Exact locally generated 2.1.294 typings and live acceptance are not established by this page."
+    },
+    {
+      "id": "claude-code-mods-testing-official",
+      "title": "Claude Code Mods test kit",
+      "locator": "https://code.claude.com/docs/en/plugins/mods/test",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-08",
+      "refresh_due": "2026-11-07",
+      "confidence": "high",
+      "license": "Anthropic documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0302"
+      ],
+      "notes": "2026-10-08 verification: Checked documented event stubbing and UI tree testing without a session, sign-in or network; it does not establish native painting."
+    },
+    {
+      "id": "apple-ads-platform-api-official",
+      "title": "Apple Ads Platform API",
+      "locator": "https://developer.apple.com/documentation/apple-ads-platform-api",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "medium",
+      "license": "Apple Developer documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0220"
+      ],
+      "notes": "2026-10-12 verification: A documentation page titled Apple Ads Platform API exists at this locator and is the replacement that the Apple Ads API deprecation notice names. Only the page title was retrievable. Endpoints, authentication, capabilities, field mappings, and migration details were not read and are not claimed."
+    },
+    {
+      "id": "meta-graph-api-versions-official",
+      "title": "Graph API and Marketing API versions",
+      "locator": "https://developers.facebook.com/docs/graph-api/changelog/versions",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Meta Platform Terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0221"
+      ],
+      "notes": "2026-10-12 verification: Version table lists Graph API v26.0 released July 29, 2026 with no expiry set. The Marketing API table lists v24.0 with an expiry of October 6, 2026 (now passed) and a note that the Marketing API auto-upgrade happened on July 29, 2026."
+    },
+    {
+      "id": "meta-graph-api-v26-changelog-official",
+      "title": "Graph API and Marketing API v26.0 changelog",
+      "locator": "https://developers.facebook.com/docs/graph-api/changelog/version26.0",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Meta Platform Terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0221"
+      ],
+      "notes": "2026-10-12 verification: v26.0 released July 29, 2026. Marketing API section: Housing, Employment, and Financial Products and Services ad sets with relaxable targeting in a non-broad setup must set targeting_automation.advantage_audience explicitly, otherwise the request is rejected with a documented error code; the rule extends to earlier versions only after v25.0 is deprecated. Several removals extend to all remaining versions on October 27, 2026."
+    },
+    {
+      "id": "meta-v26-launch-blog-official",
+      "title": "Introducing Graph API v26.0 and Marketing API v26.0",
+      "locator": "https://developers.facebook.com/blog/post/2026/07/29/introducing-graph-api-v26-and-marketing-api-v26/",
+      "source_type": "first-party-blog",
+      "authority_tier": 1,
+      "published_at": "2026-07-29",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Meta Platform Terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0221"
+      ],
+      "notes": "2026-10-12 verification: Launch post dated July 29, 2026 (retrieved in a Russian-language rendering). States that the explicit advantage_audience setting applies when creating ad sets in the special categories, not when updating existing ad sets, and that the Messenger Stories and web-only destination restrictions extend to all Marketing API versions on October 27, 2026."
+    },
+    {
+      "id": "meta-capi-deduplication-official",
+      "title": "Handling Duplicate Pixel and Conversions API Events",
+      "locator": "https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Meta Platform Terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0008"
+      ],
+      "notes": "2026-10-12 verification: Recommends implementing Conversions API alongside Meta Pixel as a redundant setup. Deduplication matches Pixel eventID to Conversions API event_id and Pixel event to event_name, or uses fbp and external_id consistently. A time limit applies to deduplication. The page states no last-updated date."
+    },
+    {
+      "id": "meta-ads-mcp-official",
+      "title": "Meta ads MCP server overview",
+      "locator": "https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Meta Platform Terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0228"
+      ],
+      "notes": "2026-10-12 verification: Overview describes a Meta-hosted MCP server at mcp.facebook.com/ads that can create and edit ads, ad sets, and campaigns, with seven tool categories. It states no total tool count, no beta or availability status, and no update date; authentication and the tool inventory are on separate pages that were not read."
+    },
+    {
+      "id": "tiktok-event-deduplication-official",
+      "title": "About Event Deduplication",
+      "locator": "https://ads.tiktok.com/help/article/event-deduplication",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "TikTok for Business documentation terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0010",
+        "CLM-0105"
+      ],
+      "notes": "2026-10-12 verification: Page last updated May 2025. Events shared through both Pixel and Events API are deduplicated when they carry identical event and event_id parameters, and the event_id must be shared through both. Deduplication is required when the same events are shared through both paths. A time window applies."
+    },
+    {
+      "id": "google-consent-mode-verification-official",
+      "title": "Verify consent mode implementation",
+      "locator": "https://support.google.com/google-ads/answer/14218557",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Help terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0104"
+      ],
+      "notes": "2026-10-12 verification: States the click threshold for conversion modeling as 700 ad clicks over 7 days for a domain and country grouping. It does not use the word daily that the modeling page uses."
+    },
+    {
+      "id": "google-consent-mode-improve-modeling-official",
+      "title": "How to improve your modeling",
+      "locator": "https://support.google.com/google-ads/answer/12445060",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Help terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0104"
+      ],
+      "notes": "2026-10-12 verification: Lists an ad click threshold of 100 clicks per day per country and domain grouping that the page says is required for basic consent mode implementation but not for advanced implementation."
+    },
+    {
+      "id": "google-ads-api-developer-token-official",
+      "title": "Google Ads API developer token and API access levels",
+      "locator": "https://developers.google.com/google-ads/api/docs/api-policy/developer-token",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Developers content CC BY 4.0 and samples Apache-2.0 unless noted",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0222"
+      ],
+      "notes": "2026-10-12 verification: Developer tokens were sunset on September 9, 2026. API access levels are determined by the Google Cloud project that owns the OAuth credentials or service account. Sending a developer-token header is optional and ignored. API v25 throws CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION when a project with Test access calls a production account; older versions return ACTION_NOT_PERMITTED."
+    },
+    {
+      "id": "google-ads-api-release-notes-official",
+      "title": "Google Ads API release notes",
+      "locator": "https://developers.google.com/google-ads/api/docs/release-notes",
+      "source_type": "api-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Developers content CC BY 4.0 and samples Apache-2.0 unless noted",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0223",
+        "CLM-0227"
+      ],
+      "notes": "2026-10-12 verification: v25.2 (2026-09-23) adds SmartCampaignSettingService.GeneratePMaxDraftCampaign, which generates a paused, incomplete Performance Max draft campaign from an existing Smart campaign and supports validate_only; some flags are not yet supported. The v23 entry (2026-01-28) records that support for call ads was removed. Only part of the long page was read."
+    },
+    {
+      "id": "google-ads-vac-demand-gen-upgrade-official",
+      "title": "Video Action Campaigns are being upgraded to Demand Gen",
+      "locator": "https://support.google.com/google-ads/answer/15110871",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Help terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0224"
+      ],
+      "notes": "2026-10-12 verification: Google removed creation of new Video Action Campaigns in April 2025, began automatic upgrades in July 2025, and states final campaigns are automatically upgraded to Demand Gen by April 2026 (the page does not mention May 2026). Original campaigns remain in the account as removed or paused and keep historical data viewable through status filters; spend in the original is not counted by the new Demand Gen campaign. The page carries conflicting timing text in places and no update date."
+    },
+    {
+      "id": "google-ads-dsa-ai-max-timeline-official",
+      "title": "Dynamic Search Ads upgrade to AI Max timeline",
+      "locator": "https://blog.google/products/ads-commerce/dsa-upgrade-to-ai-max-2026/",
+      "source_type": "first-party-blog",
+      "authority_tier": 1,
+      "published_at": "2026-04-15",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0225"
+      ],
+      "notes": "2026-10-12 verification: Post dated 2026-04-15 originally said legacy features such as Dynamic Search Ads would start upgrading to AI Max in September. An update dated 2026-06-11 extends the Dynamic Search Ads sunset and automatic upgrade, which will begin in February 2027, and says automatic upgrades for Automatically Created Assets and campaign-level broad match continue starting September 2026. Help-center pages were not re-read for timing and may still show the earlier date."
+    },
+    {
+      "id": "google-ads-demand-gen-min-budget-official",
+      "title": "Minimum Budget Requirement for Demand Gen Campaigns",
+      "locator": "https://ads-developers.googleblog.com/2026/02/minimum-budget-requirement-for-demand.html",
+      "source_type": "first-party-blog",
+      "authority_tier": 1,
+      "published_at": "2026-02-27",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Developers content CC BY 4.0 and samples Apache-2.0 unless noted",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0226"
+      ],
+      "notes": "2026-10-12 verification: Google Ads Developer Blog post dated 2026-02-27. From April 1, 2026 the Google Ads API enforces a minimum daily budget of 5 USD (or the local-currency equivalent) for all Demand Gen campaigns. API v21 and above return BUDGET_BELOW_DAILY_MINIMUM when creating or updating a campaign below the floor. Existing Demand Gen campaigns already below the floor continue serving without interruption. This is an API enforcement note and is not a recommended budget."
+    },
+    {
+      "id": "google-ads-call-ads-transition-official",
+      "title": "How to transition from call ads to call assets",
+      "locator": "https://support.google.com/google-ads/answer/16619010",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "Google Help terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0227"
+      ],
+      "notes": "2026-10-12 verification: Key dates on the page: February 2026, all options to create a new call-only ad are removed; February 2027, all existing call-only ads stop receiving impressions. Google steers advertisers to responsive search ads with call assets."
+    },
+    {
+      "id": "eu-ai-act-article-50-faq-official",
+      "title": "Commission FAQ on transparency obligations under Article 50 of the AI Act",
+      "locator": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
+      "source_type": "regulator",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "European Commission reuse policy; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0106"
+      ],
+      "notes": "2026-10-12 verification: FAQ updated 24 July 2026 states Article 50 applies from 2 August 2026 and that a limited grace period is envisaged only for AI systems placed on the market before 2 August 2026, whose providers must comply with the Article 50(2) marking and detection obligation only from 2 December 2026. The FAQ names no amending regulation. The amending instrument is Regulation (EU) 2026/1744, verified on EUR-Lex (see eu-digital-omnibus-ai-regulation-2026-1744-official)."
+    },
+    {
+      "id": "eu-digital-omnibus-ai-regulation-2026-1744-official",
+      "title": "Regulation (EU) 2026/1744 (Digital Omnibus on AI), Official Journal",
+      "locator": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "source_type": "regulator",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "high",
+      "license": "European Commission reuse policy; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0106"
+      ],
+      "notes": "2026-10-12 verification on EUR-Lex: Regulation (EU) 2026/1744 of the European Parliament and of the Council of 8 July 2026 amending Regulation (EU) 2024/1689, published in the Official Journal on 24.7.2026 and shown as in force. Recital 38 and an added paragraph 4 state that providers of AI systems generating synthetic audio, image, video or text content that were placed on the market before 2 August 2026 shall take the necessary steps to comply with Article 50(2) by 2 December 2026."
+    },
+    {
+      "id": "pinterest-mcp-developers-official",
+      "title": "About Pinterest MCP",
+      "locator": "https://developers.pinterest.com/about-pinterest-mcp/",
+      "source_type": "official-doc",
+      "authority_tier": 1,
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "medium",
+      "license": "Pinterest developer terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0229"
+      ],
+      "notes": "2026-10-12 verification: The page describes a Pinterest MCP server that brings Pinterest data and Ads capabilities into AI tools and shows an HTTP transport example with bearer-token authentication. It gives no launch date, asks visitors to sign up to be notified at launch, and does not document the tool inventory or access terms."
+    },
+    {
+      "id": "pinterest-ai-marketers-blog-official",
+      "title": "Pinterest AI for marketers",
+      "locator": "https://business.pinterest.com/blog/pinterest-ai-for-marketers/",
+      "source_type": "first-party-blog",
+      "authority_tier": 1,
+      "published_at": "2026-06-29",
+      "retrieved_at": "2026-10-12",
+      "refresh_due": "2026-11-11",
+      "confidence": "medium",
+      "license": "Pinterest terms; citation only",
+      "redistribution": "metadata-only",
+      "claim_ids": [
+        "CLM-0229"
+      ],
+      "notes": "2026-10-12 verification: Business blog page dated June 29, 2026 says Pinterest's MCP server starts with a small group of alpha partners and that approved partners can connect their own LLM agents and copilots. It does not state whether the server is read-only or write-capable."
     }
   ]
 }

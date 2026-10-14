@@ -60,7 +60,7 @@ jobs:
         run: 'python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-repository-audit.lock'
 
       - name: Check Python syntax
-        run: python -m compileall -q claude_ads_core evals scripts tests
+        run: python -m compileall -q claude_ads_core evals scripts tests mods/claude-ads-cockpit/tests
 
       - name: Check shell script syntax
         run: |
@@ -121,6 +121,12 @@ jobs:
 
       - name: Run full test suite
         run: python -m pytest tests -v --tb=short
+
+      - name: Verify optional companion binding and archive
+        run: |
+          python -m pytest mods/claude-ads-cockpit/tests/test_launcher_integration.py -v --tb=short
+          python scripts/package_cockpit.py package --output-dir dist/cockpit
+          python scripts/package_cockpit.py verify --output-dir dist/cockpit
 
       - name: Audit dependencies for known vulnerabilities
         run: |

@@ -102,5 +102,13 @@ channel and include the affected version, reproduction, and impact.
 
 Release candidates must pass source freshness, deterministic/model evaluations,
 security/privacy/license scans, installation matrices, reproducible packaging,
-SBOM/checksum generation, and fresh-context verification. Repository visibility
-remains private until a separate public-release gate is explicitly approved.
+SBOM/checksum generation, and fresh-context verification.
+
+Claude Ads has an existing MIT public distribution at `AgriciDaniel/claude-ads`
+and a private development/community repository at `AI-Marketing-Hub/claude-ads`.
+Public distribution does not make private development inputs, review evidence,
+or future release candidates public. Each new release, publication, or
+visibility change still requires the owner's explicit approval and the
+public-release gates in
+[`control-plane/PUBLISHING_POLICY.md`](control-plane/PUBLISHING_POLICY.md).
+Contributors do not publish releases or change repository visibility.

@@ -5,8 +5,8 @@
 If you discover a security vulnerability, please report it responsibly via the **private GitHub Security Advisory channel**:
 
 1. **Do NOT open a public issue** (public issues expose the vulnerability before it can be patched).
-2. Open a [GitHub Security Advisory](https://github.com/AgriciDaniel/claude-ads/security/advisories/new) on the public repo. This is the only supported private disclosure channel — do not email or DM.
-3. Include: affected version (for example v2.0.0), reproduction steps, and impact assessment.
+2. Open a [GitHub Security Advisory](https://github.com/AgriciDaniel/claude-ads/security/advisories/new) on the public repo. This is the only supported private disclosure channel, so do not email or DM.
+3. Include: affected version (for example, the output of `python -m claude_ads_core --version`), reproduction steps, and impact assessment.
 
 We aim to acknowledge reports within **48 hours** and provide an estimated resolution timeline within **7 days**.
 
@@ -29,8 +29,8 @@ Only the latest version receives security updates.
   OS/container egress sandbox supplies a short-lived Ed25519-signed attestation
   bound to the current environment. Screenshot capture writes a digest-bound
   receipt naming the attestation, issuer, trust key, environment, and artifact.
-- PDF report text, including the health score caption, passes through one escaping helper before ReportLab markup parsing, so report values cannot inject markup
-- Error messages are scrubbed via `sanitize_error()` before reaching stdout, JSON output, or audit reports — strips `key=`, `token=`, `secret=`, `password=`, and bare `Bearer <token>` substrings
+- PDF report text is escaped before rendering on both PDF paths, so report values cannot inject markup. The canonical renderer (`claude_ads_core/reporting.py`) HTML-escapes every value before WeasyPrint renders the document. The `scripts/generate_report.py` helper passes values, including the health score caption, through one escaping function before ReportLab parses its markup
+- Error messages are scrubbed via `sanitize_error()` before reaching stdout, JSON output, or audit reports; the scrub strips `key=`, `token=`, `secret=`, `password=`, and bare `Bearer <token>` substrings
 - GitHub Actions are pinned to full commit SHAs. The Dependabot workflow is
   read-only and cannot approve or merge its own pull request. A human owns the
   merge decision after required branch checks.
