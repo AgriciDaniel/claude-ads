@@ -19,17 +19,26 @@
     Override the target's default skill install root.
 .PARAMETER AgentDir
     Override the target's default agent install root.
+.PARAMETER Ref
+    Opt-in pin for -Source git: a tag, branch, or commit, resolved to a full
+    commit SHA and checked out detached. Allowed characters are letters, digits,
+    dot, underscore, hyphen, and slash (at most 100); it must not start with a
+    hyphen, dot, or slash and must not contain .. or //. A git ref is not a
+    checksum-verified release.
 .EXAMPLE
     .\install.ps1
 .EXAMPLE
     .\install.ps1 -Target codex
 .EXAMPLE
     .\install.ps1 -SkillDir C:\Custom\Skills
+.EXAMPLE
+    .\install.ps1 -Source git -Ref v2.0.2
 .NOTES
     Prefer a host-native plugin install or a tagged release archive after
     verifying its SHA-256 checksum (releases publish SHA256SUMS and are not
     signed). -Source git clones the default branch HEAD and is NOT pinned to a
-    release. Never pipe remote content to PowerShell.
+    release unless -Ref is given; a pinned git ref is still not a
+    checksum-verified release. Never pipe remote content to PowerShell.
 #>
 
 param(
@@ -40,8 +49,11 @@ param(
     [ValidateSet('auto','local','git')]
     [string]$Source = 'auto',
     [string]$RepoDir = '',
+    [string]$Ref = '',
     [switch]$NoDeps
 )
+
+$RefWasSupplied = $PSBoundParameters.ContainsKey('Ref')
 
 $ErrorActionPreference = "Stop"
 
@@ -121,6 +133,18 @@ function Test-InstallPath {
     return $true
 }
 
+# A -Ref value must be a plain ref or commit name. It is rejected before any
+# git call so it can never be parsed as an option or act as a path trick.
+function Test-GitRef {
+    param([string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) { return $false }
+    if ($Value.Length -gt 100) { return $false }
+    if ($Value -cnotmatch '\A[A-Za-z0-9._/-]+\z') { return $false }
+    if ($Value -match '^[-./]') { return $false }
+    if ($Value.Contains('..') -or $Value.Contains('//') -or $Value.EndsWith('/')) { return $false }
+    return $true
+}
+
 function Get-NormalizedInstallRoot([string]$Path) {
     $FullPath = [IO.Path]::GetFullPath($Path)
     $PathRoot = [IO.Path]::GetPathRoot($FullPath)
@@ -156,6 +180,14 @@ function Main {
     $AgentDirResolved = $paths.AgentDir
     $AllowPip = $paths.AllowPip
     $HostLabel = $paths.Label
+
+    # Validate -Ref before any other use. The rejected value is not echoed
+    # because it may contain control characters.
+    if ($RefWasSupplied -and -not (Test-GitRef -Value $Ref)) {
+        Write-Host "X Invalid -Ref: use 1 to 100 characters from letters, digits, . _ - /" -ForegroundColor Red
+        Write-Host "  A ref must not start with - . or /, and must not contain .. or //" -ForegroundColor Red
+        exit 1
+    }
 
     if ($SkillDir) {
         if (-not (Test-InstallPath -Path $SkillDir)) {
@@ -441,6 +473,11 @@ function Main {
             $Source = 'git'
         }
     }
+    if ($RefWasSupplied -and $Source -ne 'git') {
+        Write-Host "X -Ref is only valid with -Source git (resolved source: $Source)." -ForegroundColor Red
+        Write-Host "  A local install uses the checkout as it is; use a verified release archive instead." -ForegroundColor Red
+        exit 1
+    }
     if ($Source -eq 'local') {
         $SourceDir = if ($RepoDir) { $RepoDir } else { $PSScriptRoot }
         if (-not (Test-InstallPath -Path $SourceDir)) { throw "Invalid local repository path" }
@@ -476,16 +513,57 @@ function Main {
     try {
         if ($Source -eq 'git') {
             $TempDir = Join-Path $env:TEMP "claude-ads-install-$(Get-Random)"
-            Write-Host "Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
+            $CloneDir = "$TempDir\claude-ads"
+            if ($RefWasSupplied) {
+                Write-Host "Downloading Claude Ads with Git (pinned to git ref $Ref; a git ref is not a checksum-verified release)..."
+            } else {
+                Write-Host "Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
+            }
             $ErrorActionPreference = "Continue"
-            $GitOutput = & git clone --depth 1 $RepoUrl "$TempDir\claude-ads" 2>&1
+            if ($RefWasSupplied) {
+                # A full clone without a checkout, so any tag, branch, or commit
+                # can be resolved before a single file is written.
+                $GitOutput = & git clone --no-checkout $RepoUrl $CloneDir 2>&1
+            } else {
+                $GitOutput = & git clone --depth 1 $RepoUrl "$TempDir\claude-ads" 2>&1
+            }
             $GitExitCode = $LASTEXITCODE
             $ErrorActionPreference = "Stop"
             if ($GitExitCode -ne 0) {
                 $GitText = (@($GitOutput) | ForEach-Object { "$_" }) -join [Environment]::NewLine
                 throw "Git clone failed (exit code $GitExitCode): $GitText"
             }
-            $SourceDir = "$TempDir\claude-ads"
+            if ($RefWasSupplied) {
+                # Tags and commits resolve directly; a branch resolves through
+                # its remote-tracking ref. --end-of-options keeps the value from
+                # ever being parsed as an option.
+                $PinnedSha = $null
+                $ErrorActionPreference = "Continue"
+                foreach ($Candidate in @("${Ref}^{commit}", "refs/remotes/origin/${Ref}^{commit}")) {
+                    $Resolved = (& git -C $CloneDir rev-parse --verify --quiet --end-of-options $Candidate 2>$null)
+                    if ($LASTEXITCODE -eq 0 -and "$Resolved" -cmatch '\A([0-9a-f]{40}|[0-9a-f]{64})\z') {
+                        $PinnedSha = "$Resolved"
+                        break
+                    }
+                }
+                $ErrorActionPreference = "Stop"
+                if (-not $PinnedSha) {
+                    throw "Git ref does not resolve to a commit: $Ref. Nothing was installed."
+                }
+                $ErrorActionPreference = "Continue"
+                $CheckoutOutput = & git -c advice.detachedHead=false -C $CloneDir checkout --detach --end-of-options $PinnedSha -- 2>&1
+                $CheckoutExitCode = $LASTEXITCODE
+                $HeadSha = "$(& git -C $CloneDir rev-parse --verify HEAD 2>$null)"
+                $ErrorActionPreference = "Stop"
+                if ($CheckoutExitCode -ne 0 -or $HeadSha -cne $PinnedSha) {
+                    $CheckoutText = (@($CheckoutOutput) | ForEach-Object { "$_" }) -join [Environment]::NewLine
+                    throw "Could not check out git ref $Ref ($PinnedSha). Nothing was installed. $CheckoutText"
+                }
+                Write-Host "OK Pinned git ref: $Ref" -ForegroundColor Green
+                Write-Host "  Resolved commit: $PinnedSha"
+                Write-Host "  This is a git ref, not a checksum-verified release, and it is not signed."
+            }
+            $SourceDir = $CloneDir
         }
 
         # Build the complete destination plan without touching either configured

@@ -19,6 +19,7 @@ set -euo pipefail
 #   bash install.sh --target=goose
 #   bash install.sh --skill-dir=/custom/path     # override the target's default path
 #   bash install.sh --source=local --no-deps     # install this checkout, skip Python deps
+#   bash install.sh --source=git --ref=v2.0.2    # clone, then pin to a tag, branch, or commit
 #
 # All target keys are validated against a strict whitelist (no shell injection
 # possible via --target=...). Custom --skill-dir and --agent-dir paths are
@@ -31,6 +32,14 @@ set -euo pipefail
 # --source=git clones the default branch HEAD of the public repository and is
 # NOT pinned to a release. Releases publish a zip, SHA256SUMS, an SBOM and a
 # manifest (no signatures); see the README for the checksum recipe.
+#
+# --ref=<tag|branch|commit> is an opt-in pin for --source=git only. The value is
+# validated strictly before any use (at most 100 characters of letters, digits,
+# dot, underscore, hyphen, and slash; no leading hyphen, dot, or slash; no `..`,
+# `//`, or trailing slash), resolved to a full commit SHA after the clone, and checked
+# out detached through `--end-of-options`, so it can never be parsed as an option.
+# A git ref is not a checksum-verified release and nothing here is signed. An
+# unresolvable ref fails before any install-root mutation.
 
 REPO_URL="https://github.com/AgriciDaniel/claude-ads"
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
@@ -167,13 +176,45 @@ validate_runtime_resource_path() {
     return 0
 }
 
+# A --ref value must be a plain ref or commit name. It is rejected before any
+# git call so it can never be parsed as an option or act as a path trick.
+validate_git_ref() {
+    local ref="$1"
+    local LC_ALL=C
+    [ -n "$ref" ] || return 1
+    [ "${#ref}" -le 100 ] || return 1
+    # Allow letters, digits, dot, underscore, hyphen, and slash only. This also
+    # rejects whitespace, control characters, and shell or git revision syntax.
+    case "$ref" in *[!A-Za-z0-9._/-]*) return 1 ;; esac
+    # No option lookalikes, hidden or relative names, or absolute paths.
+    case "$ref" in -*|.*|/*) return 1 ;; esac
+    # No parent traversal, empty path components, or trailing slash.
+    case "$ref" in *..*|*//*|*/) return 1 ;; esac
+    return 0
+}
+
+# Resolve a validated ref to one full commit SHA inside a fresh clone. Tags and
+# commits resolve directly; a branch resolves through its remote-tracking ref.
+resolve_git_ref() {
+    local repo="$1" ref="$2" candidate sha
+    for candidate in "${ref}^{commit}" "refs/remotes/origin/${ref}^{commit}"; do
+        sha=$(git -C "$repo" rev-parse --verify --quiet --end-of-options "$candidate" 2>/dev/null) || continue
+        case "$sha" in ""|*[!0-9a-f]*) continue ;; esac
+        case "${#sha}" in
+            40|64) printf '%s' "$sha"; return 0 ;;
+        esac
+    done
+    return 1
+}
+
 print_help() {
     cat <<EOF
 Claude Ads Installer
 
 Usage:
   bash install.sh [--target=<host>] [--skill-dir=<path>] [--agent-dir=<path>]
-                  [--source=<auto|local|git>] [--repo-dir=<path>] [--no-deps]
+                  [--source=<auto|local|git>] [--ref=<tag|branch|commit>]
+                  [--repo-dir=<path>] [--no-deps]
 
 Targets (default: claude):
   claude     Claude Code (verified)
@@ -189,6 +230,9 @@ Overrides:
   --agent-dir=<path>   Override the target's default agent install root
   --source=<mode>      auto uses this checkout when available, otherwise git
                        git clones the default branch HEAD (unpinned, not a release)
+  --ref=<ref>          Pin --source=git to a tag, branch, or commit (opt-in).
+                       Checked out detached and reported as a full commit SHA.
+                       A git ref is not a checksum-verified release.
   --repo-dir=<path>    Local checkout to install (implies --source=local)
   --no-deps            Do not create the verified managed Python environment
 
@@ -196,12 +240,15 @@ Examples:
   bash install.sh
   bash install.sh --target=codex
   bash install.sh --source=local --no-deps
+  bash install.sh --source=git --ref=v2.0.2
   bash install.sh --target=claude --skill-dir=~/custom/skills
 
 Security:
   Prefer a host-native plugin install or a tagged release archive with a
   verified SHA-256 checksum (releases publish SHA256SUMS; they are not signed).
   --source=git is unpinned: it installs whatever the default branch holds now.
+  --source=git --ref=<ref> installs exactly that git ref, which is still not a
+  checksum-verified release and is not signed.
   Never pipe a remote installer directly to a shell.
 
 EOF
@@ -215,6 +262,9 @@ main() {
     local SOURCE_MODE="auto"
     local REPO_DIR=""
     local INSTALL_DEPS=1
+    local GIT_REF=""
+    local GIT_REF_SET=0
+    local PINNED_SHA=""
 
     # Parse args
     while [ $# -gt 0 ]; do
@@ -251,6 +301,16 @@ main() {
                 [ $# -eq 0 ] && { echo "✗ --source requires a value" >&2; exit 1; }
                 SOURCE_MODE="$1"
                 ;;
+            --ref=*)
+                GIT_REF="${1#*=}"
+                GIT_REF_SET=1
+                ;;
+            --ref)
+                shift
+                [ $# -eq 0 ] && { echo "✗ --ref requires a value" >&2; exit 1; }
+                GIT_REF="$1"
+                GIT_REF_SET=1
+                ;;
             --repo-dir=*)
                 REPO_DIR="${1#*=}"
                 SOURCE_MODE="local"
@@ -276,6 +336,16 @@ main() {
         esac
         shift
     done
+
+    # Validate --ref before any other use. The rejected value is not echoed
+    # because it may contain control characters.
+    if [ "$GIT_REF_SET" = "1" ]; then
+        validate_git_ref "$GIT_REF" || {
+            echo "✗ Invalid --ref: use 1 to 100 characters from letters, digits, . _ - /" >&2
+            echo "  A ref must not start with - . or /, and must not contain .. or //" >&2
+            exit 1
+        }
+    fi
 
     # Resolve target paths (rejects unknown targets via whitelist)
     if ! resolve_target_paths "$TARGET"; then
@@ -343,6 +413,12 @@ main() {
             ;;
     esac
 
+    if [ "$GIT_REF_SET" = "1" ] && [ "$SOURCE_MODE" != "git" ]; then
+        echo "✗ --ref is only valid with --source=git (resolved source: ${SOURCE_MODE})." >&2
+        echo "  A local install uses the checkout as it is; use a verified release archive instead." >&2
+        exit 1
+    fi
+
     if [ "$SOURCE_MODE" = "local" ]; then
         validate_install_path "$SOURCE_DIR" || {
             echo "✗ Invalid local repository path" >&2
@@ -407,11 +483,37 @@ print("|".join((sys.implementation.name, f"{sys.version_info.major}.{sys.version
     if [ "$SOURCE_MODE" = "git" ]; then
         command -v git >/dev/null 2>&1 || { echo "✗ Git is required for --source=git." >&2; exit 1; }
         TEMP_DIR=$(mktemp -d)
-        echo "↓ Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
-        git clone --depth 1 "${REPO_URL}" "${TEMP_DIR}/claude-ads"
+        if [ -n "$GIT_REF" ]; then
+            echo "↓ Downloading Claude Ads with Git (pinned to git ref ${GIT_REF}; a git ref is not a checksum-verified release)..."
+            # A full clone without a checkout, so any tag, branch, or commit can
+            # be resolved before a single file is written.
+            git clone --no-checkout "${REPO_URL}" "${TEMP_DIR}/claude-ads"
+            PINNED_SHA=$(resolve_git_ref "${TEMP_DIR}/claude-ads" "$GIT_REF") || {
+                echo "✗ Git ref does not resolve to a commit: ${GIT_REF}" >&2
+                echo "  Nothing was installed." >&2
+                exit 1
+            }
+            git -c advice.detachedHead=false -C "${TEMP_DIR}/claude-ads" \
+                checkout --detach --end-of-options "$PINNED_SHA" -- || {
+                echo "✗ Could not check out git ref ${GIT_REF} (${PINNED_SHA}). Nothing was installed." >&2
+                exit 1
+            }
+            [ "$(git -C "${TEMP_DIR}/claude-ads" rev-parse --verify HEAD 2>/dev/null)" = "$PINNED_SHA" ] || {
+                echo "✗ Checked-out commit does not match the resolved ref ${GIT_REF}. Nothing was installed." >&2
+                exit 1
+            }
+        else
+            echo "↓ Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
+            git clone --depth 1 "${REPO_URL}" "${TEMP_DIR}/claude-ads"
+        fi
         SOURCE_DIR="${TEMP_DIR}/claude-ads"
     fi
     echo "✓ Distribution source: ${SOURCE_MODE}"
+    if [ -n "$PINNED_SHA" ]; then
+        echo "✓ Pinned git ref: ${GIT_REF}"
+        echo "  Resolved commit: ${PINNED_SHA}"
+        echo "  This is a git ref, not a checksum-verified release, and it is not signed."
+    fi
 
     # Validate the public runtime resource list before touching either install
     # root. The list is data, never shell input, and every entry must resolve to

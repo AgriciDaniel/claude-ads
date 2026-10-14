@@ -10,7 +10,7 @@ description: "Audit Google Ads measurement, Search, Shopping, Performance Max, D
 1. Read the main `ads` operating contract and thinking framework.
 2. Collect objective, conversion definition, account and campaign age, geography,
    date window, timezone, currency, spend, targets, and available data sources.
-3. Read `ads/references/google-audit.md` and only the relevant shared measurement,
+3. Read `ads/references/google-audit.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and only the relevant shared measurement,
    benchmark, creative, automation, policy, and scoring references. Read
    `ads/references/gaql-notes.md` before building keyword, negative-keyword, or
    search-term evidence from an API, MCP server, or export.

@@ -170,6 +170,18 @@ bash install.sh --target=gemini --source=local --no-deps
 the default branch HEAD, which is unpinned and is not a verified release. Prefer
 `--source=local` from a checkout you have reviewed, or a release archive.
 
+To pin a git install, add the opt-in `--ref` option (PowerShell: `-Ref`) with a
+tag, branch, or commit. It is valid only with `--source=git`. The installer
+validates the value strictly, checks it out detached, prints the resolved full
+commit SHA, and fails before installing anything if the ref does not resolve:
+
+```bash
+bash install.sh --source=git --ref=v2.0.2
+```
+
+A git ref is not a checksum-verified release, and nothing here is signed. A
+release zip checked with the `SHA256SUMS` recipe below remains the verified path.
+
 PowerShell uses the same managed ownership model:
 
 ```powershell

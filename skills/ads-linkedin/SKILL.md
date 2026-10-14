@@ -10,7 +10,7 @@ description: "Audit LinkedIn Ads measurement, Insight Tag and conversions, profe
 1. Read the main `ads` operating contract and thinking framework.
 2. Collect objective, conversion definition, account and campaign age, geography,
    date window, timezone, currency, spend, targets, and available data sources.
-3. Read `ads/references/linkedin-audit.md` and only the relevant shared measurement,
+3. Read `ads/references/linkedin-audit.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and only the relevant shared measurement,
    benchmark, creative, automation, policy, and scoring references.
 4. Normalize inputs and retain lineage to each export, screenshot, API result, or
    manual value.

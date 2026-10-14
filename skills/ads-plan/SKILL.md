@@ -11,7 +11,7 @@ description: "Create a professional paid-advertising strategy covering objective
    regulated category, time horizon, and success criteria.
 3. Evaluate channel roles and exclusions from first principles; do not require every
    supported platform. For a channel outside the twelve-platform contract, load
-   `ads/references/additional-platforms.md` and return a research lead unless
+   `ads/references/additional-platforms.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and return a research lead unless
    its current buying, eligibility, measurement, and creative evidence is present.
 4. Before proposing Meta budgets, learning-phase expectations, bidding,
    consolidation, or performance forecasts, collect the account, Pixel, and

@@ -90,3 +90,17 @@ def test_workflow_skills_carry_a_local_untrusted_data_rule(repo_root: Path):
 def test_landing_skill_names_the_guarded_fetcher_script(repo_root: Path):
     text = (repo_root / "skills/ads-landing/SKILL.md").read_text(encoding="utf-8")
     assert "scripts/fetch_page.py" in text
+
+
+def test_every_skill_that_cites_shared_references_says_where_they_resolve(repo_root):
+    """A live plugin eval showed models guess the wrong base directory for `ads/references/...` on the first try.
+
+    Each such skill names the plugin root once, so the first lookup lands on the right path.
+    """
+    hint = "plugin root, the directory that holds `ads/` and `skills/`"
+    missing = []
+    for path in sorted((repo_root / "skills").glob("*/SKILL.md")):
+        text = path.read_text(encoding="utf-8")
+        if "`ads/references/" in text and hint not in text:
+            missing.append(path.parent.name)
+    assert not missing, missing

@@ -11,7 +11,7 @@ description: "Audit Meta Ads measurement, Pixel and Events Manager, attribution,
 2. Collect objective, conversion definition, geography, date window, timezone,
    currency, spend, targets, and available data sources. Collect account, Pixel,
    and conversion-history maturity separately using the cold-start contract below.
-3. Read `ads/references/meta-audit.md` and only the relevant shared measurement,
+3. Read `ads/references/meta-audit.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and only the relevant shared measurement,
    benchmark, creative, automation, policy, and scoring references.
 4. Normalize inputs and retain lineage to each export, screenshot, API result, or
    manual value.
