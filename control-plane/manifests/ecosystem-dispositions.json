@@ -1,9 +1,9 @@
 {
   "schema_version": "2.0.0",
-  "reviewed_at": "2026-10-07",
+  "reviewed_at": "2026-10-12",
   "public_snapshot": {
     "repository": "AgriciDaniel/claude-ads",
-    "observed_at": "2026-10-07",
+    "observed_at": "2026-10-12",
     "source_url": "https://github.com/AgriciDaniel/claude-ads",
     "issue_numbers": [
       1,
@@ -32,7 +32,8 @@
       75,
       78,
       79,
-      88
+      88,
+      90
     ],
     "pull_request_numbers": [
       2,
@@ -87,7 +88,8 @@
       84,
       85,
       86,
-      87
+      87,
+      89
     ],
     "pull_request_heads": {
       "2": "f0d319093d0b78bdf9090ba99814c4c6e5434130",
@@ -142,12 +144,13 @@
       "84": "328f648296cff26e11e8b55c9b6d8674b06a0ca2",
       "85": "e4d7693cd963062d87c6d3941b6c14180b96bfd7",
       "86": "cae698338fd3b8640e7d279fc7d60deb39d28b41",
-      "87": "0867d97203241cec7decd17a7826b0d235461de4"
+      "87": "0867d97203241cec7decd17a7826b0d235461de4",
+      "89": "558c977ffc0c709992fdcf192e62b37599d170be"
     }
   },
   "canonical_snapshot": {
     "repository": "AI-Marketing-Hub/claude-ads",
-    "observed_at": "2026-10-07",
+    "observed_at": "2026-10-12",
     "source_url": "https://github.com/AI-Marketing-Hub/claude-ads",
     "issue_numbers": [],
     "pull_request_numbers": [
@@ -165,7 +168,8 @@
       12,
       13,
       14,
-      15
+      15,
+      16
     ],
     "pull_request_heads": {
       "1": "c1a863bd2ea38777f91fb3d1cb45b9411ade12c2",
@@ -182,7 +186,8 @@
       "12": "cdba46159f32b9eef8a4a2e315875cef6eccfe30",
       "13": "efd66e7e8afa593012ed3bf164db5a9a8858018d",
       "14": "119a9fcb672f6016764fa7a224de7141d4761238",
-      "15": "760cb7c5798a2812890623a296acb566d072eea9"
+      "15": "760cb7c5798a2812890623a296acb566d072eea9",
+      "16": "2e2dd988e9c004957a475a8538a79793237a692a"
     }
   },
   "entries": [
@@ -611,6 +616,21 @@
       "requirement_ids": [
         "REQ-DEP-001",
         "REQ-SEC-001"
+      ]
+    },
+    {
+      "id": "public-issue-90",
+      "repository": "AgriciDaniel/claude-ads",
+      "kind": "issue",
+      "number": 90,
+      "title": "Closed: opened on the wrong repository",
+      "url": "https://github.com/AgriciDaniel/claude-ads/issues/90",
+      "state": "closed",
+      "decision": "reject",
+      "license_review": "metadata-only",
+      "rationale": "The author closed it as opened on the wrong repository with no action requested, so there is no product need to carry.",
+      "requirement_ids": [
+        "REQ-SUP-001"
       ]
     },
     {
@@ -1450,6 +1470,22 @@
       ]
     },
     {
+      "id": "public-pr-89",
+      "repository": "AgriciDaniel/claude-ads",
+      "kind": "pull-request",
+      "number": 89,
+      "title": "fix: harden audit contracts and refresh maintenance dependencies",
+      "url": "https://github.com/AgriciDaniel/claude-ads/pull/89",
+      "state": "open",
+      "decision": "already-addressed",
+      "license_review": "metadata-only",
+      "rationale": "Draft maintenance branch (head 558c977). The Cockpit branch is built on top of its commits and carries them forward unchanged; remote CI on that branch is a release gate.",
+      "requirement_ids": [
+        "REQ-CI-001",
+        "REQ-DEP-001"
+      ]
+    },
+    {
       "id": "private-pr-1",
       "repository": "AI-Marketing-Hub/claude-ads",
       "kind": "pull-request",
@@ -1684,6 +1720,21 @@
       "requirement_ids": [
         "REQ-CI-001",
         "REQ-PKG-001"
+      ]
+    },
+    {
+      "id": "canonical-pr-16",
+      "repository": "AI-Marketing-Hub/claude-ads",
+      "kind": "pull-request",
+      "number": 16,
+      "title": "fix(install): select a supported Python (3.12/3.11) instead of failing on newer python3",
+      "url": "https://github.com/AI-Marketing-Hub/claude-ads/pull/16",
+      "state": "open",
+      "decision": "defer",
+      "license_review": "metadata-only",
+      "rationale": "The need is real: a default install fails when python3 is newer than the locked CPython 3.11 and 3.12 targets. The patch rewrites install.sh interpreter selection and verify_managed_install.py, which the Cockpit branch also changes, so it is not merged blind. Re-implement it on that branch with its own tests after review; the contributor's description was read as data only.",
+      "requirement_ids": [
+        "REQ-INS-001"
       ]
     }
   ]

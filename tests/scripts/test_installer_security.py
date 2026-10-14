@@ -1821,6 +1821,30 @@ def test_bash_installer_removes_temp_dirs_on_every_exit_path(
 
 
 @BASH_INSTALLER_ONLY
+def test_bash_installer_git_source_works_when_tmpdir_is_a_symlink(tmp_path):
+    """macOS temp dirs live under the /var symlink; a default git install must still work."""
+    distribution = _minimal_distribution(tmp_path / "distribution")
+    fake_bin, log = _fake_git(tmp_path, distribution)
+    real_scratch = tmp_path / "real-tmp"
+    real_scratch.mkdir()
+    linked_scratch = tmp_path / "linked-tmp"
+    linked_scratch.symlink_to(real_scratch, target_is_directory=True)
+    skills, agents = tmp_path / "skills", tmp_path / "agents"
+
+    result = _run_installer(
+        "install.sh", tmp_path, "--target=claude", "--no-deps", "--source=git",
+        f"--skill-dir={skills}", f"--agent-dir={agents}",
+        PATH=f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+        TMPDIR=str(linked_scratch),
+        FAKE_GIT_LOG=str(log),
+        FAKE_GIT_SOURCE=str(distribution),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert list(real_scratch.iterdir()) == [], "installer leaked temporary directories"
+
+
+@BASH_INSTALLER_ONLY
 def test_bash_uninstall_removes_validation_dir_on_every_exit_path(tmp_path):
     skills, agents = _install(tmp_path)
     scratch = tmp_path / "scratch-tmp"

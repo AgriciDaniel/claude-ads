@@ -483,6 +483,11 @@ print("|".join((sys.implementation.name, f"{sys.version_info.major}.{sys.version
     if [ "$SOURCE_MODE" = "git" ]; then
         command -v git >/dev/null 2>&1 || { echo "✗ Git is required for --source=git." >&2; exit 1; }
         TEMP_DIR=$(mktemp -d)
+        # macOS reports temp dirs under the /var symlink. Use the physical path so
+        # the symlink guard accepts the clone; keep the original on failure so the
+        # EXIT trap still removes it.
+        PHYSICAL_TEMP=$(cd "$TEMP_DIR" && pwd -P) || { echo "✗ Cannot resolve the temporary directory" >&2; exit 1; }
+        TEMP_DIR="$PHYSICAL_TEMP"
         if [ -n "$GIT_REF" ]; then
             echo "↓ Downloading Claude Ads with Git (pinned to git ref ${GIT_REF}; a git ref is not a checksum-verified release)..."
             # A full clone without a checkout, so any tag, branch, or commit can
