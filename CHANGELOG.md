@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* `install.sh --source=git` no longer refuses its own clone on macOS, where the default
+  temporary directory sits under the `/var` symlink. The installer resolves the physical
+  path first; a regression test reaches `TMPDIR` through a symlink.
+* Name the author in `LICENSE` and `CITATION.cff` (Daniel Agrici, handle AgriciDaniel).
 * Separate positive Google keyword inventory from ad-group, campaign, shared-list,
   and account negatives. Conflict review uses match type and applicable scope;
   missing or implausible inventory evidence produces an unknown result.
