@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="452" viewBox="0 0 1200 452" role="img" aria-labelledby="t d" font-family="Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title id="t">How Claude Ads earns trust</title>
+<desc id="d">Read only by default, evidence for every finding, honest about gaps, and your data stays yours.</desc>
+<rect width="1200" height="452" rx="20" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="1199" height="451" rx="19.5" fill="none" stroke="#E3E3E9"/>
+<text x="72" y="78" font-size="14" font-weight="700" fill="#D4623C" text-anchor="start" letter-spacing="2">BUILT TO BE TRUSTED</text>
+<text x="72" y="124" font-size="36" font-weight="800" fill="#17171C" text-anchor="start">It tells you what it knows, and what it does not</text>
+<rect x="72" y="160" width="504" height="120" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="96" y="186" width="10" height="68" rx="5" fill="#D4623C"/>
+<text x="126" y="210" font-size="21" font-weight="700" fill="#17171C" text-anchor="start">Read only by default</text>
+<text x="126" y="240" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Changes stay drafts. Nothing touches your account</text>
+<text x="126" y="264" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">until it passes every safety check.</text>
+<rect x="600" y="160" width="504" height="120" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="624" y="186" width="10" height="68" rx="5" fill="#D4623C"/>
+<text x="654" y="210" font-size="21" font-weight="700" fill="#17171C" text-anchor="start">Evidence for every finding</text>
+<text x="654" y="240" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Each result points to a dated source. No source, no</text>
+<text x="654" y="264" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">claim.</text>
+<rect x="72" y="300" width="504" height="120" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="96" y="326" width="10" height="68" rx="5" fill="#D4623C"/>
+<text x="126" y="350" font-size="21" font-weight="700" fill="#17171C" text-anchor="start">Honest about gaps</text>
+<text x="126" y="380" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">What it could not check is marked unknown. It never</text>
+<text x="126" y="404" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">guesses.</text>
+<rect x="600" y="300" width="504" height="120" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="624" y="326" width="10" height="68" rx="5" fill="#D4623C"/>
+<text x="654" y="350" font-size="21" font-weight="700" fill="#17171C" text-anchor="start">Your data stays yours</text>
+<text x="654" y="380" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Credentials and client data never go into reports or</text>
+<text x="654" y="404" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">the repository.</text>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="452" viewBox="0 0 1200 452" role="img" aria-labelledby="t d" font-family="Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<title id="t">Supported ad platforms</title>
+<desc id="d">Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, Apple, Amazon, Reddit, Pinterest, Snapchat and X.</desc>
+<rect width="1200" height="452" rx="20" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="1199" height="451" rx="19.5" fill="none" stroke="#E3E3E9"/>
+<text x="72" y="78" font-size="14" font-weight="700" fill="#D4623C" text-anchor="start" letter-spacing="2">PLATFORMS</text>
+<text x="72" y="124" font-size="36" font-weight="800" fill="#17171C" text-anchor="start">Twelve ad platforms, one way of working</text>
+<rect x="72" y="160" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="192" y="195" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Google Ads</text>
+<rect x="336" y="160" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="456" y="195" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Meta Ads</text>
+<rect x="600" y="160" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="720" y="195" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">YouTube Ads</text>
+<rect x="864" y="160" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="984" y="195" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">LinkedIn Ads</text>
+<rect x="72" y="236" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="192" y="271" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">TikTok Ads</text>
+<rect x="336" y="236" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="456" y="271" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Microsoft Advertising</text>
+<rect x="600" y="236" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="720" y="271" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Apple Ads</text>
+<rect x="864" y="236" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="984" y="271" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Amazon Ads</text>
+<rect x="72" y="312" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="192" y="347" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Reddit Ads</text>
+<rect x="336" y="312" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="456" y="347" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Pinterest Ads</text>
+<rect x="600" y="312" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="720" y="347" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">Snapchat Ads</text>
+<rect x="864" y="312" width="240" height="56" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<text x="984" y="347" font-size="18" font-weight="600" fill="#17171C" text-anchor="middle">X Ads</text>
+<text x="72" y="416" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Each platform has its own focused skill, audit worker and control reference.</text>
+</svg>

@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   owner, and restrict the copy, strategy and format agents to read-only tools.
 * Installers clean up temporary directories on every exit path, expand a leading `~`,
   and describe git installs as unpinned and releases as checksummed, not signed.
+* Rewrite the README in plain language with four new static visuals (banner, three steps,
+  platforms, trust). The old animated banner, command-discovery GIF, and diagrams are
+  removed because they showed a 0 to 100 health score and a nine-category model that the
+  disabled scoring profiles do not produce. Technical detail moves into a collapsed
+  section, and contributor credits move to `CONTRIBUTING.md`.
 * README gains a status box, a quickstart and an experimental caveat for non-Claude
   hosts. CI runner and installer-test changes from 2.0.2 follow-up work are covered
   by the existing hardening entries.

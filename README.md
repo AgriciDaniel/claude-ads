@@ -1,21 +1,17 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Claude Ads, Claude-first paid-media operations across twelve advertising platforms" width="100%">
+  <img src="assets/banner.svg" alt="Claude Ads: find out what is wrong with your ad accounts, and what to fix first" width="100%">
 </p>
 
 # Claude Ads
 
-Claude-first, portable paid-media operations for agencies, consultants, and
-in-house performance teams.
+Claude Ads is a free, open source skill for Claude Code. Give it your ad account data and it tells you what is working, what is broken, and what to fix first, across twelve ad platforms.
 
-Claude Ads turns authorized exports or account reads into source-grounded
-audits, plans, creative workflows, experiments, monitoring, and reports. It is
-read-only by default. Live changes stay disabled until the exact platform and
-operation pass approval, idempotency, verification, audit, and rollback gates.
+It is made for agencies, consultants, and in-house marketing teams. It reads your data and reports back. It does not change your accounts on its own.
 
 > [!NOTE]
-> Claude Ads ships from two homes: the **public release** at
+> You can get Claude Ads from two places: the **public release** at
 > [`AgriciDaniel/claude-ads`](https://github.com/AgriciDaniel/claude-ads)
-> (MIT, no membership required) and the **community mirror** at
+> (MIT licensed, no membership needed), and the **community mirror** at
 > `AI-Marketing-Hub/claude-ads`, where
 > [AI Marketing Hub Pro](https://www.skool.com/ai-marketing-hub-pro) members
 > get early access and direct collaboration.
@@ -34,81 +30,72 @@ operation pass approval, idempotency, verification, audit, and rollback gates.
 ## Quickstart
 
 1. Install (see [Installation](#installation)): `/plugin marketplace add agricidaniel/claude-ads`, then `/plugin install claude-ads@ai-marketing-hub-claude-ads`.
-2. Run `/ads setup` and answer the intake: business model, objective, primary conversion, monthly spend, active platforms, and who may approve changes. Never paste API keys or tokens.
-3. Bring evidence: an account export (CSV or JSON), screenshots, or a pasted metrics summary with its date range, currency, and timezone.
-4. Run `/ads audit google` (or `/ads audit all`) for a source-grounded audit: JSON bundle, then Markdown or HTML, with missing data and unknowns stated.
-5. Run `/ads report` to re-render a prior run and `/ads next` to see the highest-priority blocker.
+2. Run `/ads setup` and answer a few questions: your business model, goal, main conversion, monthly spend, active platforms, and who approves changes. Never paste API keys or tokens.
+3. Bring evidence: an account export (CSV or JSON), screenshots, or a pasted summary with its date range, currency, and timezone.
+4. Run `/ads audit google` (or `/ads audit all`). You get a report that states what passed, what failed, and what is missing.
+5. Run `/ads report` to see a past run again, and `/ads next` to see the most important blocker.
 
 <p align="center">
-  <img src="assets/diagrams/how-it-works.svg" alt="Validated inputs flow through bounded workers into schema-valid findings and deterministic reports" width="100%">
+  <img src="assets/how-it-works.svg" alt="Three steps: tell it about your business, give it your data, then read the audit" width="100%">
 </p>
 
-## What it does
+## What you can do
 
-- Audits paid-media accounts with dated evidence and explicit confidence.
-- Plans campaigns, channels, budgets, measurement, and experiments.
-- Creates copy, image, video, and product-photo briefs and assets.
-- Monitors pacing, delivery, tracking, fatigue, policy, and performance.
-- Produces versioned JSON, then renders Markdown, HTML, and optional PDF.
-- Drafts safe account changes without applying them by default.
-- Reports missing data, stale sources, contradictions, and partial failures.
+| You want to | Run | You get |
+| --- | --- | --- |
+| Find out what is wrong | `/ads audit` | A report of passed, failed, and unchecked items, each with its evidence |
+| Decide where to spend | `/ads plan` | Channel, budget, measurement, and competitor plans |
+| Make ads | `/ads create` | Copy, image, video, and product-photo briefs and assets |
+| Keep watch | `/ads monitor` | Checks on pacing, delivery, tracking, ad fatigue, and policy |
+| Improve results | `/ads optimize --draft` | Suggested changes, written as drafts |
+| Test an idea | `/ads experiment` | A test design, or a readout of a finished test |
 
 ## Platforms
 
 <p align="center">
-  <img src="assets/diagrams/platform-coverage.svg" alt="Twelve first-class paid-advertising platform surfaces" width="100%">
+  <img src="assets/platforms.svg" alt="Google, Meta, YouTube, LinkedIn, TikTok, Microsoft, Apple, Amazon, Reddit, Pinterest, Snapchat and X" width="100%">
 </p>
 
-| Segment | Platforms |
-| --- | --- |
-| Search, video, and social | Google Ads, Meta Ads, YouTube Ads, LinkedIn Ads, TikTok Ads, Microsoft Advertising, Reddit Ads, Snapchat Ads, X Ads |
-| Commerce and retail media | Apple Ads, Amazon Ads, Pinterest Ads |
-
-Each platform has a focused skill, audit worker, control reference, capability
-declaration, and testable routing surface. The
-[capability manifest](control-plane/manifests/capability-manifest.json) is the
-authoritative record for live reads and writes.
+Each platform has its own focused skill, audit worker, control reference, and capability declaration. The
+[capability manifest](control-plane/manifests/capability-manifest.json) is the authoritative record of what can be read or changed live.
 
 ## Commands
 
 Standalone installs use `/ads`. Claude Code plugins are namespaced and use
 `/claude-ads:ads`. Both load the same `ads/SKILL.md` contract.
 
-| Command | Outcome |
+| Command | What it does |
 | --- | --- |
-| `/ads setup` | Create the client, account, KPI, privacy, and guardrail profile |
-| `/ads audit [all\|platform\|scope]` | Run a complete or scoped evidence-backed audit |
+| `/ads setup` | Save your client, account, goal, privacy, and guardrail profile |
+| `/ads audit [all\|platform\|scope]` | Run a full or scoped audit backed by evidence |
 | `/ads plan` | Build channel, campaign, budget, competitor, and measurement plans |
 | `/ads create` | Produce copy, image, video, or product-photo assets |
-| `/ads launch --draft` | Draft a campaign mutation plan without changing the account |
+| `/ads launch --draft` | Draft a campaign change plan without touching the account |
 | `/ads monitor` | Review pacing, delivery, tracking, fatigue, policy, and performance |
-| `/ads optimize --draft` | Draft evidence-backed optimization changes |
+| `/ads optimize --draft` | Draft evidence-backed improvements |
 | `/ads experiment` | Design or read out a controlled test |
-| `/ads report` | Render a validated JSON run bundle |
-| `/ads research refresh` | Refresh platform, policy, API, benchmark, and ecosystem evidence |
-| `/ads validate` | Validate contracts, runs, capabilities, maturity, or release readiness |
-| `/ads status`, `/ads next` | Show current status and the highest-priority blocker |
+| `/ads report` | Render a saved run as Markdown, HTML, or PDF |
+| `/ads research refresh` | Refresh platform, policy, API, and benchmark evidence |
+| `/ads validate` | Check contracts, runs, capabilities, or release readiness |
+| `/ads status`, `/ads next` | Show where things stand and the most important blocker |
 
 Platform shortcuts such as `/ads google`, `/ads meta`, `/ads amazon`, and
-`/ads reddit` route to the matching platform audit.
+`/ads reddit` go straight to that platform's audit.
 
-Claude Ads Cockpit is a separately enabled companion, version 0.1.0, with the
-runtime plugin ID `ads-cockpit`. `/ads-cockpit` opens a local workbench for run
-states, evidence, missing inputs, comparisons, and report receipts. Its isolated
-synthetic demo is intended for walkthroughs. Explicit actions can validate inputs
-or runs and render Markdown, HTML, or conditional PDF reports. Task completion
-counts remain separate from health scores, and every scoring profile in the
-scoring manifest stays disabled. See the [Cockpit guide](docs/cockpit/user-guide.md) and
-[compatibility and acceptance limits](docs/cockpit/compatibility.md).
-
-## Demo
+## Built to be trusted
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Claude Ads command discovery inside Claude Code" width="800">
+  <img src="assets/trust.svg" alt="Read only by default, evidence for every finding, honest about gaps, and your data stays yours" width="100%">
 </p>
 
-The GIF shows the original command-discovery experience. The v2 command table
-above and the platform table are current and authoritative.
+Every check ends in one of four results: `pass`, `fail`, `unknown`, or `not_applicable`. Unknown is a real answer. It means the data was missing, and it is never guessed.
+
+## Claude Ads Cockpit (optional)
+
+Cockpit is a separate, optional companion (version 0.1.0, plugin ID `ads-cockpit`). `/ads-cockpit` opens a local workbench where you can look through a finished audit: its status, evidence, missing inputs, comparisons with an earlier run, and report receipts. A built-in demo with synthetic data lets you try it without any account.
+
+Task counts stay separate from health scores, and every scoring profile in the scoring manifest stays disabled. See the [Cockpit guide](docs/cockpit/user-guide.md) and its
+[compatibility and acceptance limits](docs/cockpit/compatibility.md).
 
 ## Installation
 
@@ -225,11 +212,12 @@ optional plugin has its own marketplace entry and curated archive, and requires
 an explicitly bound trusted core and Python executable. Installing the main
 skill alone preserves the existing experience.
 
-## Architecture
+## For engineers and contributors
 
-<p align="center">
-  <img src="assets/diagrams/architecture.svg" alt="One conductor dispatches platform and cross-platform workers, then validates and renders a canonical JSON bundle" width="100%">
-</p>
+<details>
+<summary>How it is built, how scoring works, safety gates, and how to run the tests</summary>
+
+### Architecture
 
 One conductor owns scope, policy, aggregation, and final artifacts. Workers
 analyze bounded slices and return schema-valid findings. Required-worker failure
@@ -242,11 +230,8 @@ selection applies. See the [official subagent model documentation](https://code.
 The canonical result is versioned JSON. Markdown, HTML, and PDF are renderings
 of the same validated run bundle.
 
-## Scoring and evidence
 
-<p align="center">
-  <img src="assets/diagrams/ads-health-score.svg" alt="Health and evidence coverage remain separate; scoring requires an approved platform profile" width="100%">
-</p>
+### Scoring and evidence
 
 Controls use `pass`, `fail`, `unknown`, or `not_applicable`.
 
@@ -261,7 +246,8 @@ Controls use `pass`, `fail`, `unknown`, or `not_applicable`.
 See the [scoring reference](ads/references/scoring-system.md) and production
 implementation in `claude_ads_core/scoring.py`.
 
-## Account safety
+
+### Account safety
 
 All adapters are read-only by default. Applying a change requires:
 
@@ -276,7 +262,8 @@ Missing ceilings mean no write. Permanent deletion is not supported in v2.
 Credentials belong in environment variables, an OS keychain, or an approved
 secret manager. They never belong in the repository, profiles, reports, or logs.
 
-## Evidence and release controls
+
+### Evidence and release controls
 
 The public-safe `control-plane/` records product boundaries, dated sources,
 claims, capabilities, safety rules, privacy rules, ecosystem decisions, and
@@ -307,7 +294,8 @@ regenerate those bundles using the current registry. All twelve production
 health profiles remain disabled, returning null health and zero approved
 coverage until a severity and weight policy is approved.
 
-## Development
+
+### Development
 
 Create a virtual environment and run the complete suite:
 
@@ -329,7 +317,8 @@ python -m claude_ads_core validate finding path/to/finding.json
 bash -n install.sh uninstall.sh
 ```
 
-## Repository map
+
+### Repository map
 
 ```text
 ads/                  main skill, interface metadata, and shared references
@@ -342,35 +331,17 @@ evals/                routing and behavioral evaluation cases
 tests/                deterministic, security, installer, and adapter tests
 ```
 
-## Contributors and acknowledgments
 
-Claude Ads benefits from community bug reports, feature requests, and proposed
-fixes. Thank you to the following contributors whose work informed v2.0.2.
-Some proposals were independently implemented or superseded; these credits
-recognize the contribution without implying that every submitted patch was merged.
+</details>
 
-| Contributor | Contribution | Discussion |
-| --- | --- | --- |
-| [@principisimone-sys](https://github.com/principisimone-sys) | Search and DSA overlap request | [#65](https://github.com/AgriciDaniel/claude-ads/issues/65) |
-| [@HarKro753](https://github.com/HarKro753) | Meta account, Pixel, and conversion cold-start request | [#53](https://github.com/AgriciDaniel/claude-ads/issues/53) |
-| [@plcosta](https://github.com/plcosta) | Marketplace case-normalization report and proposed documentation fix | [#17](https://github.com/AgriciDaniel/claude-ads/issues/17), [#18](https://github.com/AgriciDaniel/claude-ads/pull/18) |
-| [@ulises2k](https://github.com/ulises2k) | Stale marketplace-alias installation report | [#56](https://github.com/AgriciDaniel/claude-ads/issues/56) |
-| [@kutzki](https://github.com/kutzki) | Windows dependency-lock and older-install update report | [#57](https://github.com/AgriciDaniel/claude-ads/issues/57) |
-| [@SamaEducationalCo](https://github.com/SamaEducationalCo) | Misleading grades after failed landing-page analysis | [#61](https://github.com/AgriciDaniel/claude-ads/issues/61) |
-| [@Bortlesboat](https://github.com/Bortlesboat) | Proposed landing-page analysis failure fix | [#66](https://github.com/AgriciDaniel/claude-ads/pull/66) |
-| [@gabbyran2026-gif](https://github.com/gabbyran2026-gif) | Proposed target-lock test subprocess fix | [#58](https://github.com/AgriciDaniel/claude-ads/pull/58) |
-| [@AbundantASG](https://github.com/AbundantASG) | Proposed scoped target-lock test subprocess fix | [#59](https://github.com/AgriciDaniel/claude-ads/pull/59) |
-| [@hendrixfreire](https://github.com/hendrixfreire) | Sensitive-file ignore-pattern report | [#32](https://github.com/AgriciDaniel/claude-ads/issues/32) |
-| [@josefresco](https://github.com/josefresco) | Non-actionable Smart Conversions removal advice report | [#50](https://github.com/AgriciDaniel/claude-ads/issues/50) |
-| [@dead-simba](https://github.com/dead-simba) | Request to revisit Meta architecture guidance | [#15](https://github.com/AgriciDaniel/claude-ads/issues/15) |
-| [@c6zks4gssn-droid](https://github.com/c6zks4gssn-droid) | Repository-tooling proposal, including CodeQL | [#29](https://github.com/AgriciDaniel/claude-ads/pull/29) |
+## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to report a problem or propose a change.
+Found a problem or have an idea? See [CONTRIBUTING.md](CONTRIBUTING.md). Thanks to everyone who has reported issues and proposed fixes; they are credited there.
 
 ## Privacy
 
 Client data, raw private research, captured prompts, credentials, account
-exports, and agent transcripts must never enter Git history, reports, or release
+exports, and agent transcripts never belong in Git history, reports, or release
 archives. Keep credentials in environment variables, an OS keychain, or an
 approved secret manager.
 
