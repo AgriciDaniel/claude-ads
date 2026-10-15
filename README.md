@@ -332,6 +332,12 @@ bash -n install.sh uninstall.sh
 ```
 
 
+### Reference documents
+
+- [Cockpit implementation contract](docs/cockpit/implementation-contract.md): the integration boundary for the optional companion.
+- [Requirement index](control-plane/REQUIREMENT_INDEX.md): the stable requirement IDs the tracker ledger maps to.
+- [Control schema migration, v1 to v2](control-plane/migrations/control-schemas-v1-to-v2.md): what changed in the control schemas.
+
 ### Repository map
 
 ```text

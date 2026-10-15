@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and diagrams are removed because they showed a 0 to 100 health score and a nine-category
   model that the disabled scoring profiles do not produce. Technical detail moves into a
   collapsed section, and contributor credits move to `CONTRIBUTING.md`.
+* Describe the product as producing deterministic findings and evidence coverage in the plugin,
+  marketplace and citation metadata. Every scoring profile is disabled, so no score is produced.
+  The README links the three reference documents that were not reachable from any page.
 * README gains a status box, a quickstart and an experimental caveat for non-Claude
   hosts. CI runner and installer-test changes from 2.0.2 follow-up work are covered
   by the existing hardening entries.

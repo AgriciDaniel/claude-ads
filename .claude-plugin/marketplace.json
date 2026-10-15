@@ -11,7 +11,7 @@
     {
       "name": "claude-ads",
       "source": "./",
-      "description": "Claude-first, portable paid-media operations across 12 advertising platforms with source-grounded audits, deterministic scoring, lifecycle workflows, versioned JSON reports, and capability-gated account changes.",
+      "description": "Claude-first, portable paid-media operations across 12 advertising platforms with source-grounded audits, deterministic findings and evidence coverage, lifecycle workflows, versioned JSON reports, and capability-gated account changes.",
       "version": "2.0.2",
       "author": {
         "name": "AgriciDaniel"
