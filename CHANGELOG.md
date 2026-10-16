@@ -5,6 +5,91 @@ All notable changes to claude-ads are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+* Optional Claude Ads Cockpit companion (`ads-cockpit`, not enabled by default):
+  a local workbench for reading a registered run, its evidence and inputs,
+  comparing a baseline, and recording validation and report receipts. Includes
+  strict snapshot, index and receipt contracts, a `cockpit` core CLI, an isolated
+  synthetic demo, and a separate packaging path. All scoring profiles stay
+  disabled. Native host acceptance is pending.
+
+### Changed
+
+* Refresh platform references and evidence ledgers as of 2026-10-12: Apple Campaign
+  Management API sunset (2027-01-26), Meta Marketing API v26.0, LinkedIn versions
+  202609 and 202511, Google Ads developer-token sunset, Demand Gen and AI Max
+  timing, EU AI Act Article 50 transition, Reddit objective enums, Meta and Pinterest
+  MCP servers, and a clearer consent-mode threshold caveat.
+* Route every `/ads` command to a named skill, give each contested trigger phrase one
+  owner, and restrict the copy, strategy and format agents to read-only tools.
+* Installers clean up temporary directories on every exit path, expand a leading `~`,
+  and describe git installs as unpinned and releases as checksummed, not signed.
+* Rewrite the README in plain language with light and dark visual sets (banner, three steps,
+  platforms with brand marks, trust). Motion plays once on load, the cursor blinks, and
+  reduced-motion preferences switch it off. The old animated banner, command-discovery GIF,
+  and diagrams are removed because they showed a 0 to 100 health score and a nine-category
+  model that the disabled scoring profiles do not produce. Technical detail moves into a
+  collapsed section, and contributor credits move to `CONTRIBUTING.md`.
+* Describe the product as producing deterministic findings and evidence coverage in the plugin,
+  marketplace and citation metadata. Every scoring profile is disabled, so no score is produced.
+  The README links the three reference documents that were not reachable from any page.
+* README gains a status box, a quickstart and an experimental caveat for non-Claude
+  hosts. CI runner and installer-test changes from 2.0.2 follow-up work are covered
+  by the existing hardening entries.
+
+### Fixed
+
+* `install.sh --source=git` no longer refuses its own clone on macOS, where the default
+  temporary directory sits under the `/var` symlink. The installer resolves the physical
+  path first; a regression test reaches `TMPDIR` through a symlink.
+* Name the author in `LICENSE` and `CITATION.cff` (Daniel Agrici, handle AgriciDaniel).
+* Separate positive Google keyword inventory from ad-group, campaign, shared-list,
+  and account negatives. Conflict review uses match type and applicable scope;
+  missing or implausible inventory evidence produces an unknown result.
+* Respect the host or invocation model selection by removing package-level agent
+  model pins. Audit workers emit versioned envelopes with canonical findings.
+* Validate historical release-report v1 and current v2 independently. Reject
+  unknown versions, inconsistent checks, aggregates, and subjects.
+* Gate public scoring and report operations through canonical controls and
+  profiles. Resolve policy resources in source and standalone layouts, with an
+  explicit `--policy-root` override.
+* Install only the shared curated public runtime resources and record ownership.
+  Check standalone commands from unrelated directories and preserve unrelated
+  skills during upgrades and uninstall.
+* Accept standard managed virtual-environment links while binding reused Python
+  executables to the selected host interpreter before any installation mutation.
+  Remove only recognized owned-module bytecode during uninstall and preserve
+  unknown cache content.
+* Evaluate evidence freshness at the current UTC date and exercise synthetic
+  expiry boundaries. Packaging fixtures support managed worktrees and
+  case-insensitive filesystems without weakening the clean-subject release gate.
+
+### Changed
+
+* Correct Microsoft SOAP support through January 31, 2027. Record the September
+  Google Smart Campaign and Search language-targeting changes, Reddit onsite
+  lead-form retirement and reporting changes, and the scheduled LinkedIn API
+  sunset. Evidence retrieval gaps retain explicit verification limits.
+* Verify the exact public Meta Conversions API and campaign Insights contracts
+  and TikTok v1.3 BASIC reporting fields. Restore the existing native export
+  fixture maturity without claiming authenticated API execution or health scores.
+* Reconcile public and development tracker metadata and disposition overlapping
+  repairs once. New providers and other capability additions remain deferred.
+* Replace the moving repository-audit CI dependency install with a reviewed hash
+  lock. Dependency and target evidence changes require matching inventory and
+  support-policy verification.
+* Upgrade Pillow to 12.3.0, urllib3 to 2.8.0, and WeasyPrint to 70.0, with
+  regenerated target evidence, inventory, publisher hashes, notices, and verifier
+  bindings. Managed Linux dependencies require glibc 2.28 or later after the
+  separate owner approval of that support change. Retain three fresh guarded
+  cryptography dispositions for the macOS Intel-compatible 48.0.1 pin.
+* Clarify public MIT distribution and private development publication boundaries.
+  A new release still requires explicit approval and exact-candidate release
+  evidence.
+
 ## [2.0.2] - 2026-09-10
 
 ### Added

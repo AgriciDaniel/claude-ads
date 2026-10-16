@@ -57,10 +57,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install audit dependency
-        run: python -m pip install "pyyaml>=6.0,<7.0"
+        run: 'python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-repository-audit.lock'
 
       - name: Check Python syntax
-        run: python -m compileall -q claude_ads_core evals scripts tests
+        run: python -m compileall -q claude_ads_core evals scripts tests mods/claude-ads-cockpit/tests
 
       - name: Check shell script syntax
         run: |
@@ -122,6 +122,12 @@ jobs:
       - name: Run full test suite
         run: python -m pytest tests -v --tb=short
 
+      - name: Verify optional companion binding and archive
+        run: |
+          python -m pytest mods/claude-ads-cockpit/tests/test_launcher_integration.py -v --tb=short
+          python scripts/package_cockpit.py package --output-dir dist/cockpit
+          python scripts/package_cockpit.py verify --output-dir dist/cockpit
+
       - name: Audit dependencies for known vulnerabilities
         run: |
           python -m venv .pip-audit-venv
@@ -129,9 +135,54 @@ jobs:
           .pip-audit-venv/bin/python scripts/audit_dependencies.py
 
   installer-matrix:
-    name: Installer tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    name: Installer tests (${{ matrix.os }}, Python ${{ matrix.python-version }}, shard ${{ matrix.shard-index }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-15, macos-15-intel, windows-latest]
+        python-version: ["3.11", "3.12"]
+        shard-index: [0, 1]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install installer-test dependencies
+        run: |
+          python -m pip install --no-deps -e .
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+          python -m pip install --require-hashes --only-binary=:all: -r .github/requirements-schema-tests.lock
+
+      - name: Run native installer, path-boundary, and privacy tests
+        run: python .github/scripts/run_installer_ci.py --shard-index ${{ matrix.shard-index }} --shard-count 2 --output target-evidence/native-shard.json
+
+      - name: Upload complete native test collection and shard selection
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: native-tests-${{ matrix.os }}-py${{ matrix.python-version }}-shard${{ matrix.shard-index }}
+          path: target-evidence/native-shard.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Run native Windows PowerShell 5.1 ownership regressions
+        if: runner.os == 'Windows' && matrix.shard-index == 0
+        shell: powershell
+        run: |
+          if ($PSVersionTable.PSVersion.Major -ne 5) { throw "Windows PowerShell 5.1 is required" }
+          python -m pytest tests/scripts/test_installer_security.py -v --tb=short -k "windows_powershell_51 or windows_uninstall or windows_installer_managed"
+
+  managed-install-matrix:
+    name: Managed install (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -147,9 +198,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install installer-test dependencies
+      - name: Install exact verifier tooling
         run: |
-          python -m pip install --no-deps -e .
           python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
 
       - name: Produce and verify native target dependency evidence
@@ -172,25 +222,22 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Run native installer, path-boundary, and privacy tests
-        run: python -m pytest tests/scripts/test_installer_security.py tests/scripts/test_privacy_outputs.py -v --tb=short
-
-      - name: Run native Windows PowerShell 5.1 ownership regressions
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: |
-          if ($PSVersionTable.PSVersion.Major -ne 5) { throw "Windows PowerShell 5.1 is required" }
-          python -m pytest tests/scripts/test_installer_security.py -v --tb=short -k "windows_powershell_51 or windows_uninstall or windows_installer_managed"
-
       - name: Exercise real managed install, repeat install, and uninstall (Unix)
         if: runner.os != 'Windows'
         shell: bash
         run: |
           probe="$RUNNER_TEMP/claude-ads-managed-install"
+          mkdir -p "$probe/elsewhere" "$probe/skills/unrelated-skill"
+          echo 'unrelated owner data' > "$probe/skills/unrelated-skill/SKILL.md"
           for pass in 1 2; do
             bash install.sh --target=claude --source=local --skill-dir="$probe/skills" --agent-dir="$probe/agents"
-            python scripts/verify_managed_install.py --skill-dir "$probe/skills/ads"
+            python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
           done
+          as_of="$(date -u +%F)"
+          for command in status next; do
+            (cd "$probe/elsewhere" && "$probe/skills/ads/.venv/bin/python" -I -m claude_ads_core "$command" --as-of "$as_of") > "target-evidence/$command.json"
+          done
+          python -c 'import json,sys; from pathlib import Path; reports=[json.loads(Path(f"target-evidence/{name}.json").read_text()) for name in ("status","next")]; assert all(report["as_of"] == sys.argv[1] and "next_blocker" in report for report in reports)' "$as_of"
           "$probe/skills/ads/.venv/bin/python" -c "import pathlib,sysconfig; p=pathlib.Path(sysconfig.get_paths()['purelib'])/'unexpected_probe-1.0.dist-info'; p.mkdir(exist_ok=True); (p/'METADATA').write_text('Metadata-Version: 2.1\nName: unexpected-probe\nVersion: 1.0\n')"
           if bash install.sh --target=claude --source=local --skill-dir="$probe/skills" --agent-dir="$probe/agents"; then
             echo "poisoned managed environment unexpectedly passed repeat install" >&2
@@ -201,22 +248,39 @@ jobs:
           bash uninstall.sh --target=claude --skill-dir="$probe/skills" --agent-dir="$probe/agents"
           test ! -e "$probe/skills/ads/managed-runtime-receipt.json"
           test ! -e "$probe/skills/ads/.venv"
+          test ! -e "$probe/skills/ads"
+          test "$(cat "$probe/skills/unrelated-skill/SKILL.md")" = 'unrelated owner data'
 
       - name: Exercise real managed install, repeat install, and uninstall (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $probe = Join-Path $env:RUNNER_TEMP "claude-ads-managed-install"
+          New-Item -ItemType Directory -Force -Path "$probe/elsewhere", "$probe/skills/unrelated-skill" | Out-Null
+          Set-Content -Path "$probe/skills/unrelated-skill/SKILL.md" -Value "unrelated owner data"
           foreach ($pass in 1, 2) {
             ./install.ps1 -Target claude -Source local -SkillDir "$probe/skills" -AgentDir "$probe/agents"
-            python scripts/verify_managed_install.py --skill-dir "$probe/skills/ads"
+            python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
             if ($LASTEXITCODE -ne 0) { throw "managed install verification failed" }
           }
           ./install.ps1 -Target claude -Source local -NoDeps -SkillDir "$probe/skills" -AgentDir "$probe/agents"
           if (-not (Test-Path "$probe/skills/ads/managed-runtime-receipt.json")) { throw "NoDeps repeat stranded the managed receipt" }
           if (-not (Test-Path "$probe/skills/ads/.venv")) { throw "NoDeps repeat stranded the managed environment" }
-          python scripts/verify_managed_install.py --skill-dir "$probe/skills/ads"
+          python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
           if ($LASTEXITCODE -ne 0) { throw "NoDeps repeat invalidated the managed install" }
+          $asOf = [DateTime]::UtcNow.ToString("yyyy-MM-dd")
+          foreach ($command in "status", "next") {
+            Push-Location "$probe/elsewhere"
+            try {
+              $output = & "$probe/skills/ads/.venv/Scripts/python.exe" -I -m claude_ads_core $command --as-of $asOf
+              if ($LASTEXITCODE -ne 0) { throw "installed CLI failed from unrelated directory" }
+              $report = $output | ConvertFrom-Json
+              if (($report.as_of -ne $asOf) -or ("next_blocker" -notin $report.PSObject.Properties.Name)) { throw "installed CLI result mismatch" }
+            } finally {
+              Pop-Location
+            }
+            $output | Set-Content -Encoding utf8 -Path "target-evidence/$command.json"
+          }
           & "$probe/skills/ads/.venv/Scripts/python.exe" -c 'import pathlib,sysconfig; p=pathlib.Path(sysconfig.get_paths()["purelib"])/"unexpected_probe-1.0.dist-info"; p.mkdir(exist_ok=True); (p/"METADATA").write_text("Metadata-Version: 2.1\nName: unexpected-probe\nVersion: 1.0\n")'
           $failedClosed = $false
           try {
@@ -230,13 +294,109 @@ jobs:
           ./uninstall.ps1 -Target claude -SkillDir "$probe/skills" -AgentDir "$probe/agents"
           if (Test-Path "$probe/skills/ads/managed-runtime-receipt.json") { throw "receipt survived uninstall" }
           if (Test-Path "$probe/skills/ads/.venv") { throw "managed environment survived uninstall" }
+          if (Test-Path "$probe/skills/ads") { throw "owned skill survived uninstall" }
+          if ((Get-Content -Raw "$probe/skills/unrelated-skill/SKILL.md").Trim() -ne "unrelated owner data") { throw "unrelated skill changed" }
           exit 0
+
+      - name: Upload installed CLI evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: installed-cli-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            target-evidence/status.json
+            target-evidence/next.json
+          if-no-files-found: error
+          retention-days: 14
+
+  linux-floor:
+    name: Linux glibc 2.28 floor (${{ matrix.python-tag }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      # Official PyPA manylinux_2_28_x86_64, tag 2026.10.03-1.
+      # Publisher and digest checked against https://github.com/pypa/manylinux
+      # and the official Quay tag API on 2026-10-07.
+      image: quay.io/pypa/manylinux_2_28_x86_64@sha256:39df0042d5cc900b085aa25a0659368b42a0006c54c474299b785b44c1b4ff82
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        python-tag: [cp311-cp311, cp312-cp312]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Select bundled Python and assert the actual minimum Linux floor
+        env:
+          PYTHON_TAG: ${{ matrix.python-tag }}
+        run: |
+          test "$(getconf GNU_LIBC_VERSION)" = "glibc 2.28"
+          test "$(uname -m)" = "x86_64"
+          python_bin="/opt/python/$PYTHON_TAG/bin"
+          test -x "$python_bin/python"
+          "$python_bin/python" -c 'import os,platform,sys; assert platform.python_implementation() == "CPython"; assert platform.libc_ver() == ("glibc", "2.28"); assert f"cp{sys.version_info.major}{sys.version_info.minor}-cp{sys.version_info.major}{sys.version_info.minor}" == os.environ["PYTHON_TAG"]'
+          echo "$python_bin" >> "$GITHUB_PATH"
+
+      - name: Prepare exact verifier tooling and Git workspace trust
+        run: |
+          # Checkout's temporary HOME does not persist safe.directory for later
+          # container steps. Trust only this disposable job's checked-out path.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" rev-parse --verify HEAD
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-dev.lock
+
+      - name: Verify exact runtime wheels on glibc 2.28
+        run: |
+          mkdir -p target-evidence/runtime-wheels
+          python -m pip install --dry-run --ignore-installed --report target-evidence/runtime-pip-report.json --require-hashes --only-binary=:all: -r requirements.lock
+          python -m pip download --dest target-evidence/runtime-wheels --require-hashes --only-binary=:all: -r requirements.lock
+          python scripts/verify_target_lock.py --profile runtime --pip-report target-evidence/runtime-pip-report.json --wheel-dir target-evidence/runtime-wheels --output target-evidence/runtime-attestation.json
+
+      - name: Exercise managed lifecycle and installed CLI on the minimum floor
+        run: |
+          probe="$RUNNER_TEMP/claude-ads-linux-floor"
+          mkdir -p "$probe/elsewhere" "$probe/skills/unrelated-skill"
+          echo 'unrelated owner data' > "$probe/skills/unrelated-skill/SKILL.md"
+          for pass in 1 2; do
+            bash install.sh --target=claude --source=local --skill-dir="$probe/skills" --agent-dir="$probe/agents"
+            python scripts/verify_managed_install.py --repository . --skill-dir "$probe/skills/ads"
+          done
+          as_of="$(date -u +%F)"
+          for command in status next; do
+            (cd "$probe/elsewhere" && "$probe/skills/ads/.venv/bin/python" -I -m claude_ads_core "$command" --as-of "$as_of") > "target-evidence/$command.json"
+          done
+          python -c 'import json,sys; from pathlib import Path; reports=[json.loads(Path(f"target-evidence/{name}.json").read_text()) for name in ("status","next")]; assert all(report["as_of"] == sys.argv[1] and "next_blocker" in report for report in reports)' "$as_of"
+          "$probe/skills/ads/.venv/bin/python" -c "import pathlib,sysconfig; p=pathlib.Path(sysconfig.get_paths()['purelib'])/'unexpected_probe-1.0.dist-info'; p.mkdir(); (p/'METADATA').write_text('Metadata-Version: 2.1\nName: unexpected-probe\nVersion: 1.0\n')"
+          if bash install.sh --target=claude --source=local --skill-dir="$probe/skills" --agent-dir="$probe/agents"; then
+            echo "poisoned managed environment unexpectedly passed repeat install" >&2
+            exit 1
+          fi
+          test ! -e "$probe/skills/ads/managed-runtime-receipt.json"
+          test ! -e "$probe/skills/ads/.venv"
+          bash uninstall.sh --target=claude --skill-dir="$probe/skills" --agent-dir="$probe/agents"
+          test ! -e "$probe/skills/ads"
+          test ! -e "$probe/skills/.claude-ads-claude.manifest"
+          test "$(cat "$probe/skills/unrelated-skill/SKILL.md")" = 'unrelated owner data'
+
+      - name: Upload minimum-floor evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: dependency-evidence-linux-glibc228-${{ matrix.python-tag }}
+          path: |
+            target-evidence/*-pip-report.json
+            target-evidence/*-attestation.json
+            target-evidence/status.json
+            target-evidence/next.json
+          if-no-files-found: error
+          retention-days: 14
 
   package-smoke:
     name: Reproducible package smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [ecosystem-live, repository-audit, core-tests, full-tests, installer-matrix]
+    needs: [ecosystem-live, repository-audit, core-tests, full-tests, installer-matrix, managed-install-matrix, linux-floor]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -264,7 +424,7 @@ jobs:
   validate:
     name: validate
     if: always()
-    needs: [ecosystem-live, repository-audit, core-tests, full-tests, installer-matrix, package-smoke]
+    needs: [ecosystem-live, repository-audit, core-tests, full-tests, installer-matrix, managed-install-matrix, linux-floor, package-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -276,6 +436,8 @@ jobs:
           CORE_TESTS_RESULT: ${{ needs.core-tests.result }}
           FULL_TESTS_RESULT: ${{ needs.full-tests.result }}
           INSTALLER_MATRIX_RESULT: ${{ needs.installer-matrix.result }}
+          MANAGED_INSTALL_MATRIX_RESULT: ${{ needs.managed-install-matrix.result }}
+          LINUX_FLOOR_RESULT: ${{ needs.linux-floor.result }}
           PACKAGE_SMOKE_RESULT: ${{ needs.package-smoke.result }}
         run: |
           for result in \
@@ -284,6 +446,8 @@ jobs:
             "$CORE_TESTS_RESULT" \
             "$FULL_TESTS_RESULT" \
             "$INSTALLER_MATRIX_RESULT" \
+            "$MANAGED_INSTALL_MATRIX_RESULT" \
+            "$LINUX_FLOOR_RESULT" \
             "$PACKAGE_SMOKE_RESULT"
           do
             if [ "$result" != "success" ]; then

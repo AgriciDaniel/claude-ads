@@ -1,0 +1,31 @@
+# Public runtime resources. Paths are relative to the installed skill root.
+# Private reviews, model runs, tracker snapshots, and repository-only evidence are excluded.
+control-plane/COCKPIT.md
+control-plane/PRODUCT_BOUNDARIES.md
+control-plane/PUBLISHING_POLICY.md
+control-plane/README.md
+control-plane/RELEASE_REQUIREMENTS.md
+control-plane/manifests/capability-manifest.json
+control-plane/manifests/claim-ledger.json
+control-plane/manifests/control-registry.json
+control-plane/manifests/data-lifecycle-policy.json
+control-plane/manifests/external-runtime-dependencies.json
+control-plane/manifests/maturity-status.json
+control-plane/manifests/orchestration-policy.json
+control-plane/manifests/product-manifest.json
+control-plane/manifests/safety-policy.json
+control-plane/manifests/scoring-profiles.json
+control-plane/manifests/source-ledger.json
+control-plane/schemas/capability-manifest.schema.json
+control-plane/schemas/claim-ledger.schema.json
+control-plane/schemas/control-registry.schema.json
+control-plane/schemas/creative-worker-result.schema.json
+control-plane/schemas/data-lifecycle-policy.schema.json
+control-plane/schemas/maturity-status.schema.json
+control-plane/schemas/orchestration-packet.schema.json
+control-plane/schemas/product-status.schema.json
+control-plane/schemas/release-gate-report.schema.json
+control-plane/schemas/release-gate-report.v1.schema.json
+control-plane/schemas/safety-policy.schema.json
+control-plane/schemas/scoring-profiles.schema.json
+control-plane/schemas/source-ledger.schema.json

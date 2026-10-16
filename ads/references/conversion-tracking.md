@@ -1,7 +1,7 @@
 # Conversion Tracking and Measurement
 
-**Verified:** 2026-08-26
-**Refresh due:** 2026-09-25 for platform documentation
+**Verified:** 2026-10-12 for the Google consent-mode, TikTok deduplication, and LinkedIn Conversions API rows; other rows follow their ledger entries (2026-10-07)
+**Refresh due:** 2026-11-06 for platform documentation
 **Evidence status:** architecture and audit questions; implementation is account-specific
 
 Tracking is acceptable only when the business event, consent state, browser and
@@ -29,23 +29,29 @@ does not make otherwise prohibited collection lawful.
 
 | Platform | Current first-party source | What it supports |
 | --- | --- | --- |
-| Google Ads | `google-consent-modeling-official`: [Consent mode modeling](https://support.google.com/google-ads/answer/10548233) and `google-consent-modeling-improvement-official`: [impact results](https://support.google.com/google-ads/answer/11954524) | Modeling and impact reporting use eligibility thresholds; inspect the active setup and diagnostics instead of inventing an unpublished number |
-| TikTok Ads | `tiktok-events-api-official` — [About Events API](https://ads.tiktok.com/help/article/events-api) | TikTok recommends Pixel plus Events API with event deduplication for web conversion clients |
-| LinkedIn Ads | `linkedin-conversions-api-official` — [Conversions API Playbook](https://business.linkedin.com/content/dam/me/business/en-us/marketing-solutions/resources/pdfs/Conversions-API-Playbook.pdf) | Browser and server conversion sources require deliberate reporting setup |
-| Microsoft Advertising | `microsoft-uet-official` — [UET setup](https://help.ads.microsoft.com/apex/index/3/en/56913) | UET setup, page coverage, verification, and troubleshooting |
+| Google Ads | `google-consent-modeling-official`: [Consent mode modeling](https://support.google.com/google-ads/answer/10548233), `google-consent-mode-verification-official`: [Verify consent mode implementation](https://support.google.com/google-ads/answer/14218557), `google-consent-mode-improve-modeling-official`: [How to improve your modeling](https://support.google.com/google-ads/answer/12445060), and `google-consent-modeling-improvement-official`: [impact results](https://support.google.com/google-ads/answer/11954524) | Modeling and impact reporting use eligibility thresholds that Google words differently by page; inspect the active setup and diagnostics instead of inventing an unpublished number |
+| TikTok Ads | `tiktok-events-api-official`: [About Events API](https://ads.tiktok.com/help/article/events-api) and `tiktok-event-deduplication-official`: [About event deduplication](https://ads.tiktok.com/help/article/event-deduplication) | TikTok recommends Pixel plus Events API with event deduplication for web conversion clients; the deduplication page requires the same `event_id` and event parameters through both paths |
+| LinkedIn Ads | `linkedin-conversions-api-official`: [Conversions API use cases](https://learn.microsoft.com/en-us/linkedin/marketing/conversions/conversions-usecase) | Insight Tag, Conversions API, and CSV conversion types; browser and server events sent with the same event ID are counted once, with the Insight Tag event retained |
+| Microsoft Advertising | `microsoft-uet-official`: [UET setup](https://help.ads.microsoft.com/apex/index/3/en/56913) | UET setup, page coverage, verification, and troubleshooting |
+| Meta | `meta-capi-deduplication-official`: [Handling duplicate Pixel and Conversions API events](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events) | Conversions API is recommended alongside Meta Pixel as a redundant setup; deduplication matches the Pixel `eventID` to `event_id` and the Pixel event to `event_name`, or uses `fbp` and `external_id` consistently |
 
-For Meta, Apple, Amazon, Reddit, Pinterest, Snapchat, X, and any platform detail
+For Apple, Amazon, Reddit, Pinterest, Snapchat, X, and any platform detail
 not represented by a current source-ledger entry, inspect the current official
 account documentation and capability manifest during the run. Do not reuse a
 different platform's event names or requirements by analogy.
 
-Google's current consent-mode modeling page lists correct consent mode or IAB
-TCF implementation and a daily threshold of 700 ad clicks over seven days per
-country/domain grouping among its quality checks. The separate current
-impact-results page says additional volume and modeling thresholds apply, but it
-does not publish another numeric click threshold. Do not infer one. These are
-eligibility facts, not a universal minimum account budget or a guarantee of
-modeled conversions. Use the active configuration and current diagnostics.
+Google's consent-mode pages word the modeling click threshold differently, and
+Google does not reconcile them. Treat the figure as 700 ad clicks over seven days
+per country/domain grouping: the modeling page calls it a daily threshold over a
+seven-day period, while the implementation-verification page states 700 ad clicks
+over 7 days for a domain and country grouping without the word daily. A third
+page lists 100 clicks per day per country/domain grouping as a requirement for
+basic consent mode only, not advanced. These readings are unreconciled, so cite
+the page you used. The separate current impact-results page says additional
+volume and modeling thresholds apply, but it does not publish another numeric
+click threshold. Do not infer one. These are eligibility facts, not a universal
+minimum account budget or a guarantee of modeled conversions. Use the active
+configuration and current diagnostics.
 
 ## Audit sequence
 

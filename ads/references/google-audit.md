@@ -23,6 +23,69 @@ The registered sources below cover only the measurement, API, and import foundat
 - `google-ads-dsa-ad-rank-official`: [About Dynamic Search Ads, Ad Rank, and performance](https://support.google.com/google-ads/answer/7018712)
 - `google-ads-keyword-prioritization-official`: [About ad group and asset group prioritization within a Google Ads account](https://support.google.com/google-ads/answer/2756257)
 - `google-ads-dsa-targets-official`: [About targets for Dynamic Search Ads](https://support.google.com/google-ads/answer/7334472)
+- `google-ads-negative-keywords-official`: [About negative keywords](https://support.google.com/google-ads/answer/2453972)
+- `google-ads-api-shared-sets-official`: [Google Ads API shared sets](https://developers.google.com/google-ads/api/docs/targeting/shared-sets)
+- `google-ads-api-deprecations-official`: [Google Ads API deprecations](https://developers.google.com/google-ads/api/docs/deprecations)
+- `google-ads-api-release-notes-official`: [Google Ads API release notes](https://developers.google.com/google-ads/api/docs/release-notes)
+- `google-ads-api-developer-token-official`: [Developer token and API access levels](https://developers.google.com/google-ads/api/docs/api-policy/developer-token)
+- `google-ads-demand-gen-min-budget-official`: [Minimum budget requirement for Demand Gen](https://ads-developers.googleblog.com/2026/02/minimum-budget-requirement-for-demand.html)
+- `google-ads-call-ads-transition-official`: [Transition from call ads to call assets](https://support.google.com/google-ads/answer/16619010)
+- `google-ads-vac-demand-gen-upgrade-official`: [Video Action Campaigns are being upgraded to Demand Gen](https://support.google.com/google-ads/answer/15110871)
+- `google-ads-dsa-ai-max-timeline-official`: [Dynamic Search Ads upgrade to AI Max timeline](https://blog.google/products/ads-commerce/dsa-upgrade-to-ai-max-2026/)
+
+## Current API changes verified 2026-10-12
+
+- From 2026-09-23, the API no longer creates Smart Campaigns. Existing Smart
+  Campaigns can continue serving and can still be updated or reported. Do not
+  describe the whole Smart Campaign surface as removed. For migration, API
+  `v25.2` (2026-09-23) adds `SmartCampaignSettingService.GeneratePMaxDraftCampaign`,
+  which generates a paused, incomplete Performance Max draft campaign from an
+  existing Smart campaign and supports `validate_only` (`CLM-0223`). It is a
+  migration path, not an automatic conversion, and some of its flags are not yet
+  supported.
+- From September 2026, manual `CampaignCriterion.language` is no longer supported
+  for Search, AI Max for Search, or the Google Search portion of Performance Max.
+  Google's deprecations page gives the month only. Its own metadata reads
+  2026-09-30 as the last-updated date, which is not a confirmed effective day, so
+  cite September 2026. Search mutations fail; Performance Max requests do not fail
+  because the setting can still apply to other channels. Preserve that channel
+  distinction (`CLM-0215`).
+- Developer tokens were sunset on 2026-09-09. Access levels now attach to the
+  Google Cloud project that owns the OAuth credentials or service account, and a
+  developer-token header is optional and ignored. A Test-access project that calls
+  a production account fails with `CLOUD_PROJECT_NOT_APPROVED_FOR_PRODUCTION` on
+  API `v25` (older versions return `ACTION_NOT_PERMITTED`). Do not treat a
+  developer token as the access credential or its absence as a finding
+  (`CLM-0222`).
+- Since 2026-04-01 the API enforces a minimum daily budget for Demand Gen
+  campaigns and returns `BUDGET_BELOW_DAILY_MINIMUM` on `v21` and above. Existing
+  campaigns already below the floor keep serving. This is an enforcement
+  minimum, not a budget recommendation (`CLM-0226`).
+- Call-only ads: Google's help center says creation options were removed in
+  February 2026 and existing call-only ads stop receiving impressions in
+  February 2027. The API `v23` release notes (2026-01-28) record removal of call
+  ad support in the API. Google directs advertisers to responsive search ads with
+  call assets (`CLM-0227`).
+- Video Action Campaigns: Google states that they were automatically upgraded to
+  Demand Gen, with the final campaigns upgraded by April 2026. Original campaigns
+  remain in the account as removed or paused and keep their historical reporting,
+  while the upgraded Demand Gen campaign does not count spend made in the original
+  (`CLM-0224`). G-DG2 is therefore a historical reporting continuity control, not
+  a check for a surviving legacy campaign state.
+- Dynamic Search Ads to AI Max: Google's post (updated 2026-06-11) says the
+  Dynamic Search Ads sunset and automatic upgrade will begin in February 2027
+  instead of September 2026, while upgrades for Automatically Created Assets and
+  campaign-level broad match continue starting September 2026 (`CLM-0225`). Use
+  this timing for G-AI1 and G95. Help-center pages may still show the earlier
+  date, so cite the dated post and label any conflict.
+
+## Keyword evidence
+
+Before evaluating G03, G14, G15, G17, G18, G20 through G25, G-KW1, G-KW2,
+G-WS1, or G97, build the separate positive and negative inventories in
+`gaql-notes.md`. Count and recommend on positive keywords only. Apply the scoped,
+match-type-aware conflict rules and plausibility guards before reporting a
+self-blocking or zero-impression finding.
 
 ## Control registry
 
@@ -40,7 +103,7 @@ The registered sources below cover only the measurement, API, and import foundat
 | G-CT2 | GA4 linked and flowing | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G-CT3 | Google Tag firing | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G13 | Search term audit recency | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
-| G14 | Negative-keyword governance | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
+| G14 | Negative-keyword governance | Conditional evidence control: inventory negatives by scope separately from positives and report self-blocking only when an in-scope negative matches a positive's text under the negative's match type, per `gaql-notes.md`; otherwise return `unknown` or `not_applicable`. |
 | G15 | Account-level negatives applied | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G16 | Material irrelevant search-term spend | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G17 | Broad-match control | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
@@ -65,7 +128,7 @@ The registered sources below cover only the measurement, API, and import foundat
 | G23 | Ad relevance component | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G24 | Landing page experience | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G25 | Top keyword QS | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
-| G-KW1 | Zero-impression keywords | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
+| G-KW1 | Zero-impression keywords | Conditional evidence control: evaluate only the positive inventory joined to impression evidence for the same window and status scope; negatives never enter the count, per `gaql-notes.md`; otherwise return `unknown` or `not_applicable`. |
 | G-KW2 | Keyword-to-ad relevance | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G26 | RSA per ad group | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G27 | RSA headline count | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
@@ -99,7 +162,7 @@ The registered sources below cover only the measurement, API, and import foundat
 | G-PM6 | PMax negative-keyword applicability | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G-AI1 | AI Max for Search evaluation | Unscored source-refresh discovery: verify current official availability, account eligibility, and governance need; non-adoption is never a failure. |
 | G-DG1 | Demand Gen image assets | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
-| G-DG2 | VAC migration status | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
+| G-DG2 | Video Action Campaign upgrade reporting continuity | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G-DG3 | Demand Gen frequency capping loss | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G-CTV1 | CTV Floodlight tracking limitation | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |
 | G36 | Smart bidding strategy active | Conditional evidence control: establish applicability and evaluate from current account evidence; otherwise return `unknown` or `not_applicable`. |

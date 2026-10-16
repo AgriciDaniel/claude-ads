@@ -30,7 +30,7 @@
 
 ## Findings
 
-### [UNKNOWN] G\-CREATIVE\-001 — Creative
+### [UNKNOWN] G\-CREATIVE\-001 - Creative
 
 - Severity: Critical
 - Confidence: None
@@ -46,7 +46,7 @@
 
 No evidence was supplied.
 
-### [PASS] G\-POLICY\-001 — Policy
+### [PASS] G\-POLICY\-001 - Policy
 
 - Severity: High
 - Confidence: Medium
@@ -64,7 +64,7 @@ No evidence was supplied.
 
         {"field":"policy_status","value":"eligible"}
 
-### [FAIL] G\-TRACK\-001 — Tracking
+### [FAIL] G\-TRACK\-001 - Tracking
 
 - Severity: Critical
 - Confidence: High
@@ -93,4 +93,4 @@ No evidence was supplied.
 
 ---
 
-Generated deterministically from ReportBundle JSON. Scores were not recalculated.
+Generated deterministically from validated ReportBundle JSON.

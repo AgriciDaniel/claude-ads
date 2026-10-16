@@ -1,8 +1,8 @@
 """Deterministic, privacy-aware renderers for validated report bundles.
 
 JSON remains the canonical artifact.  This module produces human-readable
-views without recalculating scores, loading remote assets, or embedding the
-source bundle in the output.
+views after canonical policy validation, without loading remote assets or
+embedding the source bundle in the output.
 """
 
 from __future__ import annotations
@@ -18,6 +18,9 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .contracts import ContractError, validate_contract
+from .control_registry import RegistryError, load_control_registry
+from .policy_root import PolicyRootError, resolve_policy_root
+from .report_policy import validate_report_bundle_policy
 
 
 class ReportRenderError(ValueError):
@@ -90,7 +93,11 @@ def _canonical_json(value: Any) -> str:
     return json.dumps(_redact_value(value), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
-def _validated_bundle(bundle: Mapping[str, Any]) -> Mapping[str, Any]:
+def _validated_bundle(
+    bundle: Mapping[str, Any],
+    *,
+    policy_root: str | Path | None = None,
+) -> Mapping[str, Any]:
     try:
         validate_contract("report-bundle", bundle)
     except ContractError as exc:
@@ -98,6 +105,11 @@ def _validated_bundle(bundle: Mapping[str, Any]) -> Mapping[str, Any]:
     for field in ("contradictions", "actions"):
         if field in bundle and not isinstance(bundle[field], list):
             raise ReportRenderError(f"$.{field} must be an array when present")
+    try:
+        active_registry = load_control_registry(resolve_policy_root(policy_root))
+        validate_report_bundle_policy(bundle, active_registry)
+    except (PolicyRootError, RegistryError) as exc:
+        raise ReportRenderError(f"report policy validation failed: {exc}") from exc
     return bundle
 
 
@@ -155,10 +167,9 @@ def _actions(bundle: Mapping[str, Any]) -> list[Any]:
     ]
 
 
-def render_markdown(bundle: Mapping[str, Any]) -> str:
-    """Render a validated ReportBundle as deterministic Markdown."""
+def _render_markdown_layout(bundle: Mapping[str, Any]) -> str:
+    """Render an already validated report bundle as Markdown."""
 
-    bundle = _validated_bundle(bundle)
     manifest = bundle["run_manifest"]
     snapshot = bundle["account_snapshot"]
     scoring = bundle["scoring"]
@@ -214,7 +225,7 @@ def render_markdown(bundle: Mapping[str, Any]) -> str:
         control = controls.get(str(finding["control_id"]), {})
         heading = (
             f"### [{_md(str(finding['status']).replace('_', ' ').upper())}] "
-            f"{_md(finding['control_id'])} — {_md(str(control.get('category', 'uncategorized')).title())}"
+            f"{_md(finding['control_id'])} - {_md(str(control.get('category', 'uncategorized')).title())}"
         )
         lines.extend(
             (
@@ -254,8 +265,18 @@ def render_markdown(bundle: Mapping[str, Any]) -> str:
     else:
         lines.append("No follow-up actions were reported.")
 
-    lines.extend(("", "---", "", "Generated deterministically from ReportBundle JSON. Scores were not recalculated.", ""))
+    lines.extend(("", "---", "", "Generated deterministically from validated ReportBundle JSON.", ""))
     return "\n".join(lines)
+
+
+def render_markdown(
+    bundle: Mapping[str, Any],
+    *,
+    policy_root: str | Path | None = None,
+) -> str:
+    """Render a structurally and canonically validated ReportBundle."""
+
+    return _render_markdown_layout(_validated_bundle(bundle, policy_root=policy_root))
 
 
 _HTML_STYLE = """
@@ -265,10 +286,9 @@ main{max-width:960px;margin:32px auto;padding:40px;background:var(--paper);box-s
 """.strip()
 
 
-def render_html(bundle: Mapping[str, Any]) -> str:
-    """Render a validated ReportBundle as self-contained deterministic HTML."""
+def _render_html_layout(bundle: Mapping[str, Any]) -> str:
+    """Render an already validated report bundle as self-contained HTML."""
 
-    bundle = _validated_bundle(bundle)
     manifest = bundle["run_manifest"]
     snapshot = bundle["account_snapshot"]
     scoring = bundle["scoring"]
@@ -302,7 +322,7 @@ def render_html(bundle: Mapping[str, Any]) -> str:
         status = str(finding["status"])
         finding_parts.append(
             f'<article class="finding status-{html.escape(status)}">'
-            f"<h3>[{_html(status.replace('_', ' ').upper())}] {_html(finding['control_id'])} — "
+            f"<h3>[{_html(status.replace('_', ' ').upper())}] {_html(finding['control_id'])} - "
             f"{_html(str(control.get('category', 'uncategorized')).title())}</h3>"
             "<dl>"
             f"<dt>Severity</dt><dd>{_html(str(control.get('severity', 'not specified')).title())}</dd>"
@@ -350,15 +370,25 @@ def render_html(bundle: Mapping[str, Any]) -> str:
         + warnings_html
         + f"<h2>Category health</h2><ul>{category_html}</ul><h2>Findings</h2>{findings_html}"
         + f"<h2>Contradictions</h2>{contradictions_html}<h2>Prioritized actions</h2>{actions_html}"
-        + "<footer>Generated deterministically from ReportBundle JSON. Scores were not recalculated.</footer>"
+        + "<footer>Generated deterministically from validated ReportBundle JSON.</footer>"
         + "</main></body></html>\n"
     )
 
 
-def render_pdf(bundle: Mapping[str, Any]) -> bytes:
-    """Render PDF bytes through the optional WeasyPrint bridge."""
+def render_html(
+    bundle: Mapping[str, Any],
+    *,
+    policy_root: str | Path | None = None,
+) -> str:
+    """Render a canonically validated bundle as self-contained HTML."""
 
-    source = render_html(bundle)
+    return _render_html_layout(_validated_bundle(bundle, policy_root=policy_root))
+
+
+def _render_pdf_layout(bundle: Mapping[str, Any]) -> bytes:
+    """Render an already validated bundle through the WeasyPrint bridge."""
+
+    source = _render_html_layout(bundle)
     try:
         weasyprint = importlib.import_module("weasyprint")
     except (ImportError, OSError) as exc:
@@ -375,16 +405,31 @@ def render_pdf(bundle: Mapping[str, Any]) -> bytes:
     return result
 
 
-def render_report(bundle: Mapping[str, Any], output_format: str) -> str | bytes:
+def render_pdf(
+    bundle: Mapping[str, Any],
+    *,
+    policy_root: str | Path | None = None,
+) -> bytes:
+    """Render a canonically validated bundle as PDF bytes."""
+
+    return _render_pdf_layout(_validated_bundle(bundle, policy_root=policy_root))
+
+
+def render_report(
+    bundle: Mapping[str, Any],
+    output_format: str,
+    *,
+    policy_root: str | Path | None = None,
+) -> str | bytes:
     """Render *bundle* to ``markdown``, ``html``, or ``pdf``."""
 
     normalized = output_format.lower()
     if normalized in {"md", "markdown"}:
-        return render_markdown(bundle)
+        return render_markdown(bundle, policy_root=policy_root)
     if normalized == "html":
-        return render_html(bundle)
+        return render_html(bundle, policy_root=policy_root)
     if normalized == "pdf":
-        return render_pdf(bundle)
+        return render_pdf(bundle, policy_root=policy_root)
     raise ReportRenderError("format must be one of: markdown, html, pdf")
 
 
@@ -454,7 +499,17 @@ def write_report_bundle(
     output_format: str,
     root: str | Path,
     destination: str | Path,
+    *,
+    policy_root: str | Path | None = None,
 ) -> Path:
-    """Validate, render, and atomically write a report bundle."""
+    """Semantically validate, render, and atomically write a report bundle."""
 
-    return atomic_write_report(root, destination, render_report(bundle, output_format))
+    return atomic_write_report(
+        root,
+        destination,
+        render_report(
+            bundle,
+            output_format,
+            policy_root=policy_root,
+        ),
+    )

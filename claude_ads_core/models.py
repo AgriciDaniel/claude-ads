@@ -79,6 +79,18 @@ class Finding(TypedDict):
     score_contribution: NotRequired[float | None]
 
 
+class AuditWorkerResult(TypedDict):
+    schema_version: Literal["1.0.0"]
+    status: Literal["ok", "needs_input", "blocked", "failed"]
+    platform: str
+    scope: list[str]
+    findings: list[Finding]
+    contradictions: list[str]
+    missing_inputs: list[str]
+    stale_sources: list[str]
+    recovery_hints: list[str]
+
+
 class ScoringOutput(TypedDict):
     health_score: float | None
     evidence_coverage: float

@@ -1,0 +1,31 @@
+{
+  "name": "ads-cockpit",
+  "version": "0.1.0",
+  "description": "Optional local Claude Ads run, evidence, input, comparison and report cockpit",
+  "author": {
+    "name": "AI Marketing Hub"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "coreRoot": {
+      "type": "string",
+      "title": "Trusted Claude Ads core root",
+      "description": "Explicit absolute source checkout or verified standalone core root",
+      "default": ""
+    },
+    "pythonExecutable": {
+      "type": "string",
+      "title": "Trusted Python executable",
+      "description": "Explicit absolute Python executable, never resolved through PATH",
+      "default": ""
+    },
+    "runsRoot": {
+      "type": "string",
+      "title": "Local runs root",
+      "description": "Optional explicit absolute local run directory",
+      "default": ""
+    }
+  },
+  "repository": "https://github.com/AgriciDaniel/claude-ads"
+}

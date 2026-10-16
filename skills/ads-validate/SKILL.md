@@ -1,6 +1,6 @@
 ---
 name: ads-validate
-description: "Validate Claude Ads contracts, scoring inputs, run bundles, capabilities, source freshness, safety, installation, uninstall, or release readiness. Use for ads validate, ads status, ads next, stale claims with missing tool access, maturity checks, ownership-manifest uninstall, preserving unrelated ads-* skills, checksum verification, preflight, QA, or release audits. Missing access must demote stale evidence for the run and block dependent release-current claims before recovery guidance."
+description: "Validate Claude Ads contracts, scoring inputs, run bundles, capabilities, source freshness, safety, installation, uninstall, or release readiness. Use for ads validate, ads status, ads next, maturity checks, ownership-manifest uninstall, preserving unrelated ads-* skills, checksum verification, preflight, QA, or release audits."
 ---
 
 # Validate Claude Ads
@@ -21,7 +21,7 @@ evidence, and recovery steps. Never promote maturity because documentation is
 polished or a prior release passed. Stale evidence and skipped remote CI demote
 readiness.
 
-If an expired claim cannot be reverified because source or filesystem access is
+Reverify-or-demote decisions belong to `ads-research`. If an expired claim cannot be reverified because source or filesystem access is
 unavailable, return a failed current-evidence check, demote that claim for the
 current run, and block dependent release-current assertions before asking for the
 missing access.

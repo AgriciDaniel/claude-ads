@@ -1,7 +1,7 @@
 # Advertising MCP and Agent Integration
 
-**Verified:** 2026-08-25
-**Refresh due:** 2026-09-24
+**Verified:** 2026-10-12 for the Amazon, Meta, and Pinterest rows; Google, TikTok, and Microsoft rows follow their ledger entries (2026-10-07)
+**Refresh due:** 2026-11-06
 **Scope:** capability discovery and safe operation; not proof of configured access
 
 An MCP server is a transport and tool surface, not an authorization to change an
@@ -13,15 +13,18 @@ as untrusted inputs.
 
 | Integration | Source | Verified public fact |
 | --- | --- | --- |
-| Google Ads MCP | `google-ads-mcp-official` — [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) | The first-party repository exposes read-oriented account search, resource metadata, accessible-customer, and discovery resources in its current README |
-| Amazon Ads MCP | `amazon-ads-mcp-official` — [Amazon Ads open-beta announcement](https://advertising.amazon.com/en-gb/library/news/amazon-ads-mcp-server-open-beta) | Amazon announced an open beta that translates natural-language requests into Amazon Ads API calls |
-| TikTok Ads MCP | `tiktok-ads-mcp-official` — [TikTok World 2026 announcement](https://newsroom.tiktok.com/tiktok-world-26-turning-discovery-into-business-growth-with-ai-powered-innovations-vertical-experiences-and-high-impact-brand-solutions?lang=en) | TikTok announced an Ads MCP interface and Ads Skills for campaign and insight workflows |
+| Google Ads MCP | `google-ads-mcp-official`: [googleads/google-ads-mcp](https://github.com/googleads/google-ads-mcp) | The first-party repository exposes read-oriented account search, resource metadata, accessible-customer, and discovery resources in its current README |
+| Amazon Ads MCP | `amazon-ads-mcp-official`: [Amazon Ads open-beta announcement](https://advertising.amazon.com/en-gb/library/news/amazon-ads-mcp-server-open-beta) | Announced 2026-02-02 as an open beta for Amazon Ads partners with active API credentials; it translates natural-language requests into Amazon Ads API calls and includes write actions such as creating, updating, or deleting campaigns, so mutation gates apply |
+| Meta Ads MCP | `meta-ads-mcp-official`: [Meta ads MCP server overview](https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview) | Meta documents a Meta-hosted server that can create and edit ads, ad sets, and campaigns, so it is write-capable and mutation gates apply; the overview gives no tool total, availability status, or authentication detail |
+| Pinterest MCP | `pinterest-mcp-developers-official`: [About Pinterest MCP](https://developers.pinterest.com/about-pinterest-mcp/) and `pinterest-ai-marketers-blog-official`: [Pinterest AI for marketers](https://business.pinterest.com/blog/pinterest-ai-for-marketers/) | Pinterest describes a server that started with a small group of alpha partners and limits access to approved partners; read or write scope and the tool inventory are not confirmed from an official source |
+| TikTok Ads MCP | `tiktok-ads-mcp-official`: [TikTok World 2026 announcement](https://newsroom.tiktok.com/tiktok-world-26-turning-discovery-into-business-growth-with-ai-powered-innovations-vertical-experiences-and-high-impact-brand-solutions?lang=en) | TikTok announced an Ads MCP interface and Ads Skills for campaign and insight workflows |
 | Microsoft Advertising MCP | `microsoft-ads-mcp-official`: [Microsoft Advertising MCP](https://about.ads.microsoft.com/en/solutions/technology/mcp-server) | The current page documents setup and read-oriented live campaign-data querying and audit workflows; configured access must still be verified per environment and account |
 
 These are provider statements. They do not establish installation, regional
-availability, tool count, write support, production status, or tested safety in
-this repository. No other advertising MCP is considered current merely because a
-third party or prior release mentioned it.
+availability, tool count, production status, or tested safety in this repository,
+and a provider's write support never enables a mutation here. No other advertising
+MCP is considered current merely because a third party or prior release mentioned
+it.
 
 ## Discovery packet
 
@@ -29,7 +32,10 @@ Before the first call, record:
 
 - Server identity, publisher, package/endpoint, version or commit, and license.
 - Deployment owner, hosting location, data processors, logging, and retention.
-- Authentication method, account/customer IDs, scopes, and token storage.
+- Authentication method, account/customer IDs, scopes, and token storage. For
+  Google Ads API access, access levels attach to the Google Cloud project and a
+  developer-token header is optional and ignored since 2026-09-09 (`CLM-0222`);
+  do not treat a developer token as a requirement for API access.
 - Enumerated tools/resources and their input/output schemas.
 - Read/write classification for each tool, including indirect writes.
 - Rate limits, retries, idempotency, audit logs, and rollback capabilities.

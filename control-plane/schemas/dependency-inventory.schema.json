@@ -8,14 +8,14 @@
   "properties": {
     "schema_version": {"const": "1.0.0"},
     "inventory_id": {"const": "claude-ads-python-dependencies"},
-    "resolved_at": {"const": "2026-07-11T00:00:00Z", "format": "date-time"},
+    "resolved_at": {"const": "2026-10-07T00:00:00Z", "format": "date-time"},
     "resolution": {
       "type": "object", "additionalProperties": false,
       "required": ["index", "managed_lock_python_range", "supported_python_versions", "implementation", "source_date_epoch", "policy", "reviewed_metadata_sha256", "third_party_notices_sha256", "target_evidence_class", "subject_binding"],
       "properties": {
         "index": {"const": "https://pypi.org/simple"}, "managed_lock_python_range": {"const": ">=3.11,<3.13"},
         "supported_python_versions": {"const": ["3.11", "3.12"]}, "implementation": {"const": "CPython"},
-        "source_date_epoch": {"const": 1783728000}, "policy": {"type": "string", "minLength": 1},
+        "source_date_epoch": {"const": 1791331200}, "policy": {"type": "string", "minLength": 1},
         "reviewed_metadata_sha256": {"$ref": "#/$defs/sha256"}, "third_party_notices_sha256": {"$ref": "#/$defs/sha256"},
         "target_evidence_class": {"const": "cross-target-pip-resolution-requiring-native-ci-confirmation"},
         "subject_binding": {"type": "string", "minLength": 1}

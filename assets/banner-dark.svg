@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="548" viewBox="0 0 1200 548" role="img" aria-labelledby="t d">
+<title id="t">Claude Ads: every ad account, one command line</title>
+<desc id="d">Claude Ads covers 12 ad platforms with 33 skills and one /ads command. A command line types an audit for each platform in turn. It is read only by default and every finding is backed by evidence.</desc>
+<style>
+text{font-family:Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif} .m{font-family:'JetBrains Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+@keyframes type{from{width:0}to{width:var(--w)}}
+@keyframes show{from{opacity:0}to{opacity:1}}
+.r{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.cur{animation:blink 1.1s steps(1) infinite}
+.s{animation:show .4s ease-out both}
+.ty{animation:type 1.2s steps(19) .5s both}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+@keyframes g0{0%{opacity:1}0.000%{opacity:1}7.675%{opacity:1}7.825%{opacity:0}100%{opacity:0}}
+@keyframes w0{0%{width:0}0.000%{width:0;animation-timing-function:steps(17)}2.632%{width:216.2px}100%{width:216.2px}}
+@keyframes c0{0%{transform:translateX(0)}0.000%{transform:translateX(0);animation-timing-function:steps(17)}2.632%{transform:translateX(216.2px)}100%{transform:translateX(216.2px)}}
+@keyframes o0{0%{opacity:0}2.632%{opacity:0}3.032%{opacity:1}7.675%{opacity:1}7.825%{opacity:0}100%{opacity:0}}
+.g0{opacity:1;animation:g0 45.599999999999994s linear infinite}.w0{animation:w0 45.599999999999994s linear infinite}.c0{animation:c0 45.599999999999994s linear infinite}.o0{opacity:1;animation:o0 45.599999999999994s linear infinite}
+@keyframes g1{0%{opacity:0}8.323%{opacity:0}8.333%{opacity:1}16.009%{opacity:1}16.159%{opacity:0}100%{opacity:0}}
+@keyframes w1{0%{width:0}8.333%{width:0;animation-timing-function:steps(17)}10.965%{width:216.2px}100%{width:216.2px}}
+@keyframes c1{0%{transform:translateX(0)}8.333%{transform:translateX(0);animation-timing-function:steps(17)}10.965%{transform:translateX(216.2px)}100%{transform:translateX(216.2px)}}
+@keyframes o1{0%{opacity:0}10.965%{opacity:0}11.365%{opacity:1}16.009%{opacity:1}16.159%{opacity:0}100%{opacity:0}}
+.g1{opacity:0;animation:g1 45.599999999999994s linear infinite}.w1{animation:w1 45.599999999999994s linear infinite}.c1{animation:c1 45.599999999999994s linear infinite}.o1{opacity:0;animation:o1 45.599999999999994s linear infinite}
+@keyframes g2{0%{opacity:0}16.657%{opacity:0}16.667%{opacity:1}24.342%{opacity:1}24.492%{opacity:0}100%{opacity:0}}
+@keyframes w2{0%{width:0}16.667%{width:0;animation-timing-function:steps(18)}19.298%{width:228.8px}100%{width:228.8px}}
+@keyframes c2{0%{transform:translateX(0)}16.667%{transform:translateX(0);animation-timing-function:steps(18)}19.298%{transform:translateX(228.8px)}100%{transform:translateX(228.8px)}}
+@keyframes o2{0%{opacity:0}19.298%{opacity:0}19.698%{opacity:1}24.342%{opacity:1}24.492%{opacity:0}100%{opacity:0}}
+.g2{opacity:0;animation:g2 45.599999999999994s linear infinite}.w2{animation:w2 45.599999999999994s linear infinite}.c2{animation:c2 45.599999999999994s linear infinite}.o2{opacity:0;animation:o2 45.599999999999994s linear infinite}
+@keyframes g3{0%{opacity:0}24.990%{opacity:0}25.000%{opacity:1}32.675%{opacity:1}32.825%{opacity:0}100%{opacity:0}}
+@keyframes w3{0%{width:0}25.000%{width:0;animation-timing-function:steps(15)}27.632%{width:191.0px}100%{width:191.0px}}
+@keyframes c3{0%{transform:translateX(0)}25.000%{transform:translateX(0);animation-timing-function:steps(15)}27.632%{transform:translateX(191.0px)}100%{transform:translateX(191.0px)}}
+@keyframes o3{0%{opacity:0}27.632%{opacity:0}28.032%{opacity:1}32.675%{opacity:1}32.825%{opacity:0}100%{opacity:0}}
+.g3{opacity:0;animation:g3 45.599999999999994s linear infinite}.w3{animation:w3 45.599999999999994s linear infinite}.c3{animation:c3 45.599999999999994s linear infinite}.o3{opacity:0;animation:o3 45.599999999999994s linear infinite}
+@keyframes g4{0%{opacity:0}33.323%{opacity:0}33.333%{opacity:1}41.009%{opacity:1}41.159%{opacity:0}100%{opacity:0}}
+@keyframes w4{0%{width:0}33.333%{width:0;animation-timing-function:steps(19)}35.965%{width:241.4px}100%{width:241.4px}}
+@keyframes c4{0%{transform:translateX(0)}33.333%{transform:translateX(0);animation-timing-function:steps(19)}35.965%{transform:translateX(241.4px)}100%{transform:translateX(241.4px)}}
+@keyframes o4{0%{opacity:0}35.965%{opacity:0}36.365%{opacity:1}41.009%{opacity:1}41.159%{opacity:0}100%{opacity:0}}
+.g4{opacity:0;animation:g4 45.599999999999994s linear infinite}.w4{animation:w4 45.599999999999994s linear infinite}.c4{animation:c4 45.599999999999994s linear infinite}.o4{opacity:0;animation:o4 45.599999999999994s linear infinite}
+@keyframes g5{0%{opacity:0}41.657%{opacity:0}41.667%{opacity:1}49.342%{opacity:1}49.492%{opacity:0}100%{opacity:0}}
+@keyframes w5{0%{width:0}41.667%{width:0;animation-timing-function:steps(20)}44.298%{width:254.0px}100%{width:254.0px}}
+@keyframes c5{0%{transform:translateX(0)}41.667%{transform:translateX(0);animation-timing-function:steps(20)}44.298%{transform:translateX(254.0px)}100%{transform:translateX(254.0px)}}
+@keyframes o5{0%{opacity:0}44.298%{opacity:0}44.698%{opacity:1}49.342%{opacity:1}49.492%{opacity:0}100%{opacity:0}}
+.g5{opacity:0;animation:g5 45.599999999999994s linear infinite}.w5{animation:w5 45.599999999999994s linear infinite}.c5{animation:c5 45.599999999999994s linear infinite}.o5{opacity:0;animation:o5 45.599999999999994s linear infinite}
+@keyframes g6{0%{opacity:0}49.990%{opacity:0}50.000%{opacity:1}57.675%{opacity:1}57.825%{opacity:0}100%{opacity:0}}
+@keyframes w6{0%{width:0}50.000%{width:0;animation-timing-function:steps(16)}52.632%{width:203.6px}100%{width:203.6px}}
+@keyframes c6{0%{transform:translateX(0)}50.000%{transform:translateX(0);animation-timing-function:steps(16)}52.632%{transform:translateX(203.6px)}100%{transform:translateX(203.6px)}}
+@keyframes o6{0%{opacity:0}52.632%{opacity:0}53.032%{opacity:1}57.675%{opacity:1}57.825%{opacity:0}100%{opacity:0}}
+.g6{opacity:0;animation:g6 45.599999999999994s linear infinite}.w6{animation:w6 45.599999999999994s linear infinite}.c6{animation:c6 45.599999999999994s linear infinite}.o6{opacity:0;animation:o6 45.599999999999994s linear infinite}
+@keyframes g7{0%{opacity:0}58.323%{opacity:0}58.333%{opacity:1}66.009%{opacity:1}66.159%{opacity:0}100%{opacity:0}}
+@keyframes w7{0%{width:0}58.333%{width:0;animation-timing-function:steps(17)}60.965%{width:216.2px}100%{width:216.2px}}
+@keyframes c7{0%{transform:translateX(0)}58.333%{transform:translateX(0);animation-timing-function:steps(17)}60.965%{transform:translateX(216.2px)}100%{transform:translateX(216.2px)}}
+@keyframes o7{0%{opacity:0}60.965%{opacity:0}61.365%{opacity:1}66.009%{opacity:1}66.159%{opacity:0}100%{opacity:0}}
+.g7{opacity:0;animation:g7 45.599999999999994s linear infinite}.w7{animation:w7 45.599999999999994s linear infinite}.c7{animation:c7 45.599999999999994s linear infinite}.o7{opacity:0;animation:o7 45.599999999999994s linear infinite}
+@keyframes g8{0%{opacity:0}66.657%{opacity:0}66.667%{opacity:1}74.342%{opacity:1}74.492%{opacity:0}100%{opacity:0}}
+@keyframes w8{0%{width:0}66.667%{width:0;animation-timing-function:steps(17)}69.298%{width:216.2px}100%{width:216.2px}}
+@keyframes c8{0%{transform:translateX(0)}66.667%{transform:translateX(0);animation-timing-function:steps(17)}69.298%{transform:translateX(216.2px)}100%{transform:translateX(216.2px)}}
+@keyframes o8{0%{opacity:0}69.298%{opacity:0}69.698%{opacity:1}74.342%{opacity:1}74.492%{opacity:0}100%{opacity:0}}
+.g8{opacity:0;animation:g8 45.599999999999994s linear infinite}.w8{animation:w8 45.599999999999994s linear infinite}.c8{animation:c8 45.599999999999994s linear infinite}.o8{opacity:0;animation:o8 45.599999999999994s linear infinite}
+@keyframes g9{0%{opacity:0}74.990%{opacity:0}75.000%{opacity:1}82.675%{opacity:1}82.825%{opacity:0}100%{opacity:0}}
+@keyframes w9{0%{width:0}75.000%{width:0;animation-timing-function:steps(20)}77.632%{width:254.0px}100%{width:254.0px}}
+@keyframes c9{0%{transform:translateX(0)}75.000%{transform:translateX(0);animation-timing-function:steps(20)}77.632%{transform:translateX(254.0px)}100%{transform:translateX(254.0px)}}
+@keyframes o9{0%{opacity:0}77.632%{opacity:0}78.032%{opacity:1}82.675%{opacity:1}82.825%{opacity:0}100%{opacity:0}}
+.g9{opacity:0;animation:g9 45.599999999999994s linear infinite}.w9{animation:w9 45.599999999999994s linear infinite}.c9{animation:c9 45.599999999999994s linear infinite}.o9{opacity:0;animation:o9 45.599999999999994s linear infinite}
+@keyframes g10{0%{opacity:0}83.323%{opacity:0}83.333%{opacity:1}91.009%{opacity:1}91.159%{opacity:0}100%{opacity:0}}
+@keyframes w10{0%{width:0}83.333%{width:0;animation-timing-function:steps(19)}85.965%{width:241.4px}100%{width:241.4px}}
+@keyframes c10{0%{transform:translateX(0)}83.333%{transform:translateX(0);animation-timing-function:steps(19)}85.965%{transform:translateX(241.4px)}100%{transform:translateX(241.4px)}}
+@keyframes o10{0%{opacity:0}85.965%{opacity:0}86.365%{opacity:1}91.009%{opacity:1}91.159%{opacity:0}100%{opacity:0}}
+.g10{opacity:0;animation:g10 45.599999999999994s linear infinite}.w10{animation:w10 45.599999999999994s linear infinite}.c10{animation:c10 45.599999999999994s linear infinite}.o10{opacity:0;animation:o10 45.599999999999994s linear infinite}
+@keyframes g11{0%{opacity:0}91.657%{opacity:0}91.667%{opacity:1}99.342%{opacity:1}99.492%{opacity:0}100%{opacity:0}}
+@keyframes w11{0%{width:0}91.667%{width:0;animation-timing-function:steps(12)}94.298%{width:153.2px}100%{width:153.2px}}
+@keyframes c11{0%{transform:translateX(0)}91.667%{transform:translateX(0);animation-timing-function:steps(12)}94.298%{transform:translateX(153.2px)}100%{transform:translateX(153.2px)}}
+@keyframes o11{0%{opacity:0}94.298%{opacity:0}94.698%{opacity:1}99.342%{opacity:1}99.492%{opacity:0}100%{opacity:0}}
+.g11{opacity:0;animation:g11 45.599999999999994s linear infinite}.w11{animation:w11 45.599999999999994s linear infinite}.c11{animation:c11 45.599999999999994s linear infinite}.o11{opacity:0;animation:o11 45.599999999999994s linear infinite}
+</style>
+<rect width="1200" height="548" rx="22" fill="#0D1117"/>
+<rect x="0.5" y="0.5" width="1199" height="547" rx="21.5" fill="none" stroke="#2B313B"/>
+<text x="72" y="168" font-size="80" font-weight="800" fill="#F2F3F5" text-anchor="start" class="r" style="animation-delay:0s">Every ad account.</text>
+<text x="72" y="256" font-size="80" font-weight="800" fill="#F2F3F5" class="r" style="animation-delay:.12s">One command line<tspan fill="#F07A5E">.</tspan></text>
+<text x="72" y="312" font-size="24" font-weight="400" fill="#9AA1AD" text-anchor="start" class="r" style="animation-delay:0.25s">12 platforms, 33 skills, one /ads command. Read only by default,</text>
+<text x="72" y="346" font-size="24" font-weight="400" fill="#9AA1AD" text-anchor="start" class="r" style="animation-delay:0.3s">and every finding is backed by evidence.</text>
+<rect x="72" y="372" width="1056" height="108" rx="14" fill="#0A0D12" stroke="#2B313B" class="r" style="animation-delay:0.35s"/>
+<text x="1104" y="416" font-size="12" font-weight="500" fill="#6B7280" text-anchor="end" class="m">EXAMPLE OUTPUT</text>
+<clipPath id="k0"><rect x="160" y="394" height="34" width="216.2" class="w0"/></clipPath>
+<g class="g0">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M3.9998 22.9291C1.7908 22.9291 0 21.1383 0 18.9293s1.7908-3.9998 3.9998-3.9998 3.9998 1.7908 3.9998 3.9998-1.7908 3.9998-3.9998 3.9998zm19.4643-6.0004L15.4632 3.072C14.3586 1.1587 11.9121.5028 9.9988 1.6074S7.4295 5.1585 8.5341 7.0718l8.0009 13.8567c1.1046 1.9133 3.5511 2.5679 5.4644 1.4646 1.9134-1.1046 2.568-3.5511 1.4647-5.4644zM7.5137 4.8438L1.5645 15.1484A4.5 4.5 0 0 1 4 14.4297c2.5597-.0075 4.6248 2.1585 4.4941 4.7148l3.2168-5.5723-3.6094-6.25c-.4499-.7793-.6322-1.6394-.5878-2.4784z" fill="#4285F4"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k0)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit google</text>
+</g>
+<g class="c0"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o0"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">google: search terms clean, 2 findings at medium confidence</text>
+</g>
+<clipPath id="k1"><rect x="160" y="394" height="34" width="216.2" class="w1"/></clipPath>
+<g class="g1">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" fill="#FFFFFF"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k1)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit tiktok</text>
+</g>
+<g class="c1"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o1"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">tiktok: pixel firing, 1 finding at high confidence</text>
+</g>
+<clipPath id="k2"><rect x="160" y="394" height="34" width="228.8" class="w2"/></clipPath>
+<g class="g2">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#FF3333"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k2)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit youtube</text>
+</g>
+<g class="c2"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o2"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">youtube: view window set, 3 checks unknown</text>
+</g>
+<clipPath id="k3"><rect x="160" y="394" height="34" width="191.0" class="w3"/></clipPath>
+<g class="g3">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z" fill="#4C8DFF"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k3)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit meta</text>
+</g>
+<g class="c3"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o3"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">meta: conversions API connected, 1 finding at high confidence</text>
+</g>
+<clipPath id="k4"><rect x="160" y="394" height="34" width="241.4" class="w4"/></clipPath>
+<g class="g4">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#4C9BE8"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k4)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit linkedin</text>
+</g>
+<g class="c4"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o4"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">linkedin: audience overlap flagged, 2 findings at medium confidence</text>
+</g>
+<clipPath id="k5"><rect x="160" y="394" height="34" width="254.0" class="w5"/></clipPath>
+<g class="g5">
+<rect x="98" y="396" width="12.0" height="12.0" fill="#F25022"/><rect x="112.0" y="396" width="12.0" height="12.0" fill="#7FBA00"/><rect x="98" y="410.0" width="12.0" height="12.0" fill="#00A4EF"/><rect x="112.0" y="410.0" width="12.0" height="12.0" fill="#FFB900"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k5)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit microsoft</text>
+</g>
+<g class="c5"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o5"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">microsoft: UET tag present, 1 check not applicable</text>
+</g>
+<clipPath id="k6"><rect x="160" y="394" height="34" width="203.6" class="w6"/></clipPath>
+<g class="g6">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" fill="#FFFFFF"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k6)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit apple</text>
+</g>
+<g class="c6"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o6"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">apple: match types reviewed, 2 findings at low confidence</text>
+</g>
+<clipPath id="k7"><rect x="160" y="394" height="34" width="216.2" class="w7"/></clipPath>
+<g class="g7">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M.045 18.02c.072-.116.187-.124.348-.022 3.636 2.11 7.594 3.166 11.87 3.166 2.852 0 5.668-.533 8.447-1.595l.315-.14c.138-.06.234-.1.293-.13.226-.088.39-.046.525.13.12.174.09.336-.12.48-.256.19-.6.41-1.006.654-1.244.743-2.64 1.316-4.185 1.726a17.617 17.617 0 01-10.951-.577 17.88 17.88 0 01-5.43-3.35c-.1-.074-.151-.15-.151-.22 0-.047.021-.09.051-.13zm6.565-6.218c0-1.005.247-1.863.743-2.577.495-.71 1.17-1.25 2.04-1.615.796-.335 1.756-.575 2.912-.72.39-.046 1.033-.103 1.92-.174v-.37c0-.93-.105-1.558-.3-1.875-.302-.43-.78-.65-1.44-.65h-.182c-.48.046-.896.196-1.246.46-.35.27-.575.63-.675 1.096-.06.3-.206.465-.435.51l-2.52-.315c-.248-.06-.372-.18-.372-.39 0-.046.007-.09.022-.15.247-1.29.855-2.25 1.82-2.88.976-.616 2.1-.975 3.39-1.05h.54c1.65 0 2.957.434 3.888 1.29.135.15.27.3.405.48.12.165.224.314.283.45.075.134.15.33.195.57.06.254.105.42.135.51.03.104.062.3.076.615.01.313.02.493.02.553v5.28c0 .376.06.72.165 1.036.105.313.21.54.315.674l.51.674c.09.136.136.256.136.36 0 .12-.06.226-.18.314-1.2 1.05-1.86 1.62-1.963 1.71-.165.135-.375.15-.63.045a6.062 6.062 0 01-.526-.496l-.31-.347a9.391 9.391 0 01-.317-.42l-.3-.435c-.81.886-1.603 1.44-2.4 1.665-.494.15-1.093.227-1.83.227-1.11 0-2.04-.343-2.76-1.034-.72-.69-1.08-1.665-1.08-2.94l-.05-.076zm3.753-.438c0 .566.14 1.02.425 1.364.285.34.675.512 1.155.512.045 0 .106-.007.195-.02.09-.016.134-.023.166-.023.614-.16 1.08-.553 1.424-1.178.165-.28.285-.58.36-.91.09-.32.12-.59.135-.8.015-.195.015-.54.015-1.005v-.54c-.84 0-1.484.06-1.92.18-1.275.36-1.92 1.17-1.92 2.43l-.035-.02zm9.162 7.027c.03-.06.075-.11.132-.17.362-.243.714-.41 1.05-.5a8.094 8.094 0 011.612-.24c.14-.012.28 0 .41.03.65.06 1.05.168 1.172.33.063.09.099.228.099.39v.15c0 .51-.149 1.11-.424 1.8-.278.69-.664 1.248-1.156 1.68-.073.06-.14.09-.197.09-.03 0-.06 0-.09-.012-.09-.044-.107-.12-.064-.24.54-1.26.806-2.143.806-2.64 0-.15-.03-.27-.087-.344-.145-.166-.55-.257-1.224-.257-.243 0-.533.016-.87.046-.363.045-.7.09-1 .135-.09 0-.148-.014-.18-.044-.03-.03-.036-.047-.02-.077 0-.017.006-.03.02-.063v-.06z" fill="#FF9900"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k7)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit amazon</text>
+</g>
+<g class="c7"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o7"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">amazon: campaign naming consistent, 1 finding at medium confidence</text>
+</g>
+<clipPath id="k8"><rect x="160" y="394" height="34" width="216.2" class="w8"/></clipPath>
+<g class="g8">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z" fill="#FF5A1F"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k8)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit reddit</text>
+</g>
+<g class="c8"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o8"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">reddit: conversion events mapped, 2 checks unknown</text>
+</g>
+<clipPath id="k9"><rect x="160" y="394" height="34" width="254.0" class="w9"/></clipPath>
+<g class="g9">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z" fill="#FF3B50"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k9)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit pinterest</text>
+</g>
+<g class="c9"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o9"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">pinterest: tag coverage partial, 1 finding at medium confidence</text>
+</g>
+<clipPath id="k10"><rect x="160" y="394" height="34" width="241.4" class="w10"/></clipPath>
+<g class="g10">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z" fill="#FFFC00"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k10)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit snapchat</text>
+</g>
+<g class="c10"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o10"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">snapchat: pixel events verified, no findings</text>
+</g>
+<clipPath id="k11"><rect x="160" y="394" height="34" width="153.2" class="w11"/></clipPath>
+<g class="g11">
+<path transform="translate(98 396) scale(1.0833333333333333)" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" fill="#FFFFFF"/>
+<text x="138" y="416" font-size="21" font-weight="500" fill="#9AA1AD" text-anchor="start" class="m">&gt;</text>
+<g clip-path="url(#k11)"><text x="160" y="416" font-size="21" font-weight="600" fill="#E6E8EB" text-anchor="start" class="m">/ads audit x</text>
+</g>
+<g class="c11"><rect class="cur" x="163" y="398" width="11" height="24" rx="2" fill="#F07A5E"/></g>
+</g>
+<g class="o11"><text x="100" y="456" font-size="17" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">x: conversion tracking missing, 1 finding at high confidence</text>
+</g>
+<text x="72" y="518" font-size="15" font-weight="400" fill="#9AA1AD" text-anchor="start" class="m">MIT licensed  /  12 ad platforms  /  33 skills  /  read only by default</text>
+</svg>

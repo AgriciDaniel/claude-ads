@@ -1101,7 +1101,6 @@ def generate_openai(prompt: str, width: int, height: int, api_key: str, model: s
         prompt=prompt,
         n=1,
         size=size,
-        response_format="b64_json",
     )
     try:
         return base64.b64decode(response.data[0].b64_json, validate=True)

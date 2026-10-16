@@ -10,6 +10,7 @@ import pytest
 
 from claude_ads_core.contracts import CONTRACT_NAMES, ContractError, schema_path, validate_contract
 from claude_ads_core.orchestration import OrchestrationError, OrchestrationStore, evaluate_artifact_gate
+from claude_ads_core.workflow_contracts import WORKFLOW_CONTRACT_NAMES
 
 
 @pytest.fixture()
@@ -52,9 +53,9 @@ def _set_path(payload: dict, path: tuple[str | int, ...], value) -> None:
 
 def _declared_integer_fields(repo_root: Path) -> set[tuple[str, tuple[str | int, ...], int]]:
     declared: set[tuple[str, tuple[str | int, ...], int]] = set()
-    for contract in CONTRACT_NAMES:
-        if contract in {"account-snapshot", "control-definition", "finding", "report-bundle", "run-manifest"}:
-            continue
+    # This inventory is backed by workflow fixtures. Optional companion
+    # contracts have their own boundary and parity tests.
+    for contract in WORKFLOW_CONTRACT_NAMES:
         schema = json.loads(schema_path(contract).read_text(encoding="utf-8"))
 
         def walk(node, path=()):

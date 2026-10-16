@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 from datetime import date, datetime, timezone
 import hashlib
 import importlib.util
@@ -40,6 +41,8 @@ PACKAGE_FILES = {
     "SECURITY.md",
     "SUPPORT.md",
     "THIRD_PARTY_NOTICES.md",
+    "docs/cockpit/user-guide.md",
+    "docs/cockpit/compatibility.md",
     "install.ps1",
     "install.sh",
     "pyproject.toml",
@@ -67,12 +70,16 @@ TEXT_SUFFIXES = {
     ".csv",
     ".html",
     ".json",
+    ".js",
+    ".mjs",
     ".lock",
     ".md",
     ".ps1",
     ".py",
     ".sh",
     ".svg",
+    ".ts",
+    ".tsx",
     ".toml",
     ".txt",
     ".yaml",
@@ -116,15 +123,15 @@ ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 # notice review. The inventory digest is filled from the reviewed canonical
 # document; keeping it in executable verifier code makes self-consistent
 # archive/manifest/SBOM/checksum forgery fail closed.
-EXPECTED_DEPENDENCY_INVENTORY_SHA256 = "48ed1cdd3023bdb9781e7ffe9d987fb9425cc23e2dea053e2da5e8d461e588de"
-EXPECTED_THIRD_PARTY_NOTICES_SHA256 = "b90c38b4cce60c06c0090be31ee721d3482640923d9ff6f3c711c047317746d0"
-EXPECTED_EXTERNAL_RUNTIME_DEPENDENCIES_SHA256 = "c5962746f3a49570c810525c5a8557a3884e64e3b764476ff18cb65741853bc2"
-INVENTORY_RESOLVED_AT = "2026-07-11T00:00:00Z"
-INVENTORY_SOURCE_DATE_EPOCH = 1783728000
+EXPECTED_DEPENDENCY_INVENTORY_SHA256 = "cf993e3cecf0f8ad1932b995d8e0f4448e3931b27b1dbe06fd90e5e162de3e1f"
+EXPECTED_THIRD_PARTY_NOTICES_SHA256 = "16283036f1235d79fb3f0c69dd24d21258482f57470cf482b94be30d1778b88e"
+EXPECTED_EXTERNAL_RUNTIME_DEPENDENCIES_SHA256 = "c1a6e7a1a49e1a6f6662a37f3f731dc7c30bc4ac247f34496fb58d50d7f7d66b"
+INVENTORY_RESOLVED_AT = "2026-10-07T00:00:00Z"
+INVENTORY_SOURCE_DATE_EPOCH = 1791331200
 INVENTORY_PYTHON_REQUIRES = ">=3.11,<3.13"
 INVENTORY_POLICY = (
     "One exact lowest-common version set with target-specific wheel hashes for "
-    "glibc 2.17+/manylinux-compatible x86_64, macOS 11 x86_64/arm64, and "
+    "glibc 2.28+/manylinux-compatible x86_64, macOS 11 x86_64/arm64, and "
     "Windows amd64. Unlisted interpreters, libc families, platforms, and "
     "architectures fail closed."
 )
@@ -187,12 +194,32 @@ def tracked_files(root: Path) -> list[str]:
     return sorted(path for path in paths if path)
 
 
+def _companion_package_files() -> set[str]:
+    """Read the companion's sole curated allowlist without executing its code."""
+    helper = Path(__file__).with_name("package_cockpit.py")
+    if not helper.is_file():
+        return set()
+    for node in ast.parse(helper.read_text(encoding="utf-8")).body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "RUNTIME_FILES"
+            for target in node.targets
+        ):
+            names = ast.literal_eval(node.value)
+            if not isinstance(names, tuple) or any(
+                not isinstance(name, str) or validate_portable_path(name) for name in names
+            ):
+                raise ReleaseError("companion runtime allowlist is invalid")
+            return {"mods/claude-ads-cockpit/" + name for name in names}
+    raise ReleaseError("companion runtime allowlist is missing")
+
+
 def package_files(paths: list[str]) -> list[str]:
     """Select the explicitly public-safe product surface from tracked files."""
+    companion_paths = _companion_package_files()
     return [
         path
         for path in paths
-        if (path in PACKAGE_FILES or any(path.startswith(prefix) for prefix in PACKAGE_PREFIXES))
+        if (path in PACKAGE_FILES or path in companion_paths or any(path.startswith(prefix) for prefix in PACKAGE_PREFIXES))
         and not any(path.startswith(prefix) for prefix in PACKAGE_EXCLUDED_PREFIXES)
     ]
 
@@ -277,12 +304,36 @@ def _audit_manifest_consistency(root: Path, tracked: set[str]) -> list[str]:
     plugin = json.loads((root / plugin_path).read_text(encoding="utf-8"))
     marketplace = json.loads((root / marketplace_path).read_text(encoding="utf-8"))
     entries = marketplace.get("plugins") if isinstance(marketplace, dict) else None
-    if not isinstance(entries, list) or len(entries) != 1 or not isinstance(entries[0], dict):
-        return ["marketplace manifest must contain exactly one plugin object"]
-    entry = entries[0]
+    if not isinstance(entries, list) or not entries or any(not isinstance(item, dict) for item in entries):
+        return ["marketplace manifest must contain plugin objects"]
+    if any(not isinstance(item.get("name"), str) or not item["name"] for item in entries):
+        return ["marketplace plugin names must be nonempty strings"]
+    by_name = {item.get("name"): item for item in entries}
+    if len(by_name) != len(entries) or plugin.get("name") not in by_name:
+        return ["marketplace plugin names must be unique and include the primary plugin"]
+    if set(by_name) - {plugin.get("name"), "ads-cockpit"}:
+        return ["marketplace contains an unreviewed optional plugin"]
+    entry = by_name[plugin["name"]]
     for field in ("name", "version", "license", "repository"):
         if plugin.get(field) != entry.get(field):
             errors.append(f"plugin and marketplace disagree on {field!r}")
+    if "ads-cockpit" in by_name:
+        companion_entry = by_name["ads-cockpit"]
+        companion_path = "mods/claude-ads-cockpit/.claude-plugin/plugin.json"
+        if "scripts/package_cockpit.py" not in tracked:
+            errors.append("companion packaging allowlist is missing from the audited files")
+        if companion_entry.get("source") != "./mods/claude-ads-cockpit":
+            errors.append("companion marketplace source must be the reviewed local plugin root")
+        if companion_path not in tracked:
+            errors.append("companion marketplace source manifest is missing from the audited files")
+        else:
+            companion = json.loads((root / companion_path).read_text(encoding="utf-8"))
+            for field in ("name", "version", "license", "repository"):
+                if companion.get(field) != companion_entry.get(field):
+                    errors.append(f"companion and marketplace disagree on {field!r}")
+        for relative in sorted(_companion_package_files()):
+            if relative not in tracked:
+                errors.append(f"companion runtime resource is missing from the audited files: {relative}")
     for skill_root in plugin.get("skills", []):
         if not isinstance(skill_root, str):
             errors.append("plugin skills entries must be strings")
@@ -295,10 +346,13 @@ def _audit_manifest_consistency(root: Path, tracked: set[str]) -> list[str]:
     return errors
 
 
-def audit_repository(root: Path) -> list[str]:
-    """Audit tracked repository files without changing the repository."""
+def audit_repository(root: Path, *, include_untracked: bool = False) -> list[str]:
+    """Audit product files, optionally including new nonignored task files."""
     errors: list[str] = []
     tracked = tracked_files(root)
+    if include_untracked:
+        created = _git(root, "ls-files", "--others", "--exclude-standard", "-z").decode("utf-8").split("\0")
+        tracked = sorted(set(tracked) | {path for path in created if path})
     folded: dict[str, str] = {}
     skill_names: dict[str, str] = {}
 
@@ -463,7 +517,7 @@ def _wheel_is_compatible(filename: str, target: dict[str, object], name: str, ve
                 match = re.fullmatch(r"manylinux_(\d+)_(\d+)_x86_64", platform_tag)
                 if not match:
                     raise ReleaseError(f"wheel platform is incompatible with {target['id']}/{name}")
-                if (int(match.group(1)), int(match.group(2))) <= (2, 17):
+                if (int(match.group(1)), int(match.group(2))) <= (2, 28):
                     compatible_baseline = True
         if not compatible_baseline:
             raise ReleaseError(f"wheel requires a newer glibc baseline: {target['id']}/{name}")
@@ -904,11 +958,16 @@ def _load_external_runtime_dependencies(root: Path) -> dict[str, object]:
         raise ReleaseError("external runtime dependency manifest identity mismatch")
     sources = document["sources"]
     dependencies = document["dependencies"]
-    expected_source_ids = {"playwright-python-intro", "playwright-browsers", "playwright-ci", "weasyprint-69-install", "cyclonedx-1.5-json"}
+    expected_source_ids = {"playwright-python-intro", "playwright-browsers", "playwright-ci", "weasyprint-70-install", "cyclonedx-1.5-json"}
     if not isinstance(sources, list) or {item.get("id") for item in sources if isinstance(item, dict)} != expected_source_ids or len(sources) != len(expected_source_ids):
         raise ReleaseError("external runtime dependency source coverage mismatch")
+    expected_accessed_at = {source_id: "2026-07-11" for source_id in expected_source_ids}
+    expected_accessed_at["weasyprint-70-install"] = "2026-10-07"
     for source in sources:
-        if set(source) != {"id", "url", "publisher", "accessed_at"} or not str(source["url"]).startswith("https://") or source["accessed_at"] != "2026-07-11" or not source["publisher"]:
+        if (set(source) != {"id", "url", "publisher", "accessed_at"}
+                or not str(source["url"]).startswith("https://")
+                or source["accessed_at"] != expected_accessed_at.get(source["id"])
+                or not source["publisher"]):
             raise ReleaseError("external runtime dependency source metadata mismatch")
     if not isinstance(dependencies, list) or {item.get("id") for item in dependencies if isinstance(item, dict)} != {"playwright-browser-payload", "weasyprint-native-libraries"} or len(dependencies) != 2:
         raise ReleaseError("external runtime dependency coverage mismatch")
@@ -1963,10 +2022,15 @@ def _check_ecosystem(root: Path, as_of: date | None = None) -> dict[str, object]
         snapshot = snapshots[repository][0]
         item_path = "issues" if entry["kind"] == "issue" else "pull"
         expected_url = f"{snapshot['source_url']}/{item_path}/{entry['number']}"
-        expected_license = (
-            "metadata-only" if entry["kind"] == "issue" else "same-project-mit"
+        # A tracker disposition can retain metadata and independently
+        # reimplement an idea without importing the contributor's patch.
+        # MIT patch-use review is a separate, stronger assertion.
+        permitted_licenses = (
+            {"metadata-only"}
+            if entry["kind"] == "issue"
+            else {"metadata-only", "same-project-mit"}
         )
-        if entry.get("url") != expected_url or entry.get("license_review") != expected_license:
+        if entry.get("url") != expected_url or entry.get("license_review") not in permitted_licenses:
             raise ReleaseError(f"ecosystem entry URL or license is invalid: {entry['id']}")
 
     for repository, (_, issues, pulls) in snapshots.items():
@@ -2047,17 +2111,27 @@ def verify_github_run(root: Path, run_id: str, commit_sha: str) -> dict[str, obj
         "Core tests (Python 3.11)",
         "Core tests (Python 3.12)",
         "Full test suite",
-        "Installer tests (ubuntu-latest, Python 3.11)",
-        "Installer tests (ubuntu-latest, Python 3.12)",
-        "Installer tests (macos-15, Python 3.11)",
-        "Installer tests (macos-15, Python 3.12)",
-        "Installer tests (macos-15-intel, Python 3.11)",
-        "Installer tests (macos-15-intel, Python 3.12)",
-        "Installer tests (windows-latest, Python 3.11)",
-        "Installer tests (windows-latest, Python 3.12)",
         "Reproducible package smoke test",
         "validate",
     }
+    for runner in ("ubuntu-latest", "macos-15", "macos-15-intel", "windows-latest"):
+        for python_version in ("3.11", "3.12"):
+            required.add(f"Managed install ({runner}, Python {python_version})")
+            for shard_index in (0, 1):
+                required.add(
+                    f"Installer tests ({runner}, Python {python_version}, shard {shard_index})"
+                )
+    required.update(
+        f"Linux glibc 2.28 floor ({python_tag})"
+        for python_tag in ("cp311-cp311", "cp312-cp312")
+    )
+    names = [job.get("name") for job in jobs if isinstance(job, dict)]
+    if (
+        len(names) != len(jobs)
+        or any(not isinstance(name, str) or not name for name in names)
+        or len(set(names)) != len(names)
+    ):
+        raise ReleaseError("GitHub Actions jobs evidence has invalid or duplicate names")
     conclusions = {
         job.get("name"): job.get("conclusion")
         for job in jobs
@@ -2196,7 +2270,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", help="repository root (defaults to script parent)")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("audit", help="audit tracked repository files")
+    audit_parser = subparsers.add_parser("audit", help="audit repository files")
+    audit_parser.add_argument("--include-untracked", action="store_true", help="also validate new nonignored task files")
     package_parser = subparsers.add_parser("package", help="build deterministic artifacts")
     package_parser.add_argument("--output-dir", default="dist")
     verify_parser = subparsers.add_parser("verify", help="verify built artifacts")
@@ -2222,10 +2297,11 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "audit":
-            errors = audit_repository(root)
+            errors = audit_repository(root, include_untracked=args.include_untracked)
             if errors:
                 raise ReleaseError("repository audit failed:\n- " + "\n- ".join(errors))
-            print(f"release audit passed ({len(tracked_files(root))} tracked files)")
+            scope = "tracked and new nonignored files" if args.include_untracked else "tracked files"
+            print(f"release audit passed ({scope})")
         elif args.command == "package":
             artifacts = build_release(root, (root / args.output_dir).resolve())
             verify_release((root / args.output_dir).resolve(), _git(root, "rev-parse", "HEAD").decode("ascii").strip(), root)

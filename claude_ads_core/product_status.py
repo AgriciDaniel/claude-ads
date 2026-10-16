@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Mapping
@@ -24,7 +25,7 @@ MATURITY_IDS = (
     "release-ready",
 )
 CAPABILITY_STATUSES = {"declared", "implemented", "fixture-verified", "live-verified", "disabled"}
-RELEASE_CHECK_IDS = (
+LEGACY_RELEASE_CHECK_IDS = (
     "repository-audit",
     "clean-subject",
     "source-capability-integrity",
@@ -33,6 +34,20 @@ RELEASE_CHECK_IDS = (
     "independent-reviews",
     "remote-ci",
 )
+RELEASE_CHECK_IDS = (
+    "repository-audit",
+    "clean-subject",
+    "source-capability-integrity",
+    "vulnerability-exception-integrity",
+    "ecosystem-ledger-integrity",
+    "canonical-model-evaluation",
+    "independent-reviews",
+    "remote-ci",
+)
+RELEASE_CHECK_IDS_BY_VERSION = {
+    "1.0.0": LEGACY_RELEASE_CHECK_IDS,
+    "2.0.0": RELEASE_CHECK_IDS,
+}
 SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -242,6 +257,22 @@ def _disabled_capabilities(document: Mapping[str, Any]) -> list[dict[str, str]]:
     return sorted(disabled, key=lambda item: (item["platform"], item["capability_id"]))
 
 
+def _repository_subject(root: Path) -> dict[str, str]:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD", "HEAD^{tree}"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as exc:
+        raise ProductStatusError("cannot resolve repository release-gate subject") from exc
+    values = completed.stdout.splitlines() if completed.returncode == 0 else []
+    if len(values) != 2 or not all(SHA_PATTERN.fullmatch(value) for value in values):
+        raise ProductStatusError("cannot resolve repository release-gate subject")
+    return {"commit_sha": values[0], "tree_sha": values[1]}
+
+
 def _release_gate(path: Path | None, root: Path) -> dict[str, Any] | None:
     if path is None:
         return None
@@ -254,8 +285,10 @@ def _release_gate(path: Path | None, root: Path) -> dict[str, Any] | None:
         "checks",
         "release_gate_satisfied",
     }
-    if set(document) != expected_fields or document.get("schema_version") != "1.0.0":
+    version = document.get("schema_version")
+    if set(document) != expected_fields or version not in RELEASE_CHECK_IDS_BY_VERSION:
         raise ProductStatusError("release gate report fields or schema_version are invalid")
+    check_ids = RELEASE_CHECK_IDS_BY_VERSION[str(version)]
     if document.get("evidence_class") != "release-gate-assessment":
         raise ProductStatusError("release gate evidence_class is invalid")
     try:
@@ -269,16 +302,21 @@ def _release_gate(path: Path | None, root: Path) -> dict[str, Any] | None:
         raise ProductStatusError("release gate subject is invalid")
     if not all(SHA_PATTERN.fullmatch(str(subject.get(key, ""))) for key in ("commit_sha", "tree_sha")):
         raise ProductStatusError("release gate subject hashes are invalid")
+    expected_subject = _repository_subject(root)
+    if dict(subject) != expected_subject:
+        raise ProductStatusError("release gate subject does not match the reported repository")
     raw_checks = document.get("checks")
-    if not isinstance(raw_checks, list) or len(raw_checks) != len(RELEASE_CHECK_IDS):
-        raise ProductStatusError("release gate must contain seven checks")
+    if not isinstance(raw_checks, list) or len(raw_checks) != len(check_ids):
+        raise ProductStatusError(
+            f"release gate {version} must contain exactly {len(check_ids)} checks"
+        )
     checks: dict[str, Mapping[str, Any]] = {}
     for index, raw in enumerate(raw_checks):
         if not isinstance(raw, Mapping):
             raise ProductStatusError(f"release gate checks[{index}] must be an object")
         check_id = _nonempty(raw.get("id"), f"release gate checks[{index}].id")
         status = raw.get("status")
-        if check_id not in RELEASE_CHECK_IDS or check_id in checks or status not in {"pass", "fail"}:
+        if check_id not in check_ids or check_id in checks or status not in {"pass", "fail"}:
             raise ProductStatusError(f"release gate check is invalid or duplicate: {check_id}")
         expected_check_fields = {"id", "status", "evidence"} if status == "pass" else {"id", "status", "error"}
         if set(raw) != expected_check_fields:
@@ -289,14 +327,16 @@ def _release_gate(path: Path | None, root: Path) -> dict[str, Any] | None:
         elif not isinstance(raw.get("error"), str) or not raw["error"].strip() or "evidence" in raw:
             raise ProductStatusError(f"failing release check lacks error: {check_id}")
         checks[check_id] = raw
-    if set(checks) != set(RELEASE_CHECK_IDS):
+    if set(checks) != set(check_ids):
         raise ProductStatusError("release gate check coverage is incomplete")
     satisfied = document.get("release_gate_satisfied")
-    if not isinstance(satisfied, bool) or satisfied != all(checks[item]["status"] == "pass" for item in RELEASE_CHECK_IDS):
+    if not isinstance(satisfied, bool) or satisfied != all(
+        checks[item]["status"] == "pass" for item in check_ids
+    ):
         raise ProductStatusError("release_gate_satisfied disagrees with checks")
     failed = [
         {"id": check_id, "error": str(checks[check_id]["error"])}
-        for check_id in RELEASE_CHECK_IDS
+        for check_id in check_ids
         if checks[check_id]["status"] == "fail"
     ]
     try:
@@ -304,9 +344,10 @@ def _release_gate(path: Path | None, root: Path) -> dict[str, Any] | None:
     except ValueError:
         evidence_path = "external-release-gate-report"
     return {
+        "_schema_version": version,
         "evaluated_at": evaluated.isoformat(),
         "subject": dict(subject),
-        "release_gate_satisfied": satisfied,
+        "release_gate_satisfied": satisfied and version == "2.0.0",
         "failed_checks": failed,
         "evidence_path": evidence_path,
     }
@@ -364,6 +405,14 @@ def _next_blocker(
             "id": selected["id"],
             "summary": selected["error"],
             "rationale": "This is the first failed check in the canonical release-check order.",
+            "evidence_paths": [release_gate["evidence_path"]],
+        }
+    if release_gate and release_gate["_schema_version"] != "2.0.0":
+        return {
+            "kind": "release-gate-version",
+            "id": "current-release-gate-v2-required",
+            "summary": "A current v2 release-gate report is required for this repository subject.",
+            "rationale": "Historical v1 evidence remains readable but cannot satisfy the current release gate.",
             "evidence_paths": [release_gate["evidence_path"]],
         }
     if disabled_profiles:
@@ -441,6 +490,11 @@ def evaluate_product_status(
     )
     gate_path = None if release_gate_path is None else Path(release_gate_path)
     release_gate = _release_gate(gate_path, repo_root)
+    public_release_gate = (
+        None
+        if release_gate is None
+        else {key: value for key, value in release_gate.items() if not key.startswith("_")}
+    )
     next_level = next((level["id"] for level in levels if not level["satisfied"]), None)
     next_blocker = _next_blocker(
         stale=stale,
@@ -472,6 +526,6 @@ def evaluate_product_status(
         },
         "capabilities": {"disabled": disabled_capabilities},
         "scoring_profiles": {"disabled": disabled_profiles},
-        "release_gate": release_gate,
+        "release_gate": public_release_gate,
         "next_blocker": next_blocker,
     }

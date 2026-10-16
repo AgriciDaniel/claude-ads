@@ -1,6 +1,6 @@
 ---
 name: ads-google
-description: "Audit Google Ads measurement, Search, Shopping, Performance Max, Demand Gen, YouTube-linked inventory, keywords and search terms, negative-keyword generation or review, creative assets, bidding, budgets, settings, and policy. Use for Google Ads, AdWords, Search campaigns, search terms reports, broad negatives, Shopping, Performance Max, PMax, Demand Gen, GAQL, Google conversion tracking, or Google campaign optimization."
+description: "Audit Google Ads measurement, Search, Shopping, Performance Max, Demand Gen, YouTube-linked inventory, keywords and search terms, negative-keyword generation or review, creative assets, bidding, budgets, settings, and policy. Use for Google Ads, AdWords, Search campaigns, search terms reports, broad negatives, Shopping, Performance Max, PMax, Demand Gen, GAQL, or Google conversion tracking. Read-only; use ads-optimize to change campaigns."
 ---
 
 # Google Ads Audit
@@ -10,8 +10,10 @@ description: "Audit Google Ads measurement, Search, Shopping, Performance Max, D
 1. Read the main `ads` operating contract and thinking framework.
 2. Collect objective, conversion definition, account and campaign age, geography,
    date window, timezone, currency, spend, targets, and available data sources.
-3. Read `ads/references/google-audit.md` and only the relevant shared measurement,
-   benchmark, creative, automation, policy, and scoring references.
+3. Read `ads/references/google-audit.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and only the relevant shared measurement,
+   benchmark, creative, automation, policy, and scoring references. Read
+   `ads/references/gaql-notes.md` before building keyword, negative-keyword, or
+   search-term evidence from an API, MCP server, or export.
 4. Normalize inputs and retain lineage to each export, screenshot, API result, or
    manual value.
 5. Evaluate applicable controls covering measurement, search terms and waste, account structure, keywords, creative assets, bidding and budgets, settings, eligibility, and policy.
@@ -32,6 +34,9 @@ description: "Audit Google Ads measurement, Search, Shopping, Performance Max, D
   search terms report plus business-relevance and overblocking review. Request
   that evidence; do not substitute a generic negative list. Do not name sample,
   starter, brand-safety, or "commonly excluded" terms as a workaround.
+- Keep positive and negative keyword inventories separate. Never count a negative
+  as a positive, zero-impression, or self-blocked keyword. Never recommend
+  removing an "inert" keyword until the evidence proves it is positive.
 - Do not issue universal pause, bid, budget, learning-phase, or attribution rules.
 - Keep every account change as a draft until the main mutation gate passes.
 

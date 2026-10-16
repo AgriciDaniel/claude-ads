@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from collections import namedtuple
 import importlib.util
 import json
 from pathlib import Path
@@ -93,3 +94,23 @@ def test_native_target_rejects_unsupported_interpreter(monkeypatch):
     monkeypatch.setattr(verifier.sys, "version_info", (3, 14, 0))
     with pytest.raises(verifier.release.ReleaseError, match="3.11 or 3.12"):
         verifier.native_target_id("runtime")
+
+
+
+def test_native_linux_floor_rejects_glibc_227(monkeypatch):
+    monkeypatch.setattr(verifier.sys, "implementation", SimpleNamespace(name="cpython"))
+    monkeypatch.setattr(verifier.sys, "version_info", namedtuple("VersionInfo", "major minor micro")(3, 12, 0))
+    monkeypatch.setattr(verifier.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(verifier.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(verifier.platform, "libc_ver", lambda: ("glibc", "2.27"))
+    with pytest.raises(verifier.release.ReleaseError, match="glibc >=2.28"):
+        verifier.native_target_id("runtime")
+
+
+def test_native_linux_floor_accepts_glibc_228(monkeypatch):
+    monkeypatch.setattr(verifier.sys, "implementation", SimpleNamespace(name="cpython"))
+    monkeypatch.setattr(verifier.sys, "version_info", namedtuple("VersionInfo", "major minor micro")(3, 12, 0))
+    monkeypatch.setattr(verifier.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(verifier.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(verifier.platform, "libc_ver", lambda: ("glibc", "2.28"))
+    assert verifier.native_target_id("runtime") == "runtime-linux-cp312"

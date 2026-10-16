@@ -11,7 +11,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Literal
 
-ProfileStatus = Literal["fixture-verified", "disabled"]
+ProfileStatus = Literal["implemented", "fixture-verified", "disabled"]
+PROFILE_STATUSES = frozenset({"implemented", "fixture-verified", "disabled"})
 Transform = Literal[
     "text",
     "lower_text",
@@ -72,6 +73,16 @@ class NativeExportProfile:
     source_urls: tuple[str, ...]
     disabled_reason: str | None = None
     date_checks: tuple[NativeDateCheck, ...] = ()
+
+    def __post_init__(self) -> None:
+        """Reject statuses that could overstate a profile's evidence state."""
+
+        if self.status not in PROFILE_STATUSES:
+            raise ValueError(f"unsupported native export profile status: {self.status!r}")
+        if self.status in {"implemented", "disabled"} and not (
+            self.disabled_reason and self.disabled_reason.strip()
+        ):
+            raise ValueError(f"{self.status} native export profiles require a status reason")
 
     @property
     def expected_headers(self) -> tuple[str, ...]:
@@ -139,8 +150,7 @@ PROFILES: dict[str, NativeExportProfile] = {
         ("creative_id", "creative_name"),
         ("google-ads-campaign-fields-official",),
         (
-            "https://developers.google.com/google-ads/api/fields/latest/campaign",
-            "https://developers.google.com/google-ads/api/fields/latest/ad_group_ad",
+            "https://developers.google.com/google-ads/api/fields/v25/campaign",
         ),
     ),
     "youtube": NativeExportProfile(
@@ -164,7 +174,7 @@ PROFILES: dict[str, NativeExportProfile] = {
         ("google-ads-campaign-fields-official", "youtube-google-ads-video-official"),
         (
             "https://developers.google.com/google-ads/api/docs/video/overview",
-            "https://developers.google.com/google-ads/api/fields/latest/campaign",
+            "https://developers.google.com/google-ads/api/fields/v25/campaign",
         ),
     ),
     "meta": NativeExportProfile(
@@ -186,8 +196,12 @@ PROFILES: dict[str, NativeExportProfile] = {
         ("currency",),
         None,
         ("account_name", "campaign_status", "creative_id", "creative_name", "conversion_action", "conversions", "budget"),
-        ("meta-insights-reporting-official",),
-        ("https://developers.facebook.com/docs/marketing-api/insights/",),
+        ("meta-insights-reporting-official", "meta-campaign-insights-reference-official"),
+        (
+            "https://developers.facebook.com/documentation/ads-commerce/marketing-api/insights",
+            "https://developers.facebook.com/documentation/ads-commerce/marketing-api/reference/ad-campaign-group/insights",
+        ),
+        None,
         date_checks=(
             NativeDateCheck(
                 "date",
@@ -257,8 +271,13 @@ PROFILES: dict[str, NativeExportProfile] = {
         ("currency",),
         "selected_optimization_event",
         ("account_name", "campaign_status", "budget"),
-        ("tiktok-integrated-reporting-official",),
-        ("https://business-api.tiktok.com/portal/docs?id=1751087777884161",),
+        ("tiktok-integrated-reporting-official", "tiktok-basic-report-dimensions-v13-official", "tiktok-basic-report-metrics-v13-official"),
+        (
+            "https://business-api.tiktok.com/portal/docs/basic-reports/v1.3",
+            "https://business-api.tiktok.com/portal/docs/basic-reports-supported-dimensions/v1.3",
+            "https://business-api.tiktok.com/portal/docs/basic-reports-supported-metrics/v1.3",
+        ),
+        None,
     ),
     "microsoft": NativeExportProfile(
         "1.0.0",
@@ -417,7 +436,7 @@ PROFILES: dict[str, NativeExportProfile] = {
         None,
         ("date", "account_id", "account_name", "currency", "campaign_id", "campaign_name", "campaign_status", "creative_id", "creative_name", "conversion_action", "conversions", "budget", "spend"),
         ("x-conversion-tracking",),
-        ("https://business.x.com/en/help/campaign-measurement-and-analytics/conversion-tracking-for-websites/about-conversion-tracking",),
+        ("https://help.x.com/en/business-and-advertising/about-conversion-tracking",),
         "The curated X source covers website conversion tracking, not a current native reporting schema; accepting guessed report headers would be unsafe.",
     ),
 }

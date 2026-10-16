@@ -147,6 +147,18 @@ function Main {
         }
     }
 
+    function Assert-ExactBytecodeDirectory([string]$Path) {
+        $Canonical = Assert-CanonicalOwnedPath $Path
+        $Allowed = @(
+            [IO.Path]::GetFullPath((Join-Path $SkillBase "ads\scripts\claude_ads_core\__pycache__")),
+            [IO.Path]::GetFullPath((Join-Path $SkillBase "ads\scripts\claude_ads_core\adapters\__pycache__"))
+        )
+        if (@($Allowed | Where-Object { $_.Equals($Canonical, $PathComparison) }).Count -ne 1) {
+            throw "Unsafe bytecode ownership root: $Path"
+        }
+        return $Canonical
+    }
+
     function Assert-CurrentUserOwnedFile([string]$Path) {
         if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { return }
         $Identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
@@ -178,10 +190,13 @@ function Main {
     try { $Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json } catch {
         throw "Invalid ownership manifest: $ManifestPath"
     }
-    $ExpectedProperties = @('version','target','files','directories','recursive_directories')
+    $LegacyExpectedProperties = @('version','target','files','directories','recursive_directories')
+    $CurrentExpectedProperties = @($LegacyExpectedProperties + 'bytecode_directories')
     $ActualProperties = @($Manifest.PSObject.Properties.Name)
+    $HasLegacyShape = @(Compare-Object $LegacyExpectedProperties $ActualProperties).Count -eq 0
+    $HasCurrentShape = @(Compare-Object $CurrentExpectedProperties $ActualProperties).Count -eq 0
     $VersionType = if ($null -eq $Manifest.version) { $null } else { $Manifest.version.GetType() }
-    if (@(Compare-Object $ExpectedProperties $ActualProperties).Count -ne 0 -or
+    if ((-not $HasLegacyShape -and -not $HasCurrentShape) -or
         $VersionType -notin @([int], [long]) -or $Manifest.version -ne 1 -or
         -not ($Manifest.target -is [string]) -or $Manifest.target -cne $Target) {
         throw "Invalid or mismatched ownership manifest: $ManifestPath"
@@ -189,7 +204,9 @@ function Main {
 
     $AllPaths = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
     $Validated = @{}
-    foreach ($PropertyName in @('files','directories','recursive_directories')) {
+    $OwnershipProperties = @('files','directories','recursive_directories')
+    if ($HasCurrentShape) { $OwnershipProperties += 'bytecode_directories' }
+    foreach ($PropertyName in $OwnershipProperties) {
         if (-not ($Manifest.$PropertyName -is [System.Array])) {
             throw "Ownership manifest property must be an array: $PropertyName"
         }
@@ -199,6 +216,9 @@ function Main {
                 throw "Invalid ownership-manifest entry in ${PropertyName}: $ManifestPath"
             }
             $FullPath = Assert-CanonicalOwnedPath $OwnedPath
+            if ($PropertyName -eq 'bytecode_directories') {
+                $FullPath = Assert-ExactBytecodeDirectory $FullPath
+            }
             if (-not $AllPaths.Add($FullPath)) { throw "Duplicate ownership-manifest path: $FullPath" }
             [void](Assert-NoReparseChain $FullPath (Get-ContainingRoot $FullPath))
             $Item = Get-Item -LiteralPath $FullPath -Force -ErrorAction SilentlyContinue
@@ -215,6 +235,17 @@ function Main {
         $Validated[$PropertyName] = $Paths
     }
     foreach ($RecursivePath in $Validated.recursive_directories) { Assert-SafeRecursiveTree $RecursivePath }
+    if (-not $HasCurrentShape) { $Validated.bytecode_directories = @() }
+    foreach ($BytecodePath in $Validated.bytecode_directories) {
+        $Parent = [IO.Path]::GetDirectoryName($BytecodePath)
+        $OwnedModules = @($Validated.files | Where-Object {
+            ([IO.Path]::GetDirectoryName($_)).Equals($Parent, $PathComparison) -and
+            [IO.Path]::GetExtension($_) -ceq '.py'
+        })
+        if ($OwnedModules.Count -eq 0) {
+            throw "Bytecode ownership root has no owned Python modules: $BytecodePath"
+        }
+    }
 
     Write-Host "Uninstalling Claude Ads from $SkillBase and $AgentDirResolved..."
 
@@ -226,6 +257,35 @@ function Main {
                 throw "Owned file changed type before deletion: $FullPath"
             }
             Remove-Item -LiteralPath $FullPath -Force
+        }
+    }
+
+    foreach ($BytecodePath in $Validated.bytecode_directories) {
+        [void](Assert-NoReparseChain $BytecodePath (Get-ContainingRoot $BytecodePath))
+        $BytecodeItem = Get-Item -LiteralPath $BytecodePath -Force -ErrorAction SilentlyContinue
+        if ($null -eq $BytecodeItem) { continue }
+        if (-not $BytecodeItem.PSIsContainer -or
+            (($BytecodeItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) {
+            throw "Bytecode directory changed type before cleanup: $BytecodePath"
+        }
+        $Parent = [IO.Path]::GetDirectoryName($BytecodePath)
+        foreach ($OwnedSource in $Validated.files) {
+            if (-not ([IO.Path]::GetDirectoryName($OwnedSource)).Equals($Parent, $PathComparison) -or
+                [IO.Path]::GetExtension($OwnedSource) -cne '.py') {
+                continue
+            }
+            $Module = [regex]::Escape([IO.Path]::GetFileNameWithoutExtension($OwnedSource))
+            $Pattern = "^${Module}\.cpython-(?:311|312)(?:\.opt-[0-9])?\.pyc$"
+            foreach ($Cached in @(Get-ChildItem -LiteralPath $BytecodePath -File -Force -ErrorAction SilentlyContinue)) {
+                if ($Cached.Name -notmatch $Pattern -or
+                    (($Cached.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) {
+                    continue
+                }
+                Remove-Item -LiteralPath $Cached.FullName -Force
+            }
+        }
+        if (@(Get-ChildItem -LiteralPath $BytecodePath -Force -ErrorAction SilentlyContinue).Count -eq 0) {
+            Remove-Item -LiteralPath $BytecodePath -Force -Confirm:$false
         }
     }
 

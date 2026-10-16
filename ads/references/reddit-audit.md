@@ -1,7 +1,31 @@
 # Reddit Ads control reference
 
-Retrieved: 2026-07-11. Refresh official platform and policy sources before using
-this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
+
+## Current API changes verified 2026-10-12
+
+The official `reddit-ads-api-history-official` changelog records these contract
+changes (`CLM-0216`):
+
+- Since 2026-09-30, creating an onsite Lead Generation Form returns `410 Gone`;
+  retrieval remains available and existing ads using onsite forms are paused.
+- Since 2026-09-23, creative writes must use
+  `enhancements.user_generated_content.enroll_status`; the removed
+  `enhancements.allow_user_generated_content` field returns `HTTP 400`.
+- Since 2026-09-21, new campaign objective enums roll out and legacy enums remain
+  supported. Campaigns created with the new objectives return the new enum
+  values, which Reddit marks as a breaking change for integrations that store,
+  display, map, or report on objective values. `use_catalog` is added to the
+  Campaigns API and applies only to `SALES` objectives that need a product
+  catalog. Review Reddit's mapping table before comparing objectives across
+  accounts or dates.
+- Since 2026-10-01, `SALES` and `LEAD_GENERATION` objectives are supported in
+  Create Campaign for Max campaigns.
+- From 2026-12-08, report requests using the `HOUR` breakdown for more than seven
+  days, or using unsupported breakdown combinations, return `400 Bad Request`.
+  Until then, treat this as a migration deadline, not an already-active response
+  contract.
 
 ## Category model
 
@@ -49,6 +73,7 @@ unscored opportunities.
 ## Registered official evidence
 
 - `reddit-business-help`: [Reddit supported conversion events](https://business.reddithelp.com/articles/Knowledge/supported-conversion-events)
+- `reddit-ads-api-history-official`: [Reddit Ads API changelog](https://ads-api.reddit.com/docs/v3/history)
 
 Official sources override this summary when they change. Unsupported controls stay
 `unknown`; practitioner material may supplement but not replace official evidence.

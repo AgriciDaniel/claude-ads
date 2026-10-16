@@ -21,6 +21,14 @@ The registered sources below cover only the measurement, API, and import foundat
 - `microsoft-uet-official`: [Microsoft UET setup](https://learn.microsoft.com/en-us/advertising/msa-help/hlp_ba_conc_uet_setup_master)
 - `microsoft-conversions-api-official`: [Microsoft Conversions API guide](https://learn.microsoft.com/en-us/advertising/guides/uet-conversion-api-integration?view=bingads-13)
 - `microsoft-google-import-official`: [Microsoft Google Ads import mapping](https://learn.microsoft.com/en-us/advertising/msa-help/hlp_ba_conc_importwhatinfo)
+- `microsoft-ads-soap-rest-migration-official`: [Microsoft Advertising SOAP-to-REST migration](https://learn.microsoft.com/en-us/advertising/guides/migrate-to-rest?view=bingads-13)
+
+## API transport status verified 2026-10-07
+
+Microsoft states that existing SOAP integrations remain supported, including
+feature and enhancement access, through 2027-01-31. SOAP is scheduled for full
+deprecation on that date. Recommend migration planning and current SDK checks,
+but do not report SOAP as unsupported or REST-only before the deadline.
 
 ## Control registry
 

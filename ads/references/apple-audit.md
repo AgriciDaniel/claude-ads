@@ -1,7 +1,7 @@
 # Apple Ads control reference
 
-Retrieved: 2026-07-11. Refresh official product, API, policy, and availability
-sources before using this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
 
 ## Category model
 
@@ -50,6 +50,19 @@ are unscored opportunities.
 ## Registered official evidence
 
 - `apple-ads-api-official`: [Using Apple Ads API functionality](https://developer.apple.com/documentation/apple_ads/using-apple-search-ads-api-functionality)
+- `apple-ads-platform-api-official`: [Apple Ads Platform API](https://developer.apple.com/documentation/apple-ads-platform-api)
+
+## API lifecycle status verified 2026-10-12
+
+Apple's deprecation banner states that the Apple Ads Campaign Management API is
+deprecated and will be sunset on 2027-01-26, and it names the Apple Ads Platform
+API as the replacement. The `v5` endpoints, including the campaign reporting
+endpoint behind the `apple-ads-api-v5-campaign-daily-v1` profile (`CLM-0206`),
+belong to the deprecated API. Treat that profile and any `v5` reader as ending on
+2027-01-26 and plan a migration. Only the existence of the replacement page was
+confirmed (`CLM-0220`); its endpoints, authentication, capabilities, and field
+mappings were not read, so do not assume the `v5` field names or semantics carry
+over.
 
 Official sources override this summary when they change. Unsupported controls stay
 `unknown`; vendor case studies remain labeled and contextual.

@@ -5,8 +5,22 @@ from pathlib import Path
 
 import pytest
 
+import claude_ads_core
 from claude_ads_core.contracts import CONTRACT_NAMES, ContractError, schema_path, validate_contract
-from claude_ads_core.models import AccountSnapshot, ControlDefinition, Finding, ReportBundle, RunManifest
+from claude_ads_core.control_registry import (
+    ControlRegistry,
+    RegistryEntry,
+    ScoringProfile,
+    load_control_registry,
+)
+from claude_ads_core import (
+    AccountSnapshot,
+    AuditWorkerResult,
+    ControlDefinition,
+    Finding,
+    ReportBundle,
+    RunManifest,
+)
 
 
 def data_lifecycle(classification: str = "confidential") -> dict:
@@ -106,20 +120,120 @@ def report_bundle() -> dict:
     }
 
 
+def audit_worker_result() -> dict:
+    return {
+        "schema_version": "1.0.0",
+        "status": "needs_input",
+        "platform": "google",
+        "scope": ["tracking"],
+        "findings": [
+            {
+                **finding("G01"),
+                "status": "unknown",
+                "evidence": [],
+                "confidence": "none",
+            }
+        ],
+        "contradictions": [],
+        "missing_inputs": ["conversion action configuration"],
+        "stale_sources": [],
+        "recovery_hints": ["Export configuration for the same reporting window."],
+    }
+
+
+def registry_report_bundle(repo_root: Path, platform: str = "google") -> dict:
+    registry = load_control_registry(repo_root)
+    entry = registry.entries_for(platform)[0]
+    payload = report_bundle()
+    payload["account_snapshot"]["account"]["platform"] = platform
+    payload["run_manifest"]["adapters"] = [{"platform": platform, "mode": "export"}]
+    payload["control_definitions"] = [dict(entry.control_definition)]
+    payload["findings"] = [
+        {
+            "schema_version": "1.0.0",
+            "control_id": entry.control_id,
+            "status": "unknown",
+            "evidence": [],
+            "confidence": "none",
+            "observation": "The sanitized fixture does not resolve this control.",
+            "diagnosis": "More account evidence is required.",
+            "recommendation": "Supply the required inputs for the same window.",
+        }
+    ]
+    payload["scoring"] = registry.score_platform(platform, payload["findings"]).to_dict()
+    return payload
+
+
+def synthetic_report_registry(bundle: dict) -> ControlRegistry:
+    platform = bundle["account_snapshot"]["account"]["platform"]
+    entries = tuple(
+        RegistryEntry(
+            platform=platform,
+            control_id=control["control_id"],
+            intent="sanitized report fixture",
+            disposition="health",
+            source_claim_ids=(),
+            control_definition=control,
+        )
+        for control in bundle["control_definitions"]
+    )
+    health_ids = tuple(
+        entry.control_id
+        for entry in entries
+        if entry.control_definition["scoring_behavior"] == "health"
+        and entry.control_definition["stability"] == "stable"
+    )
+    categories = {
+        category["category"]: category["category_weight"]
+        for category in bundle["scoring"]["categories"]
+    }
+    if not categories:
+        category_names = {
+            entry.control_definition["category"]
+            for entry in entries
+            if entry.control_id in health_ids
+        }
+        if len(category_names) != 1:
+            raise AssertionError("synthetic report requires explicit category weights")
+        categories = {next(iter(category_names)): 100.0}
+    profile = ScoringProfile(
+        profile_id=f"{platform}-synthetic-test-v1",
+        platform=platform,
+        status="enabled",
+        category_weights=categories,
+        health_control_ids=health_ids,
+        disabled_reason=None,
+    )
+    return ControlRegistry(entries=entries, profiles=(profile,))
+
+
 def test_named_contract_types_are_public_interfaces():
-    assert {item.__name__ for item in (AccountSnapshot, RunManifest, ControlDefinition, Finding, ReportBundle)} == {
+    assert {
+        item.__name__
+        for item in (
+            AccountSnapshot,
+            AuditWorkerResult,
+            RunManifest,
+            ControlDefinition,
+            Finding,
+            ReportBundle,
+        )
+    } == {
         "AccountSnapshot",
+        "AuditWorkerResult",
         "RunManifest",
         "ControlDefinition",
         "Finding",
         "ReportBundle",
     }
+    assert "AuditWorkerResult" in claude_ads_core.__all__
 
 
 @pytest.mark.parametrize(
     ("name", "payload"),
     [
         ("account-snapshot", account_snapshot()),
+        ("audit-worker-result", audit_worker_result()),
         ("run-manifest", run_manifest()),
         ("control-definition", control()),
         ("finding", finding()),
@@ -174,6 +288,92 @@ def test_every_cross_file_schema_reference_is_absolute_and_registered(repo_root:
                 reference,
             )
             assert target in registered_ids, (path, reference)
+
+
+def test_audit_worker_result_fixture_has_schema_validator_parity(repo_root: Path):
+    jsonschema = pytest.importorskip("jsonschema")
+    referencing = pytest.importorskip("referencing")
+    fixture_path = repo_root / "tests/fixtures/audit-worker-results/valid.json"
+    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+    validate_contract("audit-worker-result", payload)
+
+    schema_root = repo_root / "claude_ads_core/schemas/v1"
+    schemas = [json.loads(path.read_text(encoding="utf-8")) for path in schema_root.glob("*.json")]
+    registry = referencing.Registry().with_resources(
+        [(schema["$id"], referencing.Resource.from_contents(schema)) for schema in schemas]
+    )
+    validator = jsonschema.Draft202012Validator(
+        json.loads(schema_path("audit-worker-result").read_text(encoding="utf-8")),
+        registry=registry,
+    )
+    assert list(validator.iter_errors(payload)) == []
+    invalid = json.loads(json.dumps(payload))
+    invalid["findings"][0]["severity"] = "high"
+    assert list(validator.iter_errors(invalid))
+
+    invalid = json.loads(json.dumps(payload))
+    invalid["findings"][0].update(status="fail", evidence=[], confidence="high")
+    with pytest.raises(ContractError, match="evidence"):
+        validate_contract("audit-worker-result", invalid)
+    assert list(validator.iter_errors(invalid))
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("schema_version", "2.0.0"),
+        ("control_id", ""),
+        ("status", "maybe"),
+        ("evidence", ["not-an-object"]),
+        ("confidence", "certain"),
+        ("source_classification", "official"),
+        ("observation", 1),
+        ("diagnosis", None),
+        ("recommendation", []),
+        ("score_contribution", "one"),
+    ],
+)
+def test_audit_worker_finding_schema_and_semantic_validator_reject_same_constraints(
+    repo_root: Path, field: str, value
+):
+    jsonschema = pytest.importorskip("jsonschema")
+    referencing = pytest.importorskip("referencing")
+    schema_root = repo_root / "claude_ads_core/schemas/v1"
+    schemas = [json.loads(path.read_text(encoding="utf-8")) for path in schema_root.glob("*.json")]
+    registry = referencing.Registry().with_resources(
+        [(schema["$id"], referencing.Resource.from_contents(schema)) for schema in schemas]
+    )
+    validator = jsonschema.Draft202012Validator(
+        json.loads(schema_path("audit-worker-result").read_text(encoding="utf-8")),
+        registry=registry,
+    )
+    payload = audit_worker_result()
+    payload["findings"][0][field] = value
+    with pytest.raises(ContractError):
+        validate_contract("audit-worker-result", payload)
+    assert list(validator.iter_errors(payload)), field
+
+
+@pytest.mark.parametrize("forbidden", ["severity", "result", "evidence_refs"])
+def test_audit_worker_result_rejects_alternate_finding_vocabulary(forbidden: str):
+    payload = audit_worker_result()
+    payload["findings"][0][forbidden] = "high" if forbidden == "severity" else []
+    with pytest.raises(ContractError, match="unsupported field"):
+        validate_contract("audit-worker-result", payload)
+
+
+def test_audit_worker_result_requires_exact_envelope():
+    payload = audit_worker_result()
+    payload["extra"] = []
+    with pytest.raises(ContractError, match="unsupported field"):
+        validate_contract("audit-worker-result", payload)
+
+
+def test_audit_worker_result_requires_canonical_platform_id():
+    payload = audit_worker_result()
+    payload["platform"] = "Google"
+    with pytest.raises(ContractError, match="platform"):
+        validate_contract("audit-worker-result", payload)
 
 
 def test_snapshot_rejects_reversed_window():

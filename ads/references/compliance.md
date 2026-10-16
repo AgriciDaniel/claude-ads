@@ -1,10 +1,12 @@
 # Platform Advertising Policy Review
 
-**Verified:** 2026-08-25
-**Refresh due:** 2026-09-24 and immediately after a policy or enforcement notice
+**Verified:** 2026-10-12 for entry-point reachability only; policy content follows the ledger entries (2026-10-07)
+**Refresh due:** 2026-11-06 and immediately after a policy or enforcement notice
 **Scope:** platform policy; regulation is handled in `compliance-requirements.md`
-**Evidence status:** all listed official policy entry points returned HTTP 200;
-precise rules still require a current product, geography, and account review
+**Evidence status:** the listed official policy entry points were checked by automated fetch on 2026-10-12.
+Most loaded, but the X policy URLs now redirect to `help.x.com` and return HTTP 403 to
+automated fetch, so open X policy pages in a browser. A page loading is not evidence of its
+content; precise rules still require a current product, geography, and account review
 
 Platform policy is contextual and changes by product, geography, objective,
 targeting, destination, advertiser status, and certification. Do not replace a
@@ -37,7 +39,7 @@ Use the current official policy center for the active platform:
 - [Reddit Ads Help and policy discovery](https://business.reddithelp.com/s/)
 - [Pinterest Advertising Guidelines](https://policy.pinterest.com/en/advertising-guidelines)
 - [Snap Advertising Policies](https://values.snap.com/policy/advertising-policies)
-- [X Ads policies](https://business.x.com/en/help/ads-policies)
+- [X Ads policies](https://help.x.com/en/business-and-advertising/ads-policies) (the former `business.x.com` address redirects here; automated fetch returns HTTP 403)
 
 Register a source-ledger entry before treating a precise policy requirement as
 current. A policy hub is not enough when a more specific product or country page

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="t d">
+<title id="t">How Claude Ads works</title>
+<desc id="d">Three steps: set up, audit, then review. Changes stay drafts.</desc>
+<style>
+text{font-family:Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif} .m{font-family:'JetBrains Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+@keyframes type{from{width:0}to{width:var(--w)}}
+@keyframes show{from{opacity:0}to{opacity:1}}
+.r{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.cur{animation:blink 1.1s steps(1) infinite}
+.s{animation:show .4s ease-out both}
+.ty{animation:type 1.2s steps(19) .5s both}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<rect width="1200" height="400" rx="22" fill="#0D1117"/>
+<rect x="0.5" y="0.5" width="1199" height="399" rx="21.5" fill="none" stroke="#2B313B"/>
+<text x="72" y="82" font-size="14" font-weight="700" fill="#F07A5E" text-anchor="start" class="m">HOW IT WORKS</text>
+<g class="r" style="animation-delay:0.1s">
+<text x="72" y="196" font-size="76" font-weight="800" fill="#6B7280" text-anchor="start">1</text>
+<text x="134" y="160" font-size="34" font-weight="800" fill="#F2F3F5" text-anchor="start">Set up.</text>
+<text x="134" y="198" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">Answer a few questions</text>
+<text x="134" y="224" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">about your goal, budget,</text>
+<text x="134" y="250" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">and platforms.</text>
+<rect x="134" y="316" width="128" height="34" rx="17" fill="#161B22" stroke="#2B313B"/>
+<text x="148" y="338" font-size="15" font-weight="600" fill="#F07A5E" text-anchor="start" class="m">/ads setup</text>
+</g>
+<g class="r" style="animation-delay:0.25s">
+<text x="428" y="196" font-size="76" font-weight="800" fill="#6B7280" text-anchor="start">2</text>
+<text x="490" y="160" font-size="34" font-weight="800" fill="#F2F3F5" text-anchor="start">Audit.</text>
+<text x="490" y="198" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">Bring an export,</text>
+<text x="490" y="224" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">screenshots, or a pasted</text>
+<text x="490" y="250" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">summary. Get findings with</text>
+<text x="490" y="276" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">their evidence.</text>
+<rect x="490" y="316" width="128" height="34" rx="17" fill="#161B22" stroke="#2B313B"/>
+<text x="504" y="338" font-size="15" font-weight="600" fill="#F07A5E" text-anchor="start" class="m">/ads audit</text>
+</g>
+<g class="r" style="animation-delay:0.4s">
+<text x="784" y="196" font-size="76" font-weight="800" fill="#6B7280" text-anchor="start">3</text>
+<text x="846" y="160" font-size="34" font-weight="800" fill="#F2F3F5" text-anchor="start">Review.</text>
+<text x="846" y="198" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">See what passed, what</text>
+<text x="846" y="224" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">failed, and what could not</text>
+<text x="846" y="250" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">be checked. Changes stay</text>
+<text x="846" y="276" font-size="18" font-weight="400" fill="#9AA1AD" text-anchor="start">drafts.</text>
+<rect x="846" y="316" width="148" height="34" rx="17" fill="#161B22" stroke="#2B313B"/>
+<text x="860" y="338" font-size="15" font-weight="600" fill="#F07A5E" text-anchor="start" class="m">/drafts only</text>
+</g>
+</svg>

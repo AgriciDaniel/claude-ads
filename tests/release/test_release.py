@@ -3,8 +3,9 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import itertools
 import json
-from datetime import timedelta
+from datetime import date, timedelta
 from pathlib import Path
 import re
 import subprocess
@@ -13,6 +14,7 @@ import tomllib
 import zipfile
 
 import pytest
+import yaml
 from jsonschema import Draft202012Validator
 
 RELEASE_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "release.py"
@@ -55,6 +57,10 @@ def _repository(tmp_path: Path) -> Path:
     _git(root, "init", "--quiet")
     _git(root, "config", "user.name", "Release Test")
     _git(root, "config", "user.email", "release-test@example.invalid")
+    # The fixture can run inside a managed worktree with repository hooks that
+    # create local packaging state during ``git commit``. Keep those products
+    # out of the synthetic repository's clean-subject assertion.
+    _write(root, ".gitignore", "*.egg-info/\nuv.lock\n")
     _write(
         root,
         ".claude-plugin/plugin.json",
@@ -250,17 +256,38 @@ def test_sensitive_artifact_ignore_patterns_are_present() -> None:
         "credentials*",
         "secrets*",
         "config.local.*",
+        ".audit-venv/",
+        "venv/",
+        "google-ads.yaml",
+        "*.p8",
+        "token.json",
+        ".netrc",
+        ".npmrc",
+        ".mypy_cache/",
+        ".ruff_cache/",
+        ".coverage",
     } <= patterns
 
 
 def test_audit_rejects_case_insensitive_path_collisions(tmp_path: Path) -> None:
     root = _repository(tmp_path)
-    _write(
+    # Stage the colliding path through the index only. Writing it would replace
+    # the existing path on a case-insensitive filesystem before Git could see
+    # both spellings.
+    blob = subprocess.run(
+        ["git", "hash-object", "-w", "--stdin"],
+        cwd=root,
+        input=b"---\nname: Ads-Google\ndescription: collision fixture.\n---\n",
+        check=True,
+        capture_output=True,
+    ).stdout.decode("ascii").strip()
+    _git(
         root,
-        "skills/Ads-Google/SKILL.md",
-        "---\nname: Ads-Google\ndescription: collision fixture.\n---\n",
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        f"100644,{blob},skills/Ads-Google/SKILL.md",
     )
-    _git(root, "add", "skills/Ads-Google/SKILL.md")
     errors = audit_repository(root)
     assert any("case-insensitive path collision" in error for error in errors)
 
@@ -459,10 +486,72 @@ def test_ci_only_tooling_is_isolated_and_hash_locked() -> None:
         ".pip-audit-venv/bin/python -m pip install --require-hashes "
         "--only-binary=:all: -r .github/requirements-pip-audit.lock"
     ) in workflow
-    assert workflow.count(
+    schema_install = (
         "python -m pip install --require-hashes --only-binary=:all: "
         "-r .github/requirements-schema-tests.lock"
-    ) == 2
+    )
+    jobs = yaml.safe_load(workflow)["jobs"]
+    for job_name in ("core-tests", "full-tests", "installer-matrix"):
+        commands = [step.get("run", "") for step in jobs[job_name]["steps"]]
+        assert any(schema_install in command.splitlines() for command in commands)
+    native_matrix = jobs["installer-matrix"]["strategy"]["matrix"]
+    assert native_matrix["shard-index"] == [0, 1]
+    managed_matrix = jobs["managed-install-matrix"]["strategy"]["matrix"]
+    assert managed_matrix == {
+        key: value for key, value in native_matrix.items() if key != "shard-index"
+    }
+    verifier_tooling_install = (
+        "python -m pip install --require-hashes --only-binary=:all: "
+        "-r requirements-dev.lock"
+    )
+    for job_name in ("managed-install-matrix", "linux-floor"):
+        lines = [
+            line for step in jobs[job_name]["steps"]
+            for line in step.get("run", "").splitlines()
+        ]
+        tooling_index = lines.index(verifier_tooling_install)
+        verifier_index = next(
+            index for index, line in enumerate(lines)
+            if line.startswith("python scripts/verify_target_lock.py ")
+        )
+        assert tooling_index < verifier_index
+    floor_lines = [
+        line for step in jobs["linux-floor"]["steps"]
+        for line in step.get("run", "").splitlines()
+    ]
+    assert 'git config --global --add safe.directory "$GITHUB_WORKSPACE"' in floor_lines
+    assert 'git -C "$GITHUB_WORKSPACE" rev-parse --verify HEAD' in floor_lines
+    floor = jobs["linux-floor"]
+    assert re.fullmatch(
+        r"quay\.io/pypa/manylinux_2_28_x86_64@sha256:[0-9a-f]{64}",
+        floor["container"]["image"],
+    )
+    assert floor["strategy"]["matrix"]["python-tag"] == [
+        "cp311-cp311", "cp312-cp312",
+    ]
+    assert floor["defaults"]["run"]["shell"] == "bash"
+    assert not any("actions/setup-python@" in step.get("uses", "") for step in floor["steps"])
+    for job_name in ("package-smoke", "validate"):
+        assert "linux-floor" in jobs[job_name]["needs"]
+        assert "managed-install-matrix" in jobs[job_name]["needs"]
+    gate = jobs["validate"]["steps"][0]
+    assert gate["env"]["LINUX_FLOOR_RESULT"] == "${{ needs.linux-floor.result }}"
+    assert '"$LINUX_FLOOR_RESULT"' in gate["run"]
+    assert gate["env"]["MANAGED_INSTALL_MATRIX_RESULT"] == (
+        "${{ needs.managed-install-matrix.result }}"
+    )
+    assert '"$MANAGED_INSTALL_MATRIX_RESULT"' in gate["run"]
+    repository_audit_lock = release._parse_hash_lock(
+        root / ".github/requirements-repository-audit.lock"
+    )
+    assert set(repository_audit_lock) == {"pyyaml"}
+    assert repository_audit_lock["pyyaml"]["version"] == "6.0.3"
+    assert repository_audit_lock["pyyaml"]["hashes"]
+    assert (
+        "python -m pip install --require-hashes --only-binary=:all: "
+        "-r .github/requirements-repository-audit.lock"
+    ) in workflow
+    assert 'python -m pip install "pyyaml>=6.0,<7.0"' not in workflow
 
 
 def test_notice_inventory_has_no_dangling_references_and_records_bundled_terms() -> None:
@@ -524,7 +613,7 @@ def test_standalone_verify_rejects_self_consistent_sbom_semantic_tamper(tmp_path
     [
         ("example-1.0-cp312-cp312-win_amd64.whl", "runtime-linux-cp312"),
         ("example-1.0-cp312-cp312-musllinux_1_2_x86_64.whl", "runtime-linux-cp312"),
-        ("example-1.0-cp312-cp312-manylinux_2_28_x86_64.whl", "runtime-linux-cp312"),
+        ("example-1.0-cp312-cp312-manylinux_2_29_x86_64.whl", "runtime-linux-cp312"),
         ("example-1.0-cp312-cp312-macosx_12_0_arm64.whl", "runtime-macos-arm-cp312"),
         ("example-1.0-cp312-cp312-macosx_11_0_x86_64.whl", "runtime-macos-arm-cp312"),
     ],
@@ -534,6 +623,17 @@ def test_wheel_tag_policy_rejects_cross_target_and_boundary_swaps(filename: str,
     target = next(item for item in inventory["targets"] if item["id"] == target_id)
     with pytest.raises(ReleaseError, match="wheel platform|newer"):
         release._wheel_is_compatible(filename, target, "example", "1.0")
+
+
+def test_glibc_228_wheel_boundary_is_accepted() -> None:
+    inventory = release._load_dependency_inventory(RELEASE_SCRIPT.parents[1])
+    target = next(item for item in inventory["targets"] if item["id"] == "runtime-linux-cp312")
+    release._wheel_is_compatible(
+        "example-1.0-cp312-cp312-manylinux_2_28_x86_64.whl",
+        target,
+        "example",
+        "1.0",
+    )
 
 
 def test_inventory_rejects_direct_flag_and_empty_graph_forgery(tmp_path: Path) -> None:
@@ -591,9 +691,11 @@ def test_normalized_target_evidence_is_honest_about_foreign_source_and_native_ci
     linux = json.loads((root / "control-plane/dependency-evidence/runtime-linux-cp311.json").read_text(encoding="utf-8"))
     windows = json.loads((root / "control-plane/dependency-evidence/development-windows-cp311.json").read_text(encoding="utf-8"))
     assert linux["evidence_class"] == "cross-target-pip-resolution-requiring-native-ci-confirmation"
-    assert linux["source_environment"]["python_version"] == "3.14"
+    assert linux["source_environment"]["python_version"] == "3.12"
     assert linux["source_environment"]["sys_platform"] == "linux"
-    assert windows["normalization_notes"] and "colorama" in windows["normalization_notes"][0]
+    assert linux["source_environment"]["python_version"] != linux["environment"]["python_version"]
+    assert windows["source_environment"]["sys_platform"] != windows["environment"]["os"]
+    assert any("colorama" in note for note in windows["normalization_notes"])
 
 
 def test_standalone_verify_rejects_self_consistent_archive_inventory_tamper(tmp_path: Path) -> None:
@@ -660,52 +762,187 @@ def test_claude_command_contract_distinguishes_plugin_namespace() -> None:
         assert "/claude-ads:ads" in text
 
 
+GROUNDING_WINDOW_AS_OF = release.date(2026, 9, 10)
+
+
 def test_release_grounding_gate_validates_control_registry_and_profiles() -> None:
+    """Exercise the live ledgers at the same UTC date used by the release gate."""
     root = RELEASE_SCRIPT.parents[1]
-    result = check_grounding_and_capabilities(root, release.date(2026, 9, 10))
+    as_of = release.datetime.now(release.timezone.utc).date()
+    result = check_grounding_and_capabilities(root, as_of)
     assert result["registered_control_count"] == 414
-    assert result["source_grounded_control_count"] > 0
     assert result["enabled_scoring_profile_count"] == 0
     assert result["disabled_scoring_profile_count"] == 12
 
 
-def test_release_grounding_gate_rejects_stale_load_bearing_source(
-    monkeypatch,
+def _ledgers_in_window(
+    root: Path, verified: date, due: date
+) -> tuple[dict[str, object], dict[str, object], dict[str, object], dict[str, object]]:
+    """Isolate date rules with synthetic verified claims and refresh windows."""
+    manifests = root / "control-plane/manifests"
+    source_doc = json.loads((manifests / "source-ledger.json").read_text(encoding="utf-8"))
+    claim_doc = json.loads((manifests / "claim-ledger.json").read_text(encoding="utf-8"))
+    load_bearing_source_ids: set[str] = set()
+    target_claim = None
+    for claim in claim_doc["claims"]:
+        if claim["load_bearing"]:
+            # This in-memory fixture is not canonical source evidence. A
+            # provisional claim must not mask the date branch under test.
+            claim["verdict"] = "verified"
+            claim["last_verified"] = verified.isoformat()
+            claim["refresh_due"] = due.isoformat()
+            load_bearing_source_ids.update(claim["source_ids"])
+            target_claim = target_claim or claim
+    target_source = None
+    for source in source_doc["sources"]:
+        if source["id"] in load_bearing_source_ids:
+            source["retrieved_at"] = verified.isoformat()
+            source["refresh_due"] = due.isoformat()
+            target_source = target_source or source
+    assert target_claim is not None and target_source is not None
+    return source_doc, claim_doc, target_claim, target_source
+
+
+def _serve_ledgers(
+    monkeypatch, source_doc: dict[str, object], claim_doc: dict[str, object]
 ) -> None:
-    root = RELEASE_SCRIPT.parents[1]
-    source_path = root / "control-plane/manifests/source-ledger.json"
-    source_doc = json.loads(source_path.read_text(encoding="utf-8"))
-    source = next(
-        item
-        for item in source_doc["sources"]
-        if item["id"] == "google-ads-conversion-goals-official"
-    )
-    source["retrieved_at"] = "2026-08-25"
-    source["refresh_due"] = "2026-08-25"
     original_json_object = release._json_object
 
     def json_object(path: Path, label: str):
         if label == "source ledger":
             return source_doc
+        if label == "claim ledger":
+            return claim_doc
         return original_json_object(path, label)
 
     monkeypatch.setattr(release, "_json_object", json_object)
+
+
+def test_release_grounding_gate_accepts_evidence_on_both_window_boundaries(
+    monkeypatch,
+) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, _, _ = _ledgers_in_window(root, as_of, as_of)
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    result = check_grounding_and_capabilities(root, as_of)
+    assert result["registered_control_count"] == 414
+
+
+@pytest.mark.parametrize("verdict", ["provisional", "contested", "demoted", "retracted"])
+def test_release_grounding_gate_rejects_unverified_load_bearing_claims(monkeypatch, verdict: str) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, target_claim, _ = _ledgers_in_window(root, as_of, as_of)
+    target_claim["verdict"] = verdict
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    with pytest.raises(ReleaseError, match=f"load-bearing claim is not verified: {target_claim['id']}$"):
+        check_grounding_and_capabilities(root, as_of)
+
+
+def test_release_grounding_gate_detects_expiry_from_the_date_alone(monkeypatch) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, target_claim, _ = _ledgers_in_window(
+        root, as_of - timedelta(days=10), as_of + timedelta(days=20)
+    )
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    check_grounding_and_capabilities(root, as_of + timedelta(days=20))
     with pytest.raises(
-        ReleaseError,
-        match="load-bearing source is stale: google-ads-conversion-goals-official",
+        ReleaseError, match=f"load-bearing claim is stale: {target_claim['id']}"
     ):
-        check_grounding_and_capabilities(root, release.date(2026, 9, 11))
+        check_grounding_and_capabilities(root, as_of + timedelta(days=21))
+
+
+@pytest.mark.parametrize(
+    ("ledger", "verified_offset", "due_offset", "message"),
+    [
+        ("claim", 1, 20, "load-bearing claim has an invalid verification window"),
+        ("claim", -2, -5, "load-bearing claim has an invalid verification window"),
+        ("claim", -10, -1, "load-bearing claim is stale"),
+        ("source", 1, 20, "load-bearing source has an invalid verification window"),
+        ("source", -2, -5, "load-bearing source has an invalid verification window"),
+        ("source", -10, -1, "load-bearing source is stale"),
+    ],
+    ids=[
+        "claim-verified-after-as-of",
+        "claim-window-inverted",
+        "claim-expired",
+        "source-retrieved-after-as-of",
+        "source-window-inverted",
+        "source-expired",
+    ],
+)
+def test_release_grounding_gate_rejects_out_of_window_evidence(
+    monkeypatch, ledger: str, verified_offset: int, due_offset: int, message: str
+) -> None:
+    root = RELEASE_SCRIPT.parents[1]
+    as_of = GROUNDING_WINDOW_AS_OF
+    source_doc, claim_doc, target_claim, target_source = _ledgers_in_window(
+        root, as_of - timedelta(days=10), as_of + timedelta(days=20)
+    )
+    verified = (as_of + timedelta(days=verified_offset)).isoformat()
+    due = (as_of + timedelta(days=due_offset)).isoformat()
+    if ledger == "claim":
+        target_claim["last_verified"], target_claim["refresh_due"] = verified, due
+        target_id = target_claim["id"]
+    else:
+        target_source["retrieved_at"], target_source["refresh_due"] = verified, due
+        target_id = target_source["id"]
+    _serve_ledgers(monkeypatch, source_doc, claim_doc)
+    with pytest.raises(ReleaseError, match=f"{message}: {target_id}$"):
+        check_grounding_and_capabilities(root, as_of)
 
 
 def test_vulnerability_exception_evidence_is_release_packaged() -> None:
     root = RELEASE_SCRIPT.parents[1]
-    result = check_vulnerability_exceptions(root, release.date(2026, 9, 10))
-
-    assert result["exception_count"] == 17
-    assert "tests/scripts/test_generate_report.py" in result["packaged_evidence_paths"]
-    assert set(result["packaged_evidence_paths"]) <= set(
-        release.package_files(result["packaged_evidence_paths"])
+    as_of = release.datetime.now(release.timezone.utc).date()
+    result = check_vulnerability_exceptions(root, as_of)
+    document = json.loads(
+        (root / "control-plane/manifests/vulnerability-exceptions.json").read_text(
+            encoding="utf-8"
+        )
     )
+    expected_paths = sorted(
+        {
+            path
+            for exception in document["exceptions"]
+            for path in exception["evidence_paths"]
+        }
+    )
+
+    assert result["exception_count"] == len(document["exceptions"])
+    assert result["packaged_evidence_paths"] == expected_paths
+    assert set(expected_paths) <= set(release.package_files(expected_paths))
+
+
+@pytest.mark.parametrize(
+    ("kind", "license_review", "accepted"),
+    [
+        ("issue", "metadata-only", True),
+        ("issue", "same-project-mit", False),
+        ("pull-request", "metadata-only", True),
+        ("pull-request", "same-project-mit", True),
+        ("pull-request", "unreviewed", False),
+    ],
+)
+def test_ecosystem_license_review_matches_metadata_or_reviewed_patch_use(
+    tmp_path: Path, monkeypatch, kind: str, license_review: str, accepted: bool
+) -> None:
+    manifest = RELEASE_SCRIPT.parents[1] / "control-plane/manifests/ecosystem-dispositions.json"
+    document = json.loads(manifest.read_text(encoding="utf-8"))
+    entry = next(item for item in document["entries"] if item["kind"] == kind)
+    entry["license_review"] = license_review
+    candidate = tmp_path / "control-plane/manifests/ecosystem-dispositions.json"
+    candidate.parent.mkdir(parents=True)
+    candidate.write_text(json.dumps(document), encoding="utf-8")
+    monkeypatch.setattr(release, "_check_repository_review_ledger", lambda root: {})
+    as_of = date.fromisoformat(document["reviewed_at"])
+    if accepted:
+        check_ecosystem(tmp_path, as_of)
+    else:
+        with pytest.raises(ReleaseError, match="license|pending"):
+            check_ecosystem(tmp_path, as_of)
 
 
 def test_ecosystem_gate_binds_public_snapshot_and_expires(
@@ -872,23 +1109,23 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
     commit = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
     ).stdout.strip()
-    required_jobs = [
-        "Live ecosystem reconciliation",
-        "Repository audit",
-        "Core tests (Python 3.11)",
-        "Core tests (Python 3.12)",
-        "Full test suite",
-        "Installer tests (ubuntu-latest, Python 3.11)",
-        "Installer tests (ubuntu-latest, Python 3.12)",
-        "Installer tests (macos-15, Python 3.11)",
-        "Installer tests (macos-15, Python 3.12)",
-        "Installer tests (macos-15-intel, Python 3.11)",
-        "Installer tests (macos-15-intel, Python 3.12)",
-        "Installer tests (windows-latest, Python 3.11)",
-        "Installer tests (windows-latest, Python 3.12)",
-        "Reproducible package smoke test",
-        "validate",
-    ]
+    workflow = yaml.safe_load(
+        (RELEASE_SCRIPT.parents[1] / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    )
+    required_jobs = []
+    for job_id, job in workflow["jobs"].items():
+        matrix = job.get("strategy", {}).get("matrix", {})
+        assert not {"include", "exclude"} & matrix.keys()
+        for values in itertools.product(*matrix.values()):
+            parameters = dict(zip(matrix, values))
+            name = re.sub(
+                r"\$\{\{\s*matrix\.([a-zA-Z0-9_-]+)\s*\}\}",
+                lambda match: str(parameters[match.group(1)]),
+                job.get("name", job_id),
+            )
+            assert "${{" not in name
+            required_jobs.append(name)
+    assert len(required_jobs) == len(set(required_jobs))
 
     def evidence(_root: Path, endpoint: str) -> dict:
         if endpoint == "repos/AI-Marketing-Hub/claude-ads":
@@ -911,6 +1148,35 @@ def test_remote_ci_verifier_requires_exact_private_subject_and_all_jobs(
     assert result["repository_visibility"] == "private"
     assert result["event"] == "workflow_dispatch"
     assert result["ecosystem_reconciliation_mode"] == "strict"
+    assert result["jobs"] == sorted(required_jobs)
+
+    # Every actual workflow job must be present and successful, including every
+    # native shard, each independent managed lifecycle, and both Linux floors.
+    for job_name in required_jobs:
+        for conclusion in (None, "failure", "skipped", "cancelled"):
+            def incomplete_jobs(_root: Path, endpoint: str) -> dict:
+                value = evidence(_root, endpoint)
+                if endpoint.endswith("/jobs?per_page=100"):
+                    remaining = [job for job in value["jobs"] if job["name"] != job_name]
+                    if conclusion is not None:
+                        remaining.append({"name": job_name, "conclusion": conclusion})
+                    value = {"jobs": remaining}
+                return value
+
+            monkeypatch.setattr(release, "_gh_json", incomplete_jobs)
+            with pytest.raises(ReleaseError, match="required GitHub jobs are incomplete"):
+                verify_github_run(root, "123", commit)
+
+    for malformed in (None, {"name": ""}, {"name": required_jobs[0], "conclusion": "success"}):
+        def invalid_jobs(_root: Path, endpoint: str) -> dict:
+            value = evidence(_root, endpoint)
+            if endpoint.endswith("/jobs?per_page=100"):
+                value = {"jobs": [*value["jobs"], malformed]}
+            return value
+
+        monkeypatch.setattr(release, "_gh_json", invalid_jobs)
+        with pytest.raises(ReleaseError, match="invalid or duplicate names"):
+            verify_github_run(root, "123", commit)
 
     def push_run(_root: Path, endpoint: str) -> dict:
         value = evidence(_root, endpoint)

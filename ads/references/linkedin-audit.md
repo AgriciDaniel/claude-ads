@@ -20,6 +20,25 @@ The registered sources below cover only the measurement, API, and import foundat
 - `linkedin-marketing-api-official`: [LinkedIn Marketing Developer Platform](https://learn.microsoft.com/en-us/linkedin/marketing/overview)
 - `linkedin-conversion-tracking-official`: [LinkedIn conversion tracking](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking)
 - `linkedin-conversions-api-official`: [LinkedIn Conversions API use cases](https://learn.microsoft.com/en-us/linkedin/marketing/conversions/conversions-usecase)
+- `linkedin-marketing-api-changes-official`: [Recent LinkedIn Marketing API changes](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2026-09)
+
+## API version status verified 2026-10-16
+
+LinkedIn's change log labels Marketing API version `202610` as the latest, while
+the page's default version is still `202609`. It lists version `202510` for
+sunset on 2026-10-15, a date that has now passed, and version `202511` for sunset
+on 2026-11-16 (`CLM-0217`). The page lists the schedule only; it does not
+confirm that `202510` was removed. Treat those dates as migration deadlines and
+verify the requested replacement version and endpoint compatibility before
+changing an integration. Do not report `202511` as already removed before the
+effective date, do not report `202510` as removed from the schedule alone, and
+recheck on or after each date before reporting removal.
+
+LinkedIn also states that legacy Geo targeting support ended on 2026-08-31:
+creating a campaign with legacy geo fails with a `400` error
+(`INVALID_VALUE_FOR_FIELD`), and the replacement is the Bing geo scheme in
+LinkedIn's migration guide. Check existing campaigns and integrations for legacy
+geo before reporting a targeting finding.
 
 ## Control registry
 

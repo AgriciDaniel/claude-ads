@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
-pdf = ["weasyprint>=69.0,<70.0"]
+pdf = ["weasyprint>=70.0,<71.0"]
 
 [project.scripts]
 claude-ads-core = "claude_ads_core.cli:main"

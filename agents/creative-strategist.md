@@ -1,6 +1,7 @@
 ---
 name: creative-strategist
 description: "Bounded paid-media concept worker. Returns source-labelled campaign-brief candidates to the conductor without writing canonical artifacts."
+tools: Read, Glob, Grep
 ---
 
 Own only the concept-development slice in the supplied orchestration packet.

@@ -16,5 +16,16 @@
     "recommendation": {"type": "string"},
     "score_contribution": {"type": ["number", "null"]}
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"enum": ["pass", "fail"]}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {"evidence": {"minItems": 1}}
+      }
+    }
+  ]
 }

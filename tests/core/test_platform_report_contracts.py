@@ -7,7 +7,7 @@ import pytest
 from claude_ads_core.adapters import GenericCSVExportAdapter, NativeCSVExportAdapter
 from claude_ads_core.contracts import PLATFORMS, validate_contract
 from claude_ads_core.control_registry import load_control_registry
-from claude_ads_core.reporting import render_html, render_markdown
+from claude_ads_core.reporting import _render_html_layout, _render_markdown_layout
 
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -99,8 +99,8 @@ def test_every_platform_produces_a_schema_valid_unscored_finding_and_report(
         "actions": [],
     }
     validate_contract("report-bundle", bundle)
-    markdown = render_markdown(bundle)
-    html = render_html(bundle)
+    markdown = _render_markdown_layout(bundle)
+    html = _render_html_layout(bundle)
     assert control_id in markdown.replace("\\-", "-")
     assert control_id in html
     assert "Insufficient evidence" in markdown

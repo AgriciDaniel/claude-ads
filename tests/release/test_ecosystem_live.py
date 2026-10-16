@@ -217,7 +217,9 @@ def test_merged_after_snapshot_pull_is_set_aside_in_default_mode_only() -> None:
     assert _finding_kinds(result) == ["merged_after_snapshot"]
     assert result["findings"][0]["recorded"] is False
     assert result["repositories"][module.CANONICAL_REPOSITORY]["merged_after_snapshot"] == [998]
-    assert result["repositories"][module.CANONICAL_REPOSITORY]["pull_request_count"] == 14
+    assert result["repositories"][module.CANONICAL_REPOSITORY]["pull_request_count"] == len(
+        ledger["canonical_snapshot"]["pull_request_numbers"]
+    )
 
     with pytest.raises(module.EcosystemAuditError, match="coverage mismatch"):
         module.reconcile_live(ledger, live, repositories=BOTH, strict=True)

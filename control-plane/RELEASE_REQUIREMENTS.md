@@ -95,6 +95,12 @@ capability loses its test evidence, or required remote CI does not pass.
 - Python-wheel resolution, install, upgrade, and uninstall are tested on the
   declared Linux, macOS, and Windows interpreter tuples. This is not a claim of
   cross-platform Playwright browser or WeasyPrint PDF feature execution.
+- Native installer and privacy collections run in deterministic complementary
+  shards, with every selected and deselected node ID recorded. Each interpreter
+  tuple has a separate managed lifecycle job so a failed test cannot suppress
+  its installation evidence. The Linux glibc 2.28 floor runs both interpreters
+  in a digest-pinned PyPA manylinux container and verifies exact wheels,
+  unrelated-directory CLI use, poisoned-environment rejection, and safe uninstall.
 - Installation does not silently mutate global Python or execute unverified
   network content.
 - Uninstall removes only ownership-manifest entries and leaves no unowned files.
@@ -131,8 +137,9 @@ capability loses its test evidence, or required remote CI does not pass.
   Pending templates and repository-local trust roots cannot satisfy this gate.
 - No critical blocker remains in the ecosystem disposition ledger.
 - Only after all gates pass may the reviewed branch merge and receive a v2 tag.
-- Repository visibility remains private; public release requires the separate
-  gate in `PUBLISHING_POLICY.md`.
+- The development repository remains private. Existing public distribution does
+  not authorize a new publication; every new public release requires the
+  separate gate in `PUBLISHING_POLICY.md`.
 
 ## Independent-review evidence protocol
 

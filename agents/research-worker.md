@@ -1,7 +1,6 @@
 ---
 name: research-worker
 description: "Paid-media research worker for one bounded platform, policy, API, issue, pull-request, or repository slice. Produces source and license evidence without editing canonical guidance."
-model: sonnet
 maxTurns: 30
 tools: Read, Glob, Grep, WebSearch, WebFetch
 ---

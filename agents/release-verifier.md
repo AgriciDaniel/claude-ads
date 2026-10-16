@@ -1,7 +1,6 @@
 ---
 name: release-verifier
 description: "Fresh-context Claude Ads release verifier. Audits acceptance criteria, diffs, tests, packages, evidence freshness, privacy, security, licensing, and installability before release."
-model: sonnet
 maxTurns: 30
 tools: Read, Bash, Glob, Grep
 ---

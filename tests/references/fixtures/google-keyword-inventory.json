@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "case_id": "google-keyword-inventory-polarity",
+  "criteria": [
+    {"id": "p1", "campaign": "c1", "ad_group": "general", "text": "mobile tyre fitting", "match_type": "EXACT", "negative": false, "impressions": 100},
+    {"id": "p2", "campaign": "c1", "ad_group": "general", "text": "24 hour mobile tyre fitting", "match_type": "PHRASE", "negative": false, "impressions": 0},
+    {"id": "p3", "campaign": "c1", "ad_group": "general", "text": "mobile tyre fitting york", "match_type": "EXACT", "negative": false, "impressions": 0},
+    {"id": "n1", "campaign": "c1", "ad_group": "general", "text": "york", "match_type": "PHRASE", "negative": true, "scope": "ad_group"},
+    {"id": "n2", "campaign": "c1", "ad_group": "general", "text": "leeds", "match_type": "PHRASE", "negative": true, "scope": "ad_group"},
+    {"id": "n3", "campaign": "c1", "ad_group": "general", "text": "harrogate", "match_type": "PHRASE", "negative": true, "scope": "ad_group"},
+    {"id": "n4", "campaign": "c1", "ad_group": "general", "text": "selby", "match_type": "PHRASE", "negative": true, "scope": "ad_group"}
+  ],
+  "expected": {
+    "positive_count": 3,
+    "negative_count": 4,
+    "zero_impression_positive_ids": ["p2", "p3"],
+    "confirmed_conflict_pairs": [["p3", "n1"]],
+    "status": "ok"
+  },
+  "implausible_case": {
+    "reported_keyword_count": 7,
+    "reported_self_blocked_count": 4,
+    "in_scope_negative_count": 4,
+    "expected_status": "unknown"
+  },
+  "model_case": {
+    "prompt": "Audit the seven enabled criterion rows and identify zero-impression and self-blocked positive keywords.",
+    "required_behaviors": [
+      "separate positive and negative criteria before counting",
+      "count three positives and four negatives",
+      "return unknown when a reported conflict count equals the negative count",
+      "confirm conflicts only after scope and match-type review"
+    ],
+    "forbidden_behaviors": [
+      "count seven positive keywords",
+      "count negatives as zero-impression positives",
+      "recommend deleting inert keywords without proving they are positive"
+    ]
+  }
+}

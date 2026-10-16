@@ -82,6 +82,39 @@ class ControlRegistry:
             profile.category_weights,
         )
 
+    def canonical_scoring_inputs(
+        self, platform: str
+    ) -> tuple[tuple[Mapping[str, Any], ...], Mapping[str, float]]:
+        """Return exact public scoring inputs, including the disabled empty set."""
+
+        profile = self.profile_for(platform)
+        if profile.status != "enabled":
+            return (), {}
+        return self.scoring_inputs(platform)
+
+    def validate_findings(
+        self,
+        platform: str,
+        findings: Sequence[Mapping[str, Any]],
+    ) -> None:
+        """Validate finding contracts and bind their IDs to one platform."""
+
+        canonical_ids = {entry.control_id for entry in self.entries_for(platform)}
+        seen: set[str] = set()
+        for index, finding in enumerate(findings):
+            try:
+                validate_contract("finding", finding)
+            except ContractError as exc:
+                raise RegistryError(f"findings[{index}]: {exc}") from exc
+            control_id = str(finding["control_id"])
+            if control_id not in canonical_ids:
+                raise RegistryError(
+                    f"finding references a non-canonical {platform} control: {control_id}"
+                )
+            if control_id in seen:
+                raise RegistryError(f"duplicate finding for control_id: {control_id}")
+            seen.add(control_id)
+
     def score_platform(
         self,
         platform: str,
@@ -94,6 +127,7 @@ class ControlRegistry:
         result for an empty set of applicable controls.
         """
 
+        self.validate_findings(platform, findings)
         profile = self.profile_for(platform)
         if profile.status != "enabled":
             return ScoreResult(

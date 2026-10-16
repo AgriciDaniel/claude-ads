@@ -1,6 +1,6 @@
 ---
 name: ads-reddit
-description: "Audit Reddit Ads measurement, campaign structure, community and interest targeting, creative-native fit, catalog advertising, budgets, brand safety, and reporting. Use for Reddit Ads, promoted posts, conversation ads, community targeting, Reddit Pixel, Reddit Conversions API, or Reddit dynamic product ads."
+description: "Audit Reddit Ads measurement, campaign structure, community and interest targeting, creative-native fit, catalog advertising, budgets, brand safety, and reporting. Use for Reddit Ads, conversation ads, community targeting, Reddit Pixel, Reddit Conversions API, or Reddit dynamic product ads."
 ---
 
 # Reddit Ads Audit
@@ -10,7 +10,7 @@ description: "Audit Reddit Ads measurement, campaign structure, community and in
 1. Read the main `ads` operating contract and thinking framework.
 2. Collect business objective, account age, date window, timezone, currency,
    spend, conversion definition, and available exports or authenticated reads.
-3. Read `ads/references/reddit-audit.md` and relevant shared measurement,
+3. Read `ads/references/reddit-audit.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and relevant shared measurement,
    benchmark, creative, policy, and scoring references.
 4. Normalize the account data and preserve source lineage.
 5. Evaluate only applicable controls across measurement, campaign structure, audiences, community relevance, creative, catalog readiness, budget, experimentation, and brand safety.

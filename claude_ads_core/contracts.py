@@ -24,12 +24,18 @@ from .workflow_contracts import (
 SCHEMA_VERSION = "1.0.0"
 CORE_CONTRACT_NAMES = (
     "account-snapshot",
+    "audit-worker-result",
     "run-manifest",
     "control-definition",
     "finding",
     "report-bundle",
 )
-CONTRACT_NAMES = CORE_CONTRACT_NAMES + WORKFLOW_CONTRACT_NAMES
+COCKPIT_CONTRACT_NAMES = (
+    "cockpit-index",
+    "cockpit-snapshot",
+    "cockpit-action-receipt",
+)
+CONTRACT_NAMES = CORE_CONTRACT_NAMES + WORKFLOW_CONTRACT_NAMES + COCKPIT_CONTRACT_NAMES
 PLATFORMS = {
     "google",
     "meta",
@@ -67,7 +73,10 @@ def _require_string(value: Any, path: str, *, nonempty: bool = True) -> str:
 def _require_number(value: Any, path: str, *, minimum: float | None = None) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ContractError(f"{path} must be a number")
-    result = float(value)
+    try:
+        result = float(value)
+    except OverflowError as exc:
+        raise ContractError(f"{path} must be finite") from exc
     if not math.isfinite(result):
         raise ContractError(f"{path} must be finite")
     if minimum is not None and result < minimum:
@@ -85,6 +94,13 @@ def _require_keys(payload: Mapping[str, Any], keys: Sequence[str], path: str = "
     missing = [key for key in keys if key not in payload]
     if missing:
         raise ContractError(f"{path} missing required field(s): {', '.join(missing)}")
+
+
+def _require_exact_keys(payload: Mapping[str, Any], keys: Sequence[str], path: str = "$") -> None:
+    _require_keys(payload, keys, path)
+    unexpected = sorted(set(payload) - set(keys))
+    if unexpected:
+        raise ContractError(f"{path} has unsupported field(s): {', '.join(unexpected)}")
 
 
 def _validate_version(payload: Mapping[str, Any]) -> None:
@@ -247,6 +263,58 @@ def _validate_finding(payload: Mapping[str, Any]) -> None:
         _require_number(payload["score_contribution"], "$.score_contribution")
 
 
+def _validate_string_array(value: Any, path: str) -> None:
+    items = _require_list(value, path)
+    strings = [_require_string(item, f"{path}[{index}]") for index, item in enumerate(items)]
+    if len(strings) != len(set(strings)):
+        raise ContractError(f"{path} must contain unique values")
+
+
+def _validate_audit_worker_result(payload: Mapping[str, Any]) -> None:
+    fields = (
+        "schema_version",
+        "status",
+        "platform",
+        "scope",
+        "findings",
+        "contradictions",
+        "missing_inputs",
+        "stale_sources",
+        "recovery_hints",
+    )
+    _require_exact_keys(payload, fields)
+    _validate_version(payload)
+    if payload["status"] not in {"ok", "needs_input", "blocked", "failed"}:
+        raise ContractError("$.status is invalid")
+    platform = _require_string(payload["platform"], "$.platform")
+    if platform not in PLATFORMS:
+        raise ContractError(f"$.platform must be one of: {', '.join(sorted(PLATFORMS))}")
+    _validate_string_array(payload["scope"], "$.scope")
+    allowed_finding_fields = {
+        "schema_version",
+        "control_id",
+        "status",
+        "evidence",
+        "confidence",
+        "source_classification",
+        "observation",
+        "diagnosis",
+        "recommendation",
+        "score_contribution",
+    }
+    findings = _require_list(payload["findings"], "$.findings")
+    for index, raw_finding in enumerate(findings):
+        finding = _require_object(raw_finding, f"$.findings[{index}]")
+        unexpected = sorted(set(finding) - allowed_finding_fields)
+        if unexpected:
+            raise ContractError(
+                f"$.findings[{index}] has unsupported field(s): {', '.join(unexpected)}"
+            )
+        _validate_finding(finding)
+    for field in ("contradictions", "missing_inputs", "stale_sources", "recovery_hints"):
+        _validate_string_array(payload[field], f"$.{field}")
+
+
 def _validate_report_bundle(payload: Mapping[str, Any]) -> None:
     _require_keys(payload, ("schema_version", "run_manifest", "account_snapshot", "control_definitions", "findings", "scoring"))
     _validate_version(payload)
@@ -274,6 +342,7 @@ def _validate_report_bundle(payload: Mapping[str, Any]) -> None:
 
 _VALIDATORS: dict[str, Callable[[Mapping[str, Any]], None]] = {
     "account-snapshot": _validate_account_snapshot,
+    "audit-worker-result": _validate_audit_worker_result,
     "run-manifest": _validate_run_manifest,
     "control-definition": _validate_control_definition,
     "finding": _validate_finding,
@@ -284,6 +353,15 @@ _VALIDATORS: dict[str, Callable[[Mapping[str, Any]], None]] = {
 def validate_contract(name: str, payload: Any) -> None:
     """Validate *payload* against the supported semantic v1 contract."""
 
+    if name in COCKPIT_CONTRACT_NAMES:
+        # Keep the optional projection's validator out of core import cycles.
+        from .cockpit_contracts import validate_cockpit_contract
+
+        try:
+            validate_cockpit_contract(name, payload)
+        except ValueError as exc:
+            raise ContractError(str(exc)) from exc
+        return
     if name in WORKFLOW_CONTRACT_NAMES:
         try:
             validate_workflow_contract(name, payload)

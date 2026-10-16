@@ -54,6 +54,13 @@ platform eligibility, provider availability, account authority, or approval.
 File-backed orchestration uses immutable run, task, result, and artifact-only gate
 packets. Reruns require an explicit `supersedes` chain.
 
+Ecosystem dispositions may use `metadata-only` for issue or pull-request
+metadata and independently reimplemented concepts. This does not approve
+copying a patch or establish contributor rights. `same-project-mit` records a
+separate review of MIT-covered patch use. Tracker titles and links provide
+attribution; raw issue text, private discussion, and patches do not belong in
+the disposition ledger.
+
 The current catalog is operational for discovery findings, not account-health
 grading. All twelve scoring profiles are disabled until per-control source
 support, severity decisions, typed inputs, weights, and regression evidence are

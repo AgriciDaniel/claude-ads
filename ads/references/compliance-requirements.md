@@ -1,7 +1,7 @@
 # Regulatory Compliance Requirements
 
-**Verified:** 2026-08-25
-**Refresh:** event-driven; re-check within 30 days of an applicable effective date
+**Verified:** 2026-10-12 for the EU AI Act row; other rows follow their ledger entries (2026-10-07)
+**Refresh:** event-driven; re-check within 30 days of an applicable effective date, including the AI Act marking transition date (2026-12-02); ledger entries next due 2026-11-06
 **Scope:** issue spotting and evidence collection, not legal advice
 
 Do not apply a global checklist before establishing jurisdiction, role, data
@@ -27,16 +27,22 @@ Missing jurisdiction or data-flow evidence produces `needs_input`, not a pass.
 
 | Area | Source | Retained fact |
 | --- | --- | --- |
-| EU AI Act | `eu-ai-act-article-50-official` — [European Commission transparency code](https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content) and [Regulation (EU) 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) | Article 50 transparency obligations apply from 2 August 2026; scope differs for providers and deployers |
-| Digital Services Act | `eu-dsa-official` — [European Commission DSA overview](https://digital-strategy.ec.europa.eu/en/policies/digital-services-act) | Ads must be identifiable and include information about who placed them and why they are shown; platform duties differ by service type |
-| California privacy | `cppa-regulations-official` — [CPPA laws and regulations](https://cppa.ca.gov/regulations/) | Adopted and proposed packages are distinct; consult the effective text rather than commentary |
+| EU AI Act | `eu-ai-act-article-50-official`: [European Commission transparency code](https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content), `eu-ai-act-article-50-faq-official`: [Commission Article 50 FAQ](https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act), and [Regulation (EU) 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) | Article 50 transparency obligations apply from 2 August 2026; scope differs for providers and deployers; a limited grace period to 2 December 2026 covers only the Article 50(2) marking and detection obligation for systems placed on the market before 2 August 2026 |
+| Digital Services Act | `eu-dsa-official`: [European Commission DSA overview](https://digital-strategy.ec.europa.eu/en/policies/digital-services-act) | Ads must be identifiable and include information about who placed them and why they are shown; platform duties differ by service type |
+| California privacy | `cppa-regulations-official`: [CPPA laws and regulations](https://cppa.ca.gov/regulations/) | Adopted and proposed packages are distinct; consult the effective text rather than commentary |
 | Health information | `hhs-tracking-guidance-official`: [HHS tracking guidance](https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/hipaa-online-tracking/index.html) | HIPAA-regulated entities must assess tracking technologies when collected or disclosed information includes PHI; the page records a court-vacated portion of earlier guidance |
 | US endorsements | `ftc-endorsement-guides-official`: [FTC Endorsement Guides FAQ](https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides-what-people-are-asking) | Material connections and non-typical result claims require context-appropriate, clear disclosure/substantiation analysis |
 
 The cited Article 50 transparency date is in effect as of the verification date. Do not convert it
 into a claim that every AI-assisted advertisement requires the same label. Check
 the actor, output type, use, exceptions, final Commission guidance, and platform
-implementation. Proposed transition rules remain proposals until adopted.
+implementation. Regulation (EU) 2026/1744 (Digital Omnibus on AI, of 8 July 2026,
+Official Journal 24 July 2026, verified on EUR-Lex on 2026-10-12) requires
+providers of generative systems placed on the market before 2 August 2026 to
+comply with Article 50(2) marking by 2 December 2026. The Commission FAQ
+(updated 24 July 2026) describes the same limited grace period (`CLM-0106`).
+It does not cover other Article 50 duties or systems placed on the market from
+2 August 2026. Any further transition proposal remains a proposal until adopted.
 
 ## Data and privacy review
 

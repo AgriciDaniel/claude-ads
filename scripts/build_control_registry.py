@@ -15,13 +15,13 @@ ROW = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*$")
 # corresponding verified claim's scope.  The mappings ground discovery; they do
 # not assign severity or make a control scoreable.
 CLAIM_SUPPORT: dict[tuple[str, str], tuple[tuple[str, ...], tuple[str, ...]]] = {
+    ("google", "G14"): (("CLM-0213",), ("google-ads-negative-keywords-official", "google-ads-api-shared-sets-official")),
+    ("google", "G15"): (("CLM-0213",), ("google-ads-negative-keywords-official", "google-ads-api-shared-sets-official")),
+    ("google", "G-KW1"): (("CLM-0214",), ("google-ads-api-criteria-v25",)),
     ("google", "G42"): (("CLM-0007",), ("google-ads-conversion-goals-official",)),
     ("google", "G43"): (("CLM-0007",), ("google-ads-enhanced-conversions-official",)),
     ("google", "G96"): (("CLM-0211",), ("google-ads-dsa-ad-rank-official", "google-ads-keyword-prioritization-official")),
     ("google", "G97"): (("CLM-0210",), ("google-ads-keyword-prioritization-official",)),
-    ("meta", "M01"): (("CLM-0008",), ("meta-conversions-api-official",)),
-    ("meta", "M02"): (("CLM-0008",), ("meta-conversions-api-official",)),
-    ("meta", "M03"): (("CLM-0008",), ("meta-conversions-api-official",)),
     ("linkedin", "L01"): (("CLM-0009",), ("linkedin-conversion-tracking-official",)),
     ("linkedin", "L02"): (("CLM-0009",), ("linkedin-conversions-api-official",)),
     ("tiktok", "T01"): (("CLM-0010",), ("tiktok-pixel-official",)),

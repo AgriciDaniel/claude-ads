@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="t d">
+<title id="t">How Claude Ads earns trust</title>
+<desc id="d">Read only by default, evidence for every finding, honest about gaps, and your data stays yours.</desc>
+<style>
+text{font-family:Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif} .m{font-family:'JetBrains Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes blink{50%{opacity:0}}
+@keyframes type{from{width:0}to{width:var(--w)}}
+@keyframes show{from{opacity:0}to{opacity:1}}
+.r{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.cur{animation:blink 1.1s steps(1) infinite}
+.s{animation:show .4s ease-out both}
+.ty{animation:type 1.2s steps(19) .5s both}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<rect width="1200" height="520" rx="22" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="1199" height="519" rx="21.5" fill="none" stroke="#E3E3E9"/>
+<text x="72" y="82" font-size="14" font-weight="700" fill="#E4684B" text-anchor="start" class="m">BUILT TO BE TRUSTED</text>
+<text x="72" y="144" font-size="40" font-weight="800" fill="#17171C" text-anchor="start">It says what it knows, and what it does not.</text>
+<g class="r" style="animation-delay:0.1s">
+<rect x="72" y="184" width="516" height="132" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="96" y="210" width="52" height="52" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<g transform="translate(108 222)" fill="none" stroke="#E4684B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14s4.5-8 12-8 12 8 12 8-4.5 8-12 8S2 14 2 14z"/><circle cx="14" cy="14" r="3.5"/></g>
+<text x="168" y="236" font-size="22" font-weight="700" fill="#17171C" text-anchor="start">Read only by default</text>
+<text x="168" y="268" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Changes stay drafts. Nothing touches your</text>
+<text x="168" y="292" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">account until it passes every safety check.</text>
+</g>
+<g class="r" style="animation-delay:0.2s">
+<rect x="612" y="184" width="516" height="132" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="636" y="210" width="52" height="52" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<g transform="translate(648 222)" fill="none" stroke="#E4684B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l5 5v17H7z"/><path d="M17 3v5h5"/><path d="M11 17l3 3 5-6"/></g>
+<text x="708" y="236" font-size="22" font-weight="700" fill="#17171C" text-anchor="start">Evidence for every finding</text>
+<text x="708" y="268" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Each result points to a dated source. No</text>
+<text x="708" y="292" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">source, no claim.</text>
+</g>
+<g class="r" style="animation-delay:0.30000000000000004s">
+<rect x="72" y="340" width="516" height="132" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="96" y="366" width="52" height="52" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<g transform="translate(108 378)" fill="none" stroke="#E4684B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="14" r="11"/><path d="M11 11a3 3 0 1 1 4.2 2.7c-.8.4-1.2 1-1.2 1.8"/><circle cx="14" cy="19.5" r=".6"/></g>
+<text x="168" y="392" font-size="22" font-weight="700" fill="#17171C" text-anchor="start">Honest about gaps</text>
+<text x="168" y="424" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">What it could not check is marked unknown.</text>
+<text x="168" y="448" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">It never guesses.</text>
+</g>
+<g class="r" style="animation-delay:0.4s">
+<rect x="612" y="340" width="516" height="132" rx="18" fill="#FFFFFF" stroke="#E3E3E9"/>
+<rect x="636" y="366" width="52" height="52" rx="14" fill="#F6F6F8" stroke="#E3E3E9"/>
+<g transform="translate(648 378)" fill="none" stroke="#E4684B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3l9 4v7c0 6-4 10-9 12-5-2-9-6-9-12V7z"/><path d="M10 14l3 3 5-6"/></g>
+<text x="708" y="392" font-size="22" font-weight="700" fill="#17171C" text-anchor="start">Your data stays yours</text>
+<text x="708" y="424" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">Credentials and client data never go into</text>
+<text x="708" y="448" font-size="16" font-weight="400" fill="#5B5F6B" text-anchor="start">reports or the repository.</text>
+</g>
+</svg>

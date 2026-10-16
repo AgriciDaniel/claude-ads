@@ -23,6 +23,8 @@ owners and are not relicensed by this repository.
 
 Dependencies are installed from their publishers and retain their own licenses:
 
+The dependency set resolved on 2026-10-07 selects Pillow 12.3.0, urllib3 2.8.0, and WeasyPrint 70.0. The dependency inventory binds the publisher source URLs, selected-wheel SHA-256 hashes, and embedded license/notice documents for these versions.
+
 - Requests: Apache-2.0.
 - urllib3: MIT.
 - Playwright for Python: Apache-2.0.

@@ -1,7 +1,7 @@
 # Amazon Ads control reference
 
-Retrieved: 2026-07-11. Refresh official product, API, policy, and availability
-sources before using this reference after its control-plane refresh date.
+Catalog reviewed: 2026-10-07. Use the per-source and per-claim verification
+dates in the control-plane ledgers. This date does not verify every control.
 
 ## Category model
 
@@ -48,6 +48,12 @@ coverage. Optional, beta, premium, unavailable, immutable, or ineligible feature
 are unscored opportunities.
 
 ## Registered official evidence
+
+The October 7, 2026 review verified the API overview and MCP open-beta
+announcement. The exact creative-acceptance page exposed no reviewable policy
+text, so its prior verification date was retained. Obtain directly readable,
+placement-specific official policy before enforcing a creative limit. Amazon
+native report normalization remains disabled pending an exact report contract.
 
 - `amazon-ads-api-official`: [Amazon Ads API overview](https://advertising.amazon.com/about-api/)
 

@@ -10,7 +10,7 @@ description: "Audit Snapchat Ads measurement, Snap Pixel and Conversions API, mo
 1. Read the main `ads` operating contract and thinking framework.
 2. Collect business objective, account age, date window, timezone, currency,
    spend, conversion definition, and available exports or authenticated reads.
-3. Read `ads/references/snapchat-audit.md` and relevant shared measurement,
+3. Read `ads/references/snapchat-audit.md` (resolve it from the plugin root, the directory that holds `ads/` and `skills/`, or from the skills directory in a standalone install) and relevant shared measurement,
    benchmark, creative, policy, and scoring references.
 4. Normalize the account data and preserve source lineage.
 5. Evaluate only applicable controls across measurement, account and ad-squad structure, mobile creative, AR and catalog formats, audiences, budget, reporting, and brand safety.

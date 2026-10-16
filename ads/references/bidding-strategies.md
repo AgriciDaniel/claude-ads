@@ -1,9 +1,9 @@
 # Bidding Strategy Decisions
 
-**Verified:** 2026-08-25
-**Refresh due:** 2026-09-24
-**Primary source:** `google-smart-bidding-official` — [Google Ads Help: About Smart Bidding](https://support.google.com/google-ads/answer/7065882)
-**Supporting source:** `google-target-roas-official` — [Google Ads Help: About Target ROAS](https://support.google.com/google-ads/answer/6268637)
+**Verified:** 2026-10-07 (ledger entries for the two sources below)
+**Refresh due:** 2026-11-06
+**Primary source:** `google-smart-bidding-official`: [Google Ads Help: About Smart Bidding](https://support.google.com/google-ads/answer/7065882)
+**Supporting source:** `google-target-roas-official`: [Google Ads Help: About Target ROAS](https://support.google.com/google-ads/answer/6268637)
 
 Bidding is a control system, not a ladder unlocked by a universal conversion
 count. Select an eligible strategy from the campaign objective, value signal,

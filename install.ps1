@@ -19,15 +19,26 @@
     Override the target's default skill install root.
 .PARAMETER AgentDir
     Override the target's default agent install root.
+.PARAMETER Ref
+    Opt-in pin for -Source git: a tag, branch, or commit, resolved to a full
+    commit SHA and checked out detached. Allowed characters are letters, digits,
+    dot, underscore, hyphen, and slash (at most 100); it must not start with a
+    hyphen, dot, or slash and must not contain .. or //. A git ref is not a
+    checksum-verified release.
 .EXAMPLE
     .\install.ps1
 .EXAMPLE
     .\install.ps1 -Target codex
 .EXAMPLE
     .\install.ps1 -SkillDir C:\Custom\Skills
+.EXAMPLE
+    .\install.ps1 -Source git -Ref v2.0.2
 .NOTES
-    Prefer a host-native plugin install or a signed release archive after
-    verifying its SHA-256 checksum. Never pipe remote content to PowerShell.
+    Prefer a host-native plugin install or a tagged release archive after
+    verifying its SHA-256 checksum (releases publish SHA256SUMS and are not
+    signed). -Source git clones the default branch HEAD and is NOT pinned to a
+    release unless -Ref is given; a pinned git ref is still not a
+    checksum-verified release. Never pipe remote content to PowerShell.
 #>
 
 param(
@@ -38,8 +49,11 @@ param(
     [ValidateSet('auto','local','git')]
     [string]$Source = 'auto',
     [string]$RepoDir = '',
+    [string]$Ref = '',
     [switch]$NoDeps
 )
+
+$RefWasSupplied = $PSBoundParameters.ContainsKey('Ref')
 
 $ErrorActionPreference = "Stop"
 
@@ -113,9 +127,21 @@ function Test-InstallPath {
     param([string]$Path)
     if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
     if ($Path -match '[\;\&\|\$\(\)\<\>\`]') { return $false }
-    if ($Path -match '\.\.') { return $false }
+    if ($Path -match '(^|[\\/])\.\.($|[\\/])') { return $false }   # parent-traversal components only
     if ($Path -match '^[-]') { return $false }
     if ($Path -match '^(\\\\|//)') { return $false }   # UNC paths
+    return $true
+}
+
+# A -Ref value must be a plain ref or commit name. It is rejected before any
+# git call so it can never be parsed as an option or act as a path trick.
+function Test-GitRef {
+    param([string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) { return $false }
+    if ($Value.Length -gt 100) { return $false }
+    if ($Value -cnotmatch '\A[A-Za-z0-9._/-]+\z') { return $false }
+    if ($Value -match '^[-./]') { return $false }
+    if ($Value.Contains('..') -or $Value.Contains('//') -or $Value.EndsWith('/')) { return $false }
     return $true
 }
 
@@ -154,6 +180,14 @@ function Main {
     $AgentDirResolved = $paths.AgentDir
     $AllowPip = $paths.AllowPip
     $HostLabel = $paths.Label
+
+    # Validate -Ref before any other use. The rejected value is not echoed
+    # because it may contain control characters.
+    if ($RefWasSupplied -and -not (Test-GitRef -Value $Ref)) {
+        Write-Host "X Invalid -Ref: use 1 to 100 characters from letters, digits, . _ - /" -ForegroundColor Red
+        Write-Host "  A ref must not start with - . or /, and must not contain .. or //" -ForegroundColor Red
+        exit 1
+    }
 
     if ($SkillDir) {
         if (-not (Test-InstallPath -Path $SkillDir)) {
@@ -310,16 +344,30 @@ function Main {
         return $FullRoot
     }
 
+    function Assert-ExactBytecodeDirectory([string]$Path) {
+        $Canonical = Assert-ConfiguredDestination $Path
+        $Allowed = @(
+            [IO.Path]::GetFullPath((Join-Path $SkillDirResolved "scripts\claude_ads_core\__pycache__")),
+            [IO.Path]::GetFullPath((Join-Path $SkillDirResolved "scripts\claude_ads_core\adapters\__pycache__"))
+        )
+        if (@($Allowed | Where-Object { $_.Equals($Canonical, $PathComparison) }).Count -ne 1) {
+            throw "Unsafe bytecode ownership root: $Path"
+        }
+        return $Canonical
+    }
+
     function Read-ValidPriorManifest {
         $PriorFiles = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $PriorDirectories = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $PriorRecursiveDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
+        $PriorBytecodeDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $ManifestItem = Get-Item -LiteralPath $ManifestPath -Force -ErrorAction SilentlyContinue
         if ($null -eq $ManifestItem) {
             return @{
                 Files = $PriorFiles
                 Directories = $PriorDirectories
                 RecursiveDirectories = $PriorRecursiveDirs
+                BytecodeDirectories = $PriorBytecodeDirs
             }
         }
         if ($ManifestItem.PSIsContainer -or
@@ -332,16 +380,21 @@ function Main {
         } catch {
             throw "Invalid ownership manifest: $ManifestPath"
         }
-        $ExpectedProperties = @('version','target','files','directories','recursive_directories')
+        $LegacyExpectedProperties = @('version','target','files','directories','recursive_directories')
+        $CurrentExpectedProperties = @($LegacyExpectedProperties + 'bytecode_directories')
         $ActualProperties = @($PriorManifest.PSObject.Properties.Name)
+        $HasLegacyShape = @(Compare-Object $LegacyExpectedProperties $ActualProperties).Count -eq 0
+        $HasCurrentShape = @(Compare-Object $CurrentExpectedProperties $ActualProperties).Count -eq 0
         $VersionType = if ($null -eq $PriorManifest.version) { $null } else { $PriorManifest.version.GetType() }
-        if (@(Compare-Object $ExpectedProperties $ActualProperties).Count -ne 0 -or
+        if ((-not $HasLegacyShape -and -not $HasCurrentShape) -or
             $VersionType -notin @([int], [long]) -or $PriorManifest.version -ne 1 -or
             -not ($PriorManifest.target -is [string]) -or $PriorManifest.target -cne $Target) {
             throw "Invalid or mismatched ownership manifest: $ManifestPath"
         }
         $AllPriorPaths = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
-        foreach ($PropertyName in @('files','directories','recursive_directories')) {
+        $OwnershipProperties = @('files','directories','recursive_directories')
+        if ($HasCurrentShape) { $OwnershipProperties += 'bytecode_directories' }
+        foreach ($PropertyName in $OwnershipProperties) {
             if (-not ($PriorManifest.$PropertyName -is [System.Array])) {
                 throw "Ownership manifest property must be an array: $PropertyName"
             }
@@ -350,6 +403,9 @@ function Main {
                     throw "Invalid ownership-manifest entry in ${PropertyName}: $ManifestPath"
                 }
                 $Canonical = Assert-ConfiguredDestination $OwnedPath
+                if ($PropertyName -eq 'bytecode_directories') {
+                    $Canonical = Assert-ExactBytecodeDirectory $Canonical
+                }
                 if (-not $OwnedPath.Equals($Canonical, $PathComparison)) {
                     throw "Non-canonical ownership-manifest path: $OwnedPath"
                 }
@@ -382,6 +438,10 @@ function Main {
                     if (-not $PriorRecursiveDirs.Add($Canonical)) {
                         throw "Duplicate recursive ownership-manifest directory: $Canonical"
                     }
+                } elseif ($PropertyName -eq 'bytecode_directories') {
+                    if (-not $PriorBytecodeDirs.Add($Canonical)) {
+                        throw "Duplicate bytecode ownership-manifest directory: $Canonical"
+                    }
                 }
             }
         }
@@ -390,6 +450,7 @@ function Main {
             Files = $PriorFiles
             Directories = $PriorDirectories
             RecursiveDirectories = $PriorRecursiveDirs
+            BytecodeDirectories = $PriorBytecodeDirs
         }
     }
 
@@ -400,7 +461,8 @@ function Main {
     Write-Host ""
 
     # Prefer the current release/checkout when this script ships with the
-    # distribution. Standalone installers use the operator's authenticated Git.
+    # distribution. Standalone installers clone the default branch HEAD with the
+    # operator's Git; the clone is not pinned to a release tag.
     $SourceDir = $null
     if ($RepoDir) { $Source = 'local' }
     if ($Source -eq 'auto') {
@@ -411,12 +473,20 @@ function Main {
             $Source = 'git'
         }
     }
+    if ($RefWasSupplied -and $Source -ne 'git') {
+        Write-Host "X -Ref is only valid with -Source git (resolved source: $Source)." -ForegroundColor Red
+        Write-Host "  A local install uses the checkout as it is; use a verified release archive instead." -ForegroundColor Red
+        exit 1
+    }
     if ($Source -eq 'local') {
         $SourceDir = if ($RepoDir) { $RepoDir } else { $PSScriptRoot }
         if (-not (Test-InstallPath -Path $SourceDir)) { throw "Invalid local repository path" }
         $SourceDir = (Resolve-Path $SourceDir).Path
         if (-not (Test-Path (Join-Path $SourceDir "ads\SKILL.md"))) {
             throw "Local source is not a Claude Ads distribution: $SourceDir"
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $SourceDir "control-plane\runtime-resources.txt") -PathType Leaf)) {
+            throw "Local source is missing the runtime resource allowlist: $SourceDir"
         }
     } elseif (-not (Get-Command git -ErrorAction SilentlyContinue)) {
         Write-Host "X Git is required for -Source git." -ForegroundColor Red
@@ -443,12 +513,57 @@ function Main {
     try {
         if ($Source -eq 'git') {
             $TempDir = Join-Path $env:TEMP "claude-ads-install-$(Get-Random)"
-            Write-Host "Downloading Claude Ads with authenticated Git..."
+            $CloneDir = "$TempDir\claude-ads"
+            if ($RefWasSupplied) {
+                Write-Host "Downloading Claude Ads with Git (pinned to git ref $Ref; a git ref is not a checksum-verified release)..."
+            } else {
+                Write-Host "Downloading Claude Ads with Git (default branch HEAD, unpinned, not a verified release)..."
+            }
             $ErrorActionPreference = "Continue"
-            git clone --depth 1 $RepoUrl "$TempDir\claude-ads" 2>&1 | Out-Null
+            if ($RefWasSupplied) {
+                # A full clone without a checkout, so any tag, branch, or commit
+                # can be resolved before a single file is written.
+                $GitOutput = & git clone --no-checkout $RepoUrl $CloneDir 2>&1
+            } else {
+                $GitOutput = & git clone --depth 1 $RepoUrl "$TempDir\claude-ads" 2>&1
+            }
+            $GitExitCode = $LASTEXITCODE
             $ErrorActionPreference = "Stop"
-            if ($LASTEXITCODE -ne 0) { throw "Git clone failed" }
-            $SourceDir = "$TempDir\claude-ads"
+            if ($GitExitCode -ne 0) {
+                $GitText = (@($GitOutput) | ForEach-Object { "$_" }) -join [Environment]::NewLine
+                throw "Git clone failed (exit code $GitExitCode): $GitText"
+            }
+            if ($RefWasSupplied) {
+                # Tags and commits resolve directly; a branch resolves through
+                # its remote-tracking ref. --end-of-options keeps the value from
+                # ever being parsed as an option.
+                $PinnedSha = $null
+                $ErrorActionPreference = "Continue"
+                foreach ($Candidate in @("${Ref}^{commit}", "refs/remotes/origin/${Ref}^{commit}")) {
+                    $Resolved = (& git -C $CloneDir rev-parse --verify --quiet --end-of-options $Candidate 2>$null)
+                    if ($LASTEXITCODE -eq 0 -and "$Resolved" -cmatch '\A([0-9a-f]{40}|[0-9a-f]{64})\z') {
+                        $PinnedSha = "$Resolved"
+                        break
+                    }
+                }
+                $ErrorActionPreference = "Stop"
+                if (-not $PinnedSha) {
+                    throw "Git ref does not resolve to a commit: $Ref. Nothing was installed."
+                }
+                $ErrorActionPreference = "Continue"
+                $CheckoutOutput = & git -c advice.detachedHead=false -C $CloneDir checkout --detach --end-of-options $PinnedSha -- 2>&1
+                $CheckoutExitCode = $LASTEXITCODE
+                $HeadSha = "$(& git -C $CloneDir rev-parse --verify HEAD 2>$null)"
+                $ErrorActionPreference = "Stop"
+                if ($CheckoutExitCode -ne 0 -or $HeadSha -cne $PinnedSha) {
+                    $CheckoutText = (@($CheckoutOutput) | ForEach-Object { "$_" }) -join [Environment]::NewLine
+                    throw "Could not check out git ref $Ref ($PinnedSha). Nothing was installed. $CheckoutText"
+                }
+                Write-Host "OK Pinned git ref: $Ref" -ForegroundColor Green
+                Write-Host "  Resolved commit: $PinnedSha"
+                Write-Host "  This is a git ref, not a checksum-verified release, and it is not signed."
+            }
+            $SourceDir = $CloneDir
         }
 
         # Build the complete destination plan without touching either configured
@@ -458,6 +573,7 @@ function Main {
         $PlannedDirs = [System.Collections.Generic.List[string]]::new()
         $PlannedDirSet = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         $RecursiveDirs = [System.Collections.Generic.List[string]]::new()
+        $BytecodeDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
 
         function Add-PlannedDirectory([string]$Destination) {
             $Canonical = Assert-ConfiguredDestination $Destination
@@ -475,15 +591,36 @@ function Main {
         }
 
         function Add-PlannedFile([string]$SourcePath, [string]$Destination) {
+            $SourceItem = Get-Item -LiteralPath $SourcePath -Force -ErrorAction SilentlyContinue
+            if ($null -eq $SourceItem -or $SourceItem.PSIsContainer -or
+                (($SourceItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) {
+                throw "Missing or reparse-point install source: $SourcePath"
+            }
+            [void](Assert-NoReparseChain $SourceItem.FullName)
             $Canonical = Assert-ConfiguredDestination $Destination
             if (-not $PlannedFiles.Add($Canonical)) {
                 throw "Duplicate planned install file: $Canonical"
             }
             [void](Add-PlannedDirectory ([IO.Path]::GetDirectoryName($Canonical)))
             [void]$FilePlan.Add([pscustomobject]@{
-                Source = [IO.Path]::GetFullPath($SourcePath)
+                Source = $SourceItem.FullName
                 Destination = $Canonical
             })
+        }
+
+        function Test-RuntimeResourcePath([string]$Relative) {
+            if ([string]::IsNullOrEmpty($Relative) -or $Relative -ne $Relative.Trim()) {
+                return $false
+            }
+            if (-not $Relative.StartsWith("control-plane/", [StringComparison]::Ordinal)) {
+                return $false
+            }
+            if ($Relative.Contains("\") -or [IO.Path]::IsPathRooted($Relative)) {
+                return $false
+            }
+            if ($Relative -notmatch '^[A-Za-z0-9._/-]+$') { return $false }
+            $Parts = $Relative.Split('/')
+            return (@($Parts | Where-Object { $_ -in @('', '.', '..') }).Count -eq 0)
         }
 
         [void](Add-PlannedDirectory $SkillDirResolved)
@@ -521,9 +658,11 @@ function Main {
         $ScriptsDir = Join-Path $SkillDirResolved "scripts"
         if (Test-Path -LiteralPath $ScriptsSource -PathType Container) {
             $ScriptsDir = Add-PlannedDirectory $ScriptsDir
-            Get-ChildItem (Join-Path $ScriptsSource "*.py") -File | Sort-Object Name | ForEach-Object {
-                Add-PlannedFile $_.FullName (Join-Path $ScriptsDir $_.Name)
-            }
+            Get-ChildItem (Join-Path $ScriptsSource "*.py") -File |
+                Where-Object { $_.Name -ne "verify_managed_install.py" } |
+                Sort-Object Name | ForEach-Object {
+                    Add-PlannedFile $_.FullName (Join-Path $ScriptsDir $_.Name)
+                }
             Add-PlannedFile (Join-Path $SourceDir "requirements.txt") (Join-Path $SkillDirResolved "requirements.txt")
             Add-PlannedFile (Join-Path $SourceDir "requirements.lock") (Join-Path $SkillDirResolved "requirements.lock")
             $CoreSource = Join-Path $SourceDir "claude_ads_core"
@@ -534,6 +673,38 @@ function Main {
                 $Relative = Get-CompatibleRelativePath $CoreSource $_.FullName
                 Add-PlannedFile $_.FullName (Join-Path $CoreDir $Relative)
             }
+            [void]$BytecodeDirs.Add((Assert-ExactBytecodeDirectory (Join-Path $CoreDir "__pycache__")))
+            [void]$BytecodeDirs.Add((Assert-ExactBytecodeDirectory (Join-Path $CoreDir "adapters\__pycache__")))
+        }
+
+        # Treat the curated list as data and plan each public runtime resource
+        # beneath the installed skill root at its repository-relative path.
+        $RuntimeResourceList = Join-Path $SourceDir "control-plane\runtime-resources.txt"
+        $RuntimeListItem = Get-Item -LiteralPath $RuntimeResourceList -Force -ErrorAction SilentlyContinue
+        if ($null -eq $RuntimeListItem -or $RuntimeListItem.PSIsContainer -or
+            ($RuntimeListItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Missing or reparse-point runtime resource allowlist"
+        }
+        $RuntimeResources = [System.Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase
+        )
+        foreach ($RuntimeResource in Get-Content -LiteralPath $RuntimeResourceList) {
+            if ([string]::IsNullOrEmpty($RuntimeResource) -or $RuntimeResource.StartsWith('#')) {
+                continue
+            }
+            if (-not (Test-RuntimeResourcePath $RuntimeResource)) {
+                throw "Unsafe runtime resource path: $RuntimeResource"
+            }
+            if (-not $RuntimeResources.Add($RuntimeResource)) {
+                throw "Duplicate runtime resource path: $RuntimeResource"
+            }
+            $RuntimeSource = Join-Path $SourceDir $RuntimeResource
+            $RuntimeSourceItem = Get-Item -LiteralPath $RuntimeSource -Force -ErrorAction SilentlyContinue
+            if ($null -eq $RuntimeSourceItem -or $RuntimeSourceItem.PSIsContainer -or
+                ($RuntimeSourceItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                throw "Missing or reparse-point runtime resource: $RuntimeResource"
+            }
+            Add-PlannedFile $RuntimeSource (Join-Path $SkillDirResolved $RuntimeResource)
         }
 
         $VenvDir = Assert-ConfiguredDestination (Join-Path $SkillDirResolved ".venv")
@@ -555,6 +726,7 @@ function Main {
         $PriorFiles = $Prior.Files
         $PriorDirectories = $Prior.Directories
         $PriorRecursiveDirs = $Prior.RecursiveDirectories
+        $PriorBytecodeDirs = $Prior.BytecodeDirectories
 
         # Installs older than v2.0.0 wrote no ownership manifest. Detect that
         # layout once, before any destination mutation, instead of failing
@@ -610,6 +782,13 @@ function Main {
                 }
             }
         }
+        foreach ($BytecodeDir in $BytecodeDirs) {
+            [void](Assert-NoReparseChain $BytecodeDir (Get-ContainingConfiguredRoot $BytecodeDir))
+            $BytecodeItem = Get-Item -LiteralPath $BytecodeDir -Force -ErrorAction SilentlyContinue
+            if ($null -ne $BytecodeItem -and -not $BytecodeItem.PSIsContainer) {
+                throw "Bytecode cache root is not a directory: $BytecodeDir"
+            }
+        }
         if ($AllowPip -and -not $NoDeps) {
             Assert-SafeRecursiveTree $VenvDir
             $VenvItem = Get-Item -LiteralPath $VenvDir -Force -ErrorAction SilentlyContinue
@@ -636,6 +815,12 @@ function Main {
         }
         Write-Host "Installing guarded skill, sub-skill, agent, and runtime files..."
         foreach ($PlannedFile in $FilePlan) {
+            $SourceItem = Get-Item -LiteralPath $PlannedFile.Source -Force -ErrorAction SilentlyContinue
+            if ($null -eq $SourceItem -or $SourceItem.PSIsContainer -or
+                (($SourceItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)) {
+                throw "Install source changed before copy: $($PlannedFile.Source)"
+            }
+            [void](Assert-NoReparseChain $SourceItem.FullName)
             [void](Assert-NoReparseChain $PlannedFile.Destination)
             $DestinationItem = Get-Item -LiteralPath $PlannedFile.Destination -Force -ErrorAction SilentlyContinue
             if ($null -ne $DestinationItem -and
@@ -658,12 +843,16 @@ function Main {
         $ManifestRecursiveDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
         [void]$ManifestRecursiveDirs.UnionWith($PriorRecursiveDirs)
         [void]$ManifestRecursiveDirs.UnionWith($RecursiveDirs)
+        $ManifestBytecodeDirs = [System.Collections.Generic.HashSet[string]]::new($StringComparer)
+        [void]$ManifestBytecodeDirs.UnionWith($PriorBytecodeDirs)
+        [void]$ManifestBytecodeDirs.UnionWith($BytecodeDirs)
         $Manifest = @{
             version = 1
             target = $Target
             files = @($ManifestFiles | Sort-Object)
             directories = @($ManifestDirectories | Sort-Object)
             recursive_directories = @($ManifestRecursiveDirs | Sort-Object)
+            bytecode_directories = @($ManifestBytecodeDirs | Sort-Object)
         }
         $ManifestTemp = Join-Path $SkillBase (".claude-ads-manifest-" + [IO.Path]::GetRandomFileName())
         $Manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $ManifestTemp -Encoding UTF8
@@ -730,11 +919,15 @@ function Main {
         $SubSkillCount = @(Get-ChildItem "$SourceDir\skills" -Directory | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") }).Count
         $AgentCount = @(Get-ChildItem "$SourceDir\agents\*.md" -File).Count
         $ReferenceCount = @(Get-ChildItem "$SourceDir\ads\references\*.md" -File).Count
+        $TemplateDir = Join-Path $SourceDir "skills\ads-plan\assets"
+        $TemplateCount = if (Test-Path -LiteralPath $TemplateDir -PathType Container) {
+            @(Get-ChildItem -LiteralPath $TemplateDir -Filter "*.md" -File).Count
+        } else { 0 }
         Write-Host "    - 1 main skill (ads orchestrator)"
         Write-Host "    - $SubSkillCount sub-skills (platform + lifecycle + functional + creative)"
         Write-Host "    - $AgentCount agents"
         Write-Host "    - $ReferenceCount reference files"
-        Write-Host "    - 12 industry templates"
+        if ($TemplateCount -gt 0) { Write-Host "    - $TemplateCount industry templates" }
         Write-Host ""
         Write-Host "Usage:"
         Write-Host "  1. Start your host CLI"

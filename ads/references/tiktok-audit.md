@@ -13,6 +13,16 @@
 
 ## Source coverage boundary
 
+On October 7, 2026, the exact public v1.3 BASIC reporting, dimension, and
+metric pages were verified for the selected `AUCTION` / `AUCTION_AD` native
+projection. CLM-0204 covers its listed daily identifiers, names, spend, and
+`conversion` fields. The conversion metric counts the selected optimization
+event; it is not interchangeable with other conversion definitions.
+Documentation and fixtures do not establish an authenticated report request.
+No v1.3 removal date was verified. Pixel and Events API measurement guidance
+was reverified separately; use identical event and event_id values when
+deduplicating copies of the same event.
+
 The registered sources below cover only the measurement, API, and import foundations stated in the claim ledger. They do not support every named product or control in this catalog. Until a narrower current claim exists, treat those names as routing labels and gather fresh official or in-account evidence.
 
 ## Official evidence
@@ -20,6 +30,10 @@ The registered sources below cover only the measurement, API, and import foundat
 - `tiktok-business-api-official`: [TikTok API for Business](https://business-api.tiktok.com/portal)
 - `tiktok-events-api-official`: [TikTok Events API](https://ads.tiktok.com/help/article/events-api)
 - `tiktok-pixel-official`: [TikTok Pixel](https://ads.tiktok.com/help/article/tiktok-pixel)
+
+- `tiktok-integrated-reporting-official`: [TikTok API for Business v1.3 basic reporting documentation](https://business-api.tiktok.com/portal/docs/basic-reports/v1.3)
+- `tiktok-basic-report-dimensions-v13-official`: [TikTok v1.3 basic-report supported dimensions](https://business-api.tiktok.com/portal/docs/basic-reports-supported-dimensions/v1.3)
+- `tiktok-basic-report-metrics-v13-official`: [TikTok v1.3 basic-report supported metrics](https://business-api.tiktok.com/portal/docs/basic-reports-supported-metrics/v1.3)
 
 ## Control registry
 
