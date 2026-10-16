@@ -751,16 +751,16 @@
     },
     {
       "id": "CLM-0217",
-      "statement": "LinkedIn Marketing API version 202609 is the latest version listed. Version 202510 is scheduled to sunset on October 15, 2026 and version 202511 on November 16, 2026. Legacy Geo targeting support ended on August 31, 2026 and creating campaigns with it fails with a 400 error. The schedule must be checked on or after the sunset dates before claiming removal.",
-      "scope": "LinkedIn Marketing API lifecycle schedule checked 2026-10-12",
+      "statement": "LinkedIn Marketing API version 202610 is labelled the latest version and 202609 remains the page default. Version 202510 was scheduled to sunset on October 15, 2026 (that date has passed and the page lists the schedule only) and version 202511 on November 16, 2026. Legacy Geo targeting support ended on August 31, 2026 and creating campaigns with it fails with a 400 error. The schedule must be checked on or after the sunset dates before claiming removal.",
+      "scope": "LinkedIn Marketing API lifecycle schedule checked 2026-10-16",
       "classification": "evidence-based",
       "verdict": "verified",
       "source_ids": [
         "linkedin-marketing-api-changes-official"
       ],
       "load_bearing": true,
-      "last_verified": "2026-10-12",
-      "refresh_due": "2026-10-15",
+      "last_verified": "2026-10-16",
+      "refresh_due": "2026-11-13",
       "owner": "platform-evidence-maintainers"
     },
     {

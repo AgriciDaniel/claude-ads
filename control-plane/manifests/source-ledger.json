@@ -1154,16 +1154,16 @@
       "locator": "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/recent-changes?view=li-lms-2026-09",
       "source_type": "api-doc",
       "authority_tier": 1,
-      "retrieved_at": "2026-10-12",
-      "refresh_due": "2026-10-15",
+      "retrieved_at": "2026-10-16",
+      "refresh_due": "2026-11-13",
       "confidence": "high",
       "license": "First-party terms; citation and original summary only",
       "redistribution": "metadata-only",
       "claim_ids": [
         "CLM-0217"
       ],
-      "notes": "2026-10-12 verification: Page updated 2026-09-16 and defaulting to version 202609 (Latest). Version Sunset list: 202510 on October 15, 2026 and 202511 on November 16, 2026. Reminder: from August 31, 2026 LinkedIn stops supporting legacy Geo for ads targeting and campaign creation using it fails with a 400 INVALID_VALUE_FOR_FIELD error. Part of a long page was not read. Recheck on the effective date before claiming removal."
-    },
+      "notes": "2026-10-16 verification: the page front matter shows ms.date 2026-10-15 and updated_at 2026-10-14. The heading labels October 2026 Version 202610 as Latest while the default moniker is still li-lms-2026-09 (202609). Version Sunset list: 202510 on October 15, 2026 (date now passed; the page lists the schedule and does not confirm removal) and 202511 on November 16, 2026, matching the deprecation notice. Reminder: from August 31, 2026 LinkedIn stops supporting legacy Geo for ads targeting and campaign creation using it fails with a 400 INVALID_VALUE_FOR_FIELD error. The last 42697 characters of the page (older history) were not read. Recheck on or after 2026-11-16 before claiming removal of 202511."
+ },
     {
       "id": "google-ads-negative-keywords-official",
       "title": "Google Ads negative keyword semantics",
