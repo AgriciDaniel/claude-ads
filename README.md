@@ -164,7 +164,7 @@ validates the value strictly, checks it out detached, prints the resolved full
 commit SHA, and fails before installing anything if the ref does not resolve:
 
 ```bash
-bash install.sh --source=git --ref=v2.0.2
+bash install.sh --source=git --ref=v2.1.0
 ```
 
 A git ref is not a checksum-verified release, and nothing here is signed. A
@@ -356,7 +356,9 @@ tests/                deterministic, security, installer, and adapter tests
 
 ## Contributing
 
-Found a problem or have an idea? See [CONTRIBUTING.md](CONTRIBUTING.md). Thanks to everyone who has reported issues and proposed fixes; they are credited there.
+Found a problem or have an idea? See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Thank you to everyone who has reported issues and proposed fixes: [@aleps001](https://github.com/aleps001), [@bq9kpv2h98-max](https://github.com/bq9kpv2h98-max), [@haruntekin89](https://github.com/haruntekin89), [@reikjarloekl](https://github.com/reikjarloekl), [@osilova](https://github.com/osilova), [@Nath24591](https://github.com/Nath24591), [@sistemasond-ux](https://github.com/sistemasond-ux), [@principisimone-sys](https://github.com/principisimone-sys), [@HarKro753](https://github.com/HarKro753), [@plcosta](https://github.com/plcosta), [@ulises2k](https://github.com/ulises2k), [@kutzki](https://github.com/kutzki), [@SamaEducationalCo](https://github.com/SamaEducationalCo), [@Bortlesboat](https://github.com/Bortlesboat), [@gabbyran2026-gif](https://github.com/gabbyran2026-gif), [@AbundantASG](https://github.com/AbundantASG), [@hendrixfreire](https://github.com/hendrixfreire), [@josefresco](https://github.com/josefresco), [@dead-simba](https://github.com/dead-simba), [@c6zks4gssn-droid](https://github.com/c6zks4gssn-droid), [@kershrita](https://github.com/kershrita), [@popey](https://github.com/popey), [@xiaolai](https://github.com/xiaolai), [@seojcarlos](https://github.com/seojcarlos), [@botbikamordehai2-sketch](https://github.com/botbikamordehai2-sketch). What each person contributed is listed in [CONTRIBUTING.md](CONTRIBUTING.md#contributors-and-acknowledgments).
 
 ## Privacy
 

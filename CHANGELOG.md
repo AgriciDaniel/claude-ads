@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-16
+
 ### Added
 
 * Optional Claude Ads Cockpit companion (`ads-cockpit`, not enabled by default):
@@ -39,6 +41,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * README gains a status box, a quickstart and an experimental caveat for non-Claude
   hosts. CI runner and installer-test changes from 2.0.2 follow-up work are covered
   by the existing hardening entries.
+* Correct Microsoft SOAP support through January 31, 2027. Record the September
+  Google Smart Campaign and Search language-targeting changes, Reddit onsite
+  lead-form retirement and reporting changes, and the scheduled LinkedIn API
+  sunset. Evidence retrieval gaps retain explicit verification limits.
+* Verify the exact public Meta Conversions API and campaign Insights contracts
+  and TikTok v1.3 BASIC reporting fields. Restore the existing native export
+  fixture maturity without claiming authenticated API execution or health scores.
+* Reconcile public and development tracker metadata and disposition overlapping
+  repairs once. New providers and other capability additions remain deferred.
+* Replace the moving repository-audit CI dependency install with a reviewed hash
+  lock. Dependency and target evidence changes require matching inventory and
+  support-policy verification.
+* Upgrade Pillow to 12.3.0, urllib3 to 2.8.0, and WeasyPrint to 70.0, with
+  regenerated target evidence, inventory, publisher hashes, notices, and verifier
+  bindings. Managed Linux dependencies require glibc 2.28 or later after the
+  separate owner approval of that support change. Retain three fresh guarded
+  cryptography dispositions for the macOS Intel-compatible 48.0.1 pin.
+* Clarify public MIT distribution and private development publication boundaries.
+  A new release still requires explicit approval and exact-candidate release
+  evidence.
+* Cockpit screens fit the pane: nothing scrolls, long lists page, Checks can be
+  filtered, and a short pane keeps the verdict, coverage, topics and first fixes. The
+  Overview shows how much of the audit could be judged, a meter per platform and per
+  topic, and what to fix first. An opened check reads as a three sentence card. Fixes a
+  defect where an unset style value erased the tone colour on coloured lines.
+* Refresh the LinkedIn API lifecycle claim after the 202510 sunset date (2026-10-16).
+  The official page lists the schedule only, so the text does not claim removal.
 
 ### Fixed
 
@@ -66,29 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Evaluate evidence freshness at the current UTC date and exercise synthetic
   expiry boundaries. Packaging fixtures support managed worktrees and
   case-insensitive filesystems without weakening the clean-subject release gate.
-
-### Changed
-
-* Correct Microsoft SOAP support through January 31, 2027. Record the September
-  Google Smart Campaign and Search language-targeting changes, Reddit onsite
-  lead-form retirement and reporting changes, and the scheduled LinkedIn API
-  sunset. Evidence retrieval gaps retain explicit verification limits.
-* Verify the exact public Meta Conversions API and campaign Insights contracts
-  and TikTok v1.3 BASIC reporting fields. Restore the existing native export
-  fixture maturity without claiming authenticated API execution or health scores.
-* Reconcile public and development tracker metadata and disposition overlapping
-  repairs once. New providers and other capability additions remain deferred.
-* Replace the moving repository-audit CI dependency install with a reviewed hash
-  lock. Dependency and target evidence changes require matching inventory and
-  support-policy verification.
-* Upgrade Pillow to 12.3.0, urllib3 to 2.8.0, and WeasyPrint to 70.0, with
-  regenerated target evidence, inventory, publisher hashes, notices, and verifier
-  bindings. Managed Linux dependencies require glibc 2.28 or later after the
-  separate owner approval of that support change. Retain three fresh guarded
-  cryptography dispositions for the macOS Intel-compatible 48.0.1 pin.
-* Clarify public MIT distribution and private development publication boundaries.
-  A new release still requires explicit approval and exact-candidate release
-  evidence.
 
 ## [2.0.2] - 2026-09-10
 

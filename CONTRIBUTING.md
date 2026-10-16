@@ -100,9 +100,24 @@ deletion is unsupported in v2.
 ## Contributors and acknowledgments
 
 Claude Ads benefits from community bug reports, feature requests, and proposed
-fixes. Thank you to the following contributors whose work informed v2.0.2.
-Some proposals were independently implemented or superseded; these credits
-recognize the contribution without implying that every submitted patch was merged.
+fixes. Thank you to the following contributors. Some proposals were independently
+implemented or superseded; these credits recognize the contribution without
+implying that every submitted patch was merged. Authors of pull requests whose
+proposals informed a shipped fix are also credited as co-authors in the Git history.
+
+### v2.1.0
+
+| Contributor | Contribution | Discussion |
+| --- | --- | --- |
+| [@aleps001](https://github.com/aleps001) | Vulnerable Pillow and urllib3 lock report | [#88](https://github.com/AgriciDaniel/claude-ads/issues/88) |
+| [@bq9kpv2h98-max](https://github.com/bq9kpv2h98-max) | Report that the release grounding test pinned a fixed date | [#79](https://github.com/AgriciDaniel/claude-ads/issues/79) |
+| [@haruntekin89](https://github.com/haruntekin89) | Report that agents pinned a subagent model | [#78](https://github.com/AgriciDaniel/claude-ads/issues/78) |
+| [@reikjarloekl](https://github.com/reikjarloekl) | Report that negative keywords were counted as enabled keywords | [#75](https://github.com/AgriciDaniel/claude-ads/issues/75) |
+| [@osilova](https://github.com/osilova) | Invalid release zip report | [#51](https://github.com/AgriciDaniel/claude-ads/issues/51) |
+| [@Nath24591](https://github.com/Nath24591) | Proposed fixes for the grounding date, model pins, and keyword inventory | [#82](https://github.com/AgriciDaniel/claude-ads/pull/82), [#83](https://github.com/AgriciDaniel/claude-ads/pull/83), [#84](https://github.com/AgriciDaniel/claude-ads/pull/84) |
+| [@sistemasond-ux](https://github.com/sistemasond-ux) | Evidence refresh and portability proposal | [#85](https://github.com/AgriciDaniel/claude-ads/pull/85) |
+
+### v2.0.2
 
 | Contributor | Contribution | Discussion |
 | --- | --- | --- |
@@ -119,6 +134,17 @@ recognize the contribution without implying that every submitted patch was merge
 | [@josefresco](https://github.com/josefresco) | Non-actionable Smart Conversions removal advice report | [#50](https://github.com/AgriciDaniel/claude-ads/issues/50) |
 | [@dead-simba](https://github.com/dead-simba) | Request to revisit Meta architecture guidance | [#15](https://github.com/AgriciDaniel/claude-ads/issues/15) |
 | [@c6zks4gssn-droid](https://github.com/c6zks4gssn-droid) | Repository-tooling proposal, including CodeQL | [#29](https://github.com/AgriciDaniel/claude-ads/pull/29) |
+
+### v2.0.0
+
+| Contributor | Contribution | Discussion |
+| --- | --- | --- |
+| [@kershrita](https://github.com/kershrita) | PowerShell 5.1 installer failure cases | [#2](https://github.com/AgriciDaniel/claude-ads/pull/2) |
+| [@popey](https://github.com/popey) | Validation checkpoints and compact progressive disclosure | [#12](https://github.com/AgriciDaniel/claude-ads/pull/12) |
+| [@xiaolai](https://github.com/xiaolai) | Removing the silent package fallback and curl-to-shell guidance | [#19](https://github.com/AgriciDaniel/claude-ads/pull/19), [#20](https://github.com/AgriciDaniel/claude-ads/pull/20) |
+| [@seojcarlos](https://github.com/seojcarlos) | Output directory path traversal cases | [#34](https://github.com/AgriciDaniel/claude-ads/pull/34) |
+| [@reikjarloekl](https://github.com/reikjarloekl) | Installer repository URL and clone error fix | [#39](https://github.com/AgriciDaniel/claude-ads/pull/39) |
+| [@botbikamordehai2-sketch](https://github.com/botbikamordehai2-sketch) | URL parser SSRF bypass regression | [#44](https://github.com/AgriciDaniel/claude-ads/pull/44) |
 
 ## Security reports
 

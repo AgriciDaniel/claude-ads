@@ -430,7 +430,7 @@ def test_install_sh_help_and_header_document_the_pin():
 
 def test_readme_documents_the_pin_and_keeps_the_verified_release_path():
     text = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "bash install.sh --source=git --ref=v2.0.2" in text
+    assert "bash install.sh --source=git --ref=v2.1.0" in text
     assert "A git ref is not a checksum-verified release" in text
     assert "sha256sum -c SHA256SUMS" in text
 
