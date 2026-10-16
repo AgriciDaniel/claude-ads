@@ -30,7 +30,7 @@ function getController($, options) {
 async function openWorkbench($, c, runId) {
   if (controller !== c || !c.view().visible || c.view().selected !== runId) return;
   // Only a user callback opens the cached workbench; no core read is needed.
-  await $.ui.open({id:PANE,title:'Claude Ads Cockpit',focus:true,columns:84,rows:34});
+  await $.ui.open({id:PANE,title:'Claude Ads Cockpit',focus:true,columns:100,rows:40});
 }
 const controls = ($, c) => ({
     workbench: runId => openWorkbench($,c,runId),
@@ -38,6 +38,7 @@ const controls = ($, c) => ({
     chooser: () => c.chooser(), select: id => c.select(id), refresh: () => c.refresh(),
     action: (operation, inputId, format, subject) => c.action(operation,inputId,format,subject), demo: () => c.demo(),
     step: delta => c.step(delta), reset: () => c.reset(), tab: value => c.tab(value), details: () => c.details(), baseline: value => c.baseline(value),
+    page: delta => c.page(delta), filter: () => c.filter(), clearContext: () => c.clearContext(),
     hide: async () => { await c.hide(); await $.ui.close({ id: PANE }); },
   });
 export function register(on, options) {
@@ -78,7 +79,7 @@ export function register(on, options) {
     if (!surfaces.some(surface => surface === 'terminal' || surface === 'desktop' || surface?.surface === 'terminal' || surface?.surface === 'desktop')) {
       await c.hide(); return {text:'Claude Ads Cockpit local request finished. Visual cockpit requires terminal or Desktop; session data cleared.'};
     }
-    await $.ui.open({id:PANE,title:'Claude Ads Cockpit',focus:true,columns:84,rows:34});
+    await $.ui.open({id:PANE,title:'Claude Ads Cockpit',focus:true,columns:100,rows:40});
     return {};
   });
   on('ui.close', {id:PANE}, async ($, e, next) => { if (controller) await controller.hide(); return next(e); }).catch(($, e, next) => next(e));
@@ -93,7 +94,8 @@ export function register(on, options) {
     if (!cached.visible) return next(e);
     const ui = $.ui.resolve(e);
     // Render reads session state only; controller effects run in user callbacks.
-    return drawPane(ui,cached,controls($,getController($, options)),e.props.bodyColumns,e.props.isFocused !== false);
+    // The host says how many rows the body may use; the pane is drawn to fit them, so it never needs to scroll.
+    return drawPane(ui,cached,controls($,getController($, options)),e.props.bodyColumns,e.props.isFocused !== false,e.props.scroll?.bodyRows);
   });
   on('ui.render', {component:'AbovePrompt'}, async ($, e, next) => {
     const other = await next(e);

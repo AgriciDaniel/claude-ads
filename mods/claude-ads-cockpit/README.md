@@ -65,7 +65,9 @@ dependency or render failure must produce a clear unavailable/error receipt. A r
 advertising truth.
 
 Keys: the tabs answer to 1 to 5, and the footer keys are r refresh, c runs,
-d details, h hide (demo: b back, n next, z reset, q exit). A framed button names
+d details, h hide (demo: b back, n next, z reset, q exit). Screens fit the
+rows the pane has and never scroll: j shows the next page of a long list, u the
+previous one, and f filters Checks by result. A framed button names
 its key in its label, for example `Next (n)`, `Markdown (m)`, `HTML (l)`,
 `PDF (p)` and `Check whole run (k)`, because the terminal draws a key only on a
 plain button. Keys act while the pane or band holds focus (ctrl+x tab).

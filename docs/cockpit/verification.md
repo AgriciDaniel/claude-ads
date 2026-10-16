@@ -49,7 +49,7 @@ locally and installed from the runtime, development and schema-test locks with
 | Full Python 3.12 suite | `python -m pytest tests -q -ra --junitxml=...` | 1,017 passed, 33 skipped, 0 failures/errors, 236.08s |
 | Independent core/story regression | `python -m pytest tests/core/test_cockpit_demo_story.py tests/core/test_cockpit.py tests/core/test_cockpit_contracts.py tests/core/test_companion_cli.py -q` | 146 passed; final G14 binding and unchanged source-policy bytes independently checked |
 | Strict companion validation | `claude plugin validate mods/claude-ads-cockpit --strict` | Passed on installed CLI 2.1.294 |
-| Host test kit | `claude plugin test mods/claude-ads-cockpit` | 136 passed, 0 failed, across two files (after the interface redesign below) |
+| Host test kit | `claude plugin test mods/claude-ads-cockpit` | 169 passed, 0 failed, across three files (after the fourth pass below) |
 | Isolated launcher integration | `python -m pytest mods/claude-ads-cockpit/tests/test_launcher_integration.py -q` | 8 passed |
 | Companion packaging regression | `python -m pytest tests/release/test_cockpit_packaging.py tests/release/test_optional_marketplace.py -q` | 42 passed (32 packaging, 10 marketplace), also included in the full suites |
 | Repository and sensitive-content audit | `python scripts/release.py audit --include-untracked` | Passed, including task-created files and JavaScript/TypeScript text |
@@ -251,3 +251,25 @@ byte-identical package builds that verify, compile check, and the repository aud
 `--include-untracked` (the plain audit passes only once the companion files are tracked).
 Still unverified: native terminal and Desktop painting, Windows and macOS behavior, remote
 CI, the model-evaluation gates and an independent signed review.
+
+### Fourth pass: screens that fit, a story Overview and a plainer demo (October 16, 2026)
+
+Feedback from a real terminal was that the panes scrolled, were clipped and were hard to
+grasp. Every screen is now drawn to the rows the pane has (`scroll.bodyRows`), so none
+scrolls: long lists are paged (j next, u previous), Checks can be filtered (f), an opened
+check is a three-sentence card (d adds severity, evidence and sources), and a short pane
+keeps only the verdict, coverage, topics and first fixes. The Overview now shows how much of
+the audit could be judged, a meter per platform and per topic (topics are a display grouping
+derived from each check's id and title, because the registry leaves most controls
+unclassified), and the first checks to fix with the step that fixes each. New module:
+`pack.mjs` (fits blocks into a line budget). The demo has one plain headline per step.
+A real-terminal screenshot exposed a defect that text previews cannot show: an unset style
+value erased the tone color on every colored line part. It is fixed and a test now asserts
+that tones reach the drawn Text. Bar glyphs were changed to block characters because the
+terminal font drew the earlier ones as thin shapes.
+
+Verified: the host kit (169 passed), strict plugin validation, the launcher, packaging and
+marketplace tests, and a text-render matrix (3560 renders across six pane sizes, every tab
+and mode) with none over its row budget. The demo was walked end to end with the real
+engine, including input checks and Markdown, HTML and PDF reports. Not established: how the
+Desktop and VS Code surfaces paint the coverage donut, and Windows and macOS behavior.

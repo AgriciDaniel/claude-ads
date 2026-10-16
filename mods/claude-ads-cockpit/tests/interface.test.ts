@@ -64,21 +64,53 @@ function bigSnapshot() {
   s.findings = platforms.flatMap((platform, p) => Array.from({ length: 7 }, (_, i) => ({ platform, account_key: null, control_title: `Synthetic check title number ${p * 7 + i} with a rather long descriptive name`, severity: ['critical', 'high', 'medium', 'informational'][i % 4], claim_ids: [], source_ids: [], evidence_status: i % 3 ? 'current' : 'stale', finding: { schema_version: '1.0.0', control_id: `${platform[0].toUpperCase()}${i + 1}`, status: statuses[(i + p) % 5], evidence: statuses[(i + p) % 5] === 'pass' || statuses[(i + p) % 5] === 'fail' ? [{ kind: 'synthetic' }] : [], confidence: 'high', observation: 'Synthetic observation', diagnosis: 'Synthetic diagnosis', recommendation: 'Synthetic recommendation' } })));
   return s;
 }
-test('a large audit draws compact grouped lists without overflow and with check titles', () => {
+test('a large audit is paged: one screenful at a time, every check reachable, nothing wider than the pane', () => {
   for (const width of [34, 54, 72, 100, 160]) for (const tab of ['Run', 'Evidence']) {
     const r = text(view(tab, bigSnapshot()), width);
     expect(r.tooWide).toEqual([]);
   }
-  const shown = text(view('Evidence', bigSnapshot()), 100).text;
-  expect(shown).toMatch(/Google Ads\s+\d+ pass/); expect(shown).toContain('Synthetic check title number 0');
-  const keys = walk(drawPane(fakeUi(), view('Evidence', bigSnapshot()), noControls, 100)).filter(n => n?.type === 'Button').map(n => n.props.key);
-  expect(keys.filter(k => k.startsWith('finding-open-')).length).toBe(28);
+  const first = text(view('Evidence', bigSnapshot()), 100).text;
+  expect(first).toMatch(/Showing all 28/); expect(first).toMatch(/page 1 of \d+/);
+  const seen = new Set<string>();
+  const pages = Number(first.match(/page 1 of (\d+)/)?.[1]);
+  for (let page = 0; page < pages; page++) {
+    const keys = walk(drawPane(fakeUi(), view('Evidence', bigSnapshot(), { page }), noControls, 100)).filter(n => n?.type === 'Button').map(n => n.props.key);
+    for (const key of keys.filter(k => k.startsWith('finding-open-'))) seen.add(key);
+  }
+  expect(seen.size).toBe(28);
   const overview = text(view('Run', bigSnapshot()), 100).text;
-  expect(overview).toContain('Needs attention'); expect(overview).toMatch(/See all 28 checks/); expect(overview).toMatch(/■■■■■■■/);
+  expect(overview).toContain('Fix first'); expect(overview).toMatch(/See all 28 checks/); expect(overview).toMatch(/█████/);
 });
 test('an opened finding in a large audit shows its full card', () => {
   const shown = text(view('Evidence', bigSnapshot(), { context: { kind: 'finding', platform: 'meta', controlId: 'M1' } }), 100).text;
-  expect(shown).toContain('Synthetic diagnosis'); expect(shown).toContain('Do next');
+  expect(shown).toContain('Synthetic diagnosis'); expect(shown).toContain('What to do');
+});
+// The pane is drawn to the rows the host gives it, so it never needs to scroll.
+const ROW_SIZES = [[54, 14], [60, 16], [72, 20], [84, 24], [100, 30], [120, 40]] as Array<[number, number]>;
+const demoState = { runsRoot: '/x', policyRoot: '/y', index: 2, steps: Array.from({ length: 8 }, (_, i) => ({ run_id: 'a', title: `Step title ${i + 1} that is long enough to need cutting at a narrow width`, tab: 'Run', baseline_id: null })) };
+const ROW_MODES = { plain: {}, details: { details: true }, demo: { demo: demoState }, busy: { busy: true }, error: { error: 'Local request unavailable. Run doctor or refresh the selected run.' }, page2: { page: 1 }, filter: { filter: 'fail' } } as Record<string, object>;
+test('every screen fits the rows it is given, in every mode and at every size', () => {
+  const lines = (state, width, rows) => renderText(drawPane(fakeUi(), state, noControls, width, true, rows), width + 4);
+  for (const [width, rows] of ROW_SIZES) for (const value of [snapshot(), fullSnapshot(), bigSnapshot()]) for (const tab of TABS) for (const [mode, extra] of Object.entries(ROW_MODES)) {
+    const r = lines(view(tab, value, extra), width, rows);
+    expect({ tab, mode, width, rows, tooTall: r.lines.length > rows, tooWide: r.tooWide.length }).toEqual({ tab, mode, width, rows, tooTall: false, tooWide: 0 });
+  }
+  // The chooser and an opened check obey the same rule.
+  for (const [width, rows] of ROW_SIZES) {
+    expect(lines({ ...emptyView(), visible: true, doctor }, width, rows).lines.length).toBeLessThanOrEqual(rows);
+    const opened = view('Evidence', bigSnapshot(), { context: { kind: 'finding', platform: 'meta', controlId: 'M1' } });
+    expect(lines(opened, width, rows).lines.length).toBeLessThanOrEqual(rows);
+    expect(lines({ ...opened, details: true }, width, rows).lines.length).toBeLessThanOrEqual(rows);
+  }
+});
+test('a taller pane shows more of the same screen, never a different one', () => {
+  const short = text(view('Run', bigSnapshot()), 100).lines.length;
+  const tall = renderText(drawPane(fakeUi(), view('Run', bigSnapshot()), noControls, 100, true, 48), 104).lines.length;
+  expect(tall).toBeGreaterThanOrEqual(short);
+  const small = renderText(drawPane(fakeUi(), view('Run', bigSnapshot()), noControls, 100, true, 16), 104).text;
+  expect(small).toContain('Fix first'); expect(small).toContain('2: Checks 28');
+  const medium = renderText(drawPane(fakeUi(), view('Run', bigSnapshot()), noControls, 100, true, 24), 104).text;
+  expect(medium).toContain('See all 28 checks');
 });
 test('no screen overflows its width at any size, in any mode', () => {
   for (const [tab, width, details] of COMBOS) for (const value of [snapshot(), fullSnapshot()]) {
@@ -152,8 +184,12 @@ test('the selected input and finding are listed first and a text match is never 
   expect(shown.indexOf('input-demo')).toBeLessThan(shown.indexOf('other'));
   shown = text(view('Inputs', value, { context: { kind: 'inputs', workerId: 'worker-google', missingInput: 'Provide input-demo', inputIds: ['input-demo'], match: 'text' } })).text;
   expect(shown.replace(/[│\n]+/g, ' ').replace(/\s+/g, ' ')).toContain('A text match is not a recorded link.'); expect(shown).not.toMatch(/linked to/i);
-  shown = text(view('Evidence', value, { context: { kind: 'finding', platform: 'google', controlId: 'G-DEMO' } })).text;
-  expect(shown.indexOf('Google Ads G-DEMO')).toBeLessThan(shown.indexOf('Meta Ads G-DEMO'));
+  // An opened check is shown on its own, with a way back to the whole list.
+  const open = { context: { kind: 'finding', platform: 'google', controlId: 'G-DEMO' } };
+  shown = text(view('Evidence', value, open)).text;
+  expect(shown).toContain('Google Ads · G-DEMO'); expect(shown).not.toContain('Meta Ads · G-DEMO'); expect(shown).toContain('Back to all checks');
+  shown = text(view('Evidence', value)).text;
+  expect(shown).toMatch(/Google Ads: .*G-DEMO/); expect(shown).toMatch(/Meta Ads: .*G-DEMO/);
 });
 test('demo strip shows the step, hides unusable Back and keeps the data disclosure', () => {
   const steps = Array.from({ length: 7 }, (_, i) => ({ run_id: 'demo-run', title: `Step title ${i + 1}`, tab: 'Run', baseline_id: null }));

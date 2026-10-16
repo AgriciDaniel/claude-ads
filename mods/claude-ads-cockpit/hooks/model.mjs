@@ -81,7 +81,7 @@ export function resultCounts(findings) {
   const n = status => findings.filter(f => f.finding.status === status).length;
   return { pass: n('pass'), fail: n('fail'), unknown: n('unknown'), na: n('not_applicable') };
 }
-export const resultParts = r => [{ n: r.pass, label: 'pass', tone: 'ok' }, { n: r.fail, label: 'fail', tone: 'bad' }, { n: r.unknown, label: 'unknown', tone: 'warn' }, { n: r.na, label: 'n/a', tone: 'muted' }];
+export const resultParts = r => [{ n: r.pass, label: 'passing', tone: 'ok' }, { n: r.fail, label: 'need work', tone: 'bad' }, { n: r.unknown, label: 'no data', tone: 'unclear' }, { n: r.na, label: 'n/a', tone: 'muted' }];
 const RANK = { fail: 0, unknown: 1, pass: 2, not_applicable: 3 };
 const SEVERITY = { critical: 0, high: 1, medium: 2, informational: 3 };
 // Failed checks first, then unknown ones, worst severity first, with out-of-date support as a tie-break.
@@ -90,4 +90,38 @@ export function byAttention(findings) {
     || ((SEVERITY[a.item.severity] ?? 9) - (SEVERITY[b.item.severity] ?? 9))
     || ((a.item.evidence_status === 'current') - (b.item.evidence_status === 'current')) || a.index - b.index);
 }
-export const statusTone = status => ({ pass: 'ok', fail: 'bad', unknown: 'warn' }[status] || 'muted');
+export const statusTone = status => ({ pass: 'ok', fail: 'bad', unknown: 'unclear' }[status] || 'muted');
+
+// Display grouping only: the registry leaves most controls unclassified, so checks are grouped by topic
+// from their id and title. First match wins; anything else lands in "Account setup".
+const AREAS = [
+  ['Quality score', /quality score|\bQS\b|expected ctr|ad relevance|landing page experience|ad copy relevance/i],
+  ['Landing pages', /landing page/i],
+  ['Tracking and measurement', /conversion|tracking|attribution|ga4|consent|measurement|floodlight|server-side|duplicate counting|tag firing|google tag|incrementality|brand-lift|reporting|metrics|meridian|attributed/i],
+  ['Keywords and search terms', /keyword|search.term|negative|match|close variant/i],
+  ['Budget and bidding', /budget|\bbid|cpa|roas|pacing|learning phase|portfolio|journey/i],
+  ['Audiences and targeting', /audience|geograph|placement|customer match|schedule|targeting|suitability|brand safety/i],
+  ['Ads and creative', /\bads?\b|rsa|asset|extension|sitelink|callout|snippet|creative|hook|format|concept|image|video|freshness|ctr/i],
+];
+export const areaOf = item => { const text = `${item.control_title} ${item.finding.control_id}`; return (AREAS.find(([, pattern]) => pattern.test(text)) || ['Account setup'])[0]; };
+
+// How much of the audit could be judged. "Not applicable" checks are left out of the base.
+export function coverage(findings) {
+  const r = resultCounts(findings);
+  const applicable = findings.length - r.na;
+  const judged = r.pass + r.fail;
+  return { ...r, total: findings.length, applicable, judged, percent: applicable ? Math.round((judged / applicable) * 100) : 0 };
+}
+
+// One row per topic, worst first: most checks needing work, then most still unclear.
+export function areaRows(findings) {
+  const by = new Map();
+  for (const item of findings) {
+    const area = areaOf(item);
+    if (!by.has(area)) by.set(area, []);
+    by.get(area).push(item);
+  }
+  return [...by.entries()].map(([area, items]) => ({ area, items, ...resultCounts(items) }))
+    .filter(row => row.pass + row.fail + row.unknown > 0)
+    .sort((a, b) => (b.fail - a.fail) || (b.unknown - a.unknown) || a.area.localeCompare(b.area));
+}

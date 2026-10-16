@@ -1,7 +1,7 @@
 import { MESSAGES } from './lexicon.mjs';
 import { doctorWire, snapshotWire, receiptWire, demoWire, preparedDemoWire, TABS } from './wire.mjs';
 export function emptyView() {
-  return { visible: false, selected: null, tab: 'Run', snapshot: null, doctor: null, receipt: null, error: null, busy: false, demo: null, baseline: '', context: null, details: false };
+  return { visible: false, selected: null, tab: 'Run', snapshot: null, doctor: null, receipt: null, error: null, busy: false, demo: null, baseline: '', context: null, details: false, page: 0, filter: 'all' };
 }
 // IDs and relative paths may contain punctuation. Match the complete literal
 // reference bounded by characters outside either token alphabet, never a word fragment.
@@ -92,7 +92,7 @@ export function createController(adapter) {
     if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(runId) || (baseline && (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(baseline) || baseline === runId))) return;
     if (retainTicket !== null && !generation(retainTicket)) return;
     stop(); pendingWork = false; const ticket = retainTicket === null ? ++epoch : retainTicket; const boundRoots = roots();
-    state = { ...state, visible: true, selected: runId, tab, baseline, context: null, snapshot: null, receipt: null, error: null, busy: true };
+    state = { ...state, visible: true, selected: runId, tab, baseline, context: null, snapshot: null, receipt: null, error: null, busy: true, page: 0, filter: 'all' };
     await publish();
     if (!selection(ticket,runId,baseline)) return;
     try {
@@ -175,8 +175,13 @@ export function createController(adapter) {
     const item = state.demo.steps[index]; await select(item.run_id, item.tab, item.baseline_id || '');
   }
   async function hide() { stop(); pendingWork = false; epoch++; state = emptyView(); await publish(); }
-  async function tab(value) { if (state.visible && TABS.includes(value)) { state = { ...state, tab: value }; await publish(); } }
-  async function details() { if (state.visible && state.selected) { state = { ...state, details: !state.details }; await publish(); } }
+  async function tab(value) { if (state.visible && TABS.includes(value)) { state = { ...state, tab: value, page: 0 }; await publish(); } }
+  async function details() { if (state.visible && state.selected) { state = { ...state, details: !state.details, page: 0 }; await publish(); } }
+  // Paging and filtering only change what is drawn from the cached snapshot. No process runs.
+  async function page(delta) { if (state.visible && (delta === 1 || delta === -1)) { state = { ...state, page: Math.max(0, state.page + delta) }; await publish(); } }
+  // Leave a opened check or input and return to the list. No process runs.
+  async function clearContext() { if (state.visible && state.selected && state.context) { state = { ...state, context: null, page: 0 }; await publish(); } }
+  async function filter() { if (state.visible && state.selected) { const order = ['all', 'fail', 'unknown', 'pass']; state = { ...state, filter: order[(order.indexOf(state.filter) + 1) % order.length], page: 0 }; await publish(); } }
   async function navigate(tab, target, runId, fingerprint) {
     // Cached navigation is bound to the rendered run and its exact input subject.
     if (!state.visible || state.selected !== runId || !state.snapshot || state.snapshot.fingerprint !== fingerprint) return;
@@ -192,7 +197,7 @@ export function createController(adapter) {
       if (!finding) return;
       context = { kind: 'finding', platform: finding.platform, controlId: finding.finding.control_id };
     } else return;
-    state = { ...state, tab, context }; await publish();
+    state = { ...state, tab, context, page: 0 }; await publish();
   }
   async function baseline(value) {
     if (state.visible && state.selected && /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(value) && value !== state.selected) await select(state.selected, 'Compare', value);
@@ -202,5 +207,5 @@ export function createController(adapter) {
     try { const result = doctorWire(await adapter.call('doctor', roots())); if (epoch === ticket) { state = { ...state, doctor: result, error: result.status === 'ok' ? null : 'Engine policy is blocked.' }; await publish(); } return result.status; }
     catch (e) { if (epoch === ticket) { state = { ...state, error: diagnose(e) }; await publish(); } return 'unavailable'; }
   }
-  return { chooser, select, open: runId => { state = emptyView(); return select(runId); }, version: () => epoch, refresh, refreshIfPending, action, demo, step, hide, tab, details, navigate, baseline, doctor, reset: () => state.demo ? step(-state.demo.index) : chooser(), view: () => state, dispose: hide };
+  return { chooser, select, open: runId => { state = emptyView(); return select(runId); }, version: () => epoch, refresh, refreshIfPending, action, demo, step, hide, tab, details, page, filter, clearContext, navigate, baseline, doctor, reset: () => state.demo ? step(-state.demo.index) : chooser(), view: () => state, dispose: hide };
 }

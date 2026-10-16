@@ -17,6 +17,24 @@ export function runRing(Svg, c, tone = 'info') {
   return Svg({ source: doc(96, 96, body), alt: `${c.done} of ${c.workers} steps done`, width: 96, height: 96 });
 }
 
+// A donut of the audit: green passing, red needing work, grey not enough data. The middle says how much was judged.
+export function coverageRing(Svg, cov) {
+  const R = 34;
+  const C = 2 * Math.PI * R;
+  const total = cov.pass + cov.fail + cov.unknown;
+  if (!total) return null;
+  let offset = 0;
+  const arc = (n, color) => {
+    if (!n) return '';
+    const length = (n / total) * C;
+    const out = `<circle cx="48" cy="48" r="${R}" fill="none" stroke="${color}" stroke-width="10" stroke-dasharray="${Math.max(0, length - 1.5).toFixed(1)} ${(C - Math.max(0, length - 1.5)).toFixed(1)}" stroke-dashoffset="${(-offset).toFixed(1)}" transform="rotate(-90 48 48)"/>`;
+    offset += length;
+    return out;
+  };
+  const body = `${arc(cov.pass, SVG_COLORS.ok)}${arc(cov.fail, SVG_COLORS.bad)}${arc(cov.unknown, SVG_COLORS.muted)}<text x="48" y="53" text-anchor="middle" font-size="19" font-weight="600" fill="currentColor">${cov.percent}%</text><text x="48" y="68" text-anchor="middle" font-size="8" fill="currentColor" fill-opacity="0.6">judged</text>`;
+  return Svg({ source: doc(96, 96, body), alt: `${cov.pass} passing, ${cov.fail} need work, ${cov.unknown} without enough data`, width: 96, height: 96 });
+}
+
 // One stacked bar: how much of the evidence is up to date, out of date or missing.
 export function supportBar(Svg, current, old, missing) {
   const total = current + old + missing;

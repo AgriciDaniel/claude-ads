@@ -6,7 +6,8 @@ export const TONES = Object.freeze({
   bad: Object.freeze({ mark: '✗', color: 'error' }),
   info: Object.freeze({ mark: '●', color: 'suggestion' }),
   muted: Object.freeze({ mark: '○', color: null }),
+  unclear: Object.freeze({ mark: '?', color: null }),
 });
 export const toneOf = name => TONES[name] || TONES.muted;
 // Hex only inside Svg, where theme keys do not apply. Mid-tones that hold on light and dark.
-export const SVG_COLORS = Object.freeze({ ok: '#16a34a', warn: '#d97706', bad: '#dc2626', info: '#3b82f6', muted: '#8a8f98' });
+export const SVG_COLORS = Object.freeze({ ok: '#16a34a', warn: '#d97706', bad: '#dc2626', info: '#3b82f6', muted: '#8a8f98', unclear: '#8a8f98' });

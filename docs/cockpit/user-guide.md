@@ -122,7 +122,7 @@ opens automatically. Nonvisual replies contain safe status only.
 
 | Screen | What it shows |
 | --- | --- |
-| Overview | One plain-language verdict card (where the run is and what needs you, with a button to the next step), four number tiles, a colored results bar, one row per platform with a square per check, the few checks that most need attention, notes and the scoring state. |
+| Overview | One plain-language verdict with a button to the next step, a coverage bar (how many applicable checks had enough data, and how they came out), a meter per platform when the run has several, a meter per topic (quality score, tracking, keywords and so on, worst first), the first checks to fix with the step that fixes each, what needs your input, and the scoring state. Desktop and VS Code add a coverage donut. |
 | Checks | Every check with its plain-language name. A large audit shows one line per check, grouped by platform and worst first; open one for its card: what was seen, the diagnosis, what to do next, the evidence count and how current its claims and sources are. |
 | Inputs | What the workers are waiting for and a checklist of registered input files, each with a Check button. Missing or tampered input cannot appear validated. |
 | Compare | A selected compatible baseline, the disclosed differences and a before and after table per control. |
@@ -132,7 +132,10 @@ Every screen uses the same words for the same states ("Waiting for your input",
 "Out of date", "Not scored"). Raw status values from the core never reach the
 screen. Keys: 1 to 5 switch screens, r refreshes, c lists runs, d shows or hides
 details (short fingerprints, ledger entries, notes on limits), h hides the pane,
-g follows the verdict card's suggested next step. Colors come from your theme, so
+g follows the verdict card's suggested next step. Every screen is drawn to fit
+the rows the pane has, so it never scrolls: lists show what fits, j and u move
+to the next and previous page, and f narrows Checks to fails, unknowns or
+passes. A taller pane shows more of the same screen: a short pane keeps the verdict, coverage, topics and first fixes, and a taller one adds platforms, inputs and notes. An opened check is a three-sentence card (what we saw, what it means, what to do); d adds severity, evidence and sources. For the most room, use a fullscreen terminal at least 110 columns wide, where the pane docks at full height. Colors come from your theme, so
 the pane follows light and dark. Buttons that have a key show it in their label,
 for example `Next (n)`. Desktop and VS Code add small SVG graphics; the
 terminal uses text bars.

@@ -6,7 +6,7 @@ export const LEXICON = Object.freeze({
   completeness: { complete: w('Complete', 'ok'), partial: w('Partial', 'warn'), failed: w('Failed', 'bad') },
   worker: { pending: w('Queued', 'muted'), running: w('Working', 'info'), completed: w('Done', 'ok'), failed: w('Failed', 'bad'), skipped: w('Skipped', 'muted') },
   result: { ok: w('Result recorded', 'ok'), needs_input: w('Waiting for your input', 'warn'), blocked: w('Blocked', 'bad'), failed: w('Failed', 'bad'), none: w('No result yet', 'muted') },
-  finding: { pass: w('Pass', 'ok'), fail: w('Fail', 'bad'), unknown: w('Unknown', 'warn'), not_applicable: w('Not applicable', 'muted') },
+  finding: { pass: w('Pass', 'ok'), fail: w('Fail', 'bad'), unknown: w('Not enough data', 'unclear'), not_applicable: w('Not applicable', 'muted') },
   severity: { critical: w('Critical', 'bad'), high: w('High', 'bad'), medium: w('Medium', 'warn'), informational: w('Info', 'muted') },
   confidence: { high: w('High', 'ok'), medium: w('Medium', 'warn'), low: w('Low', 'warn'), none: w('None', 'muted') },
   support: { current: w('Up to date', 'ok'), stale: w('Out of date', 'warn'), demoted: w('Less certain', 'warn'), missing: w('No support', 'bad'), contested: w('Sources disagree', 'warn'), provisional: w('Not final', 'warn') },

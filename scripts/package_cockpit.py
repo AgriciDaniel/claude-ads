@@ -33,6 +33,7 @@ RUNTIME_FILES = (
     "hooks/launcher.mjs",
     "hooks/lexicon.mjs",
     "hooks/model.mjs",
+    "hooks/pack.mjs",
     "hooks/register.mjs",
     "hooks/screens/chooser.mjs",
     "hooks/screens/compare.mjs",
