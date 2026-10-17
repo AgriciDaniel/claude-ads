@@ -12,6 +12,13 @@ permissions:
   issues: read
   pull-requests: read
 
+# A newer push to the same pull request cancels its older run, which frees the
+# limited macOS runners. Push, merge, and dispatch runs each get their own group
+# and are never cancelled, so release evidence runs always complete.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   ecosystem-live:
     name: Live ecosystem reconciliation
@@ -137,11 +144,12 @@ jobs:
   installer-matrix:
     name: Installer tests (${{ matrix.os }}, Python ${{ matrix.python-version }}, shard ${{ matrix.shard-index }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 25
+    # Intel macOS shards take 20 to 23 minutes, so 25 left no headroom.
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-15, macos-15-intel, windows-latest]
+        os: [ubuntu-latest, macos-15-intel, macos-15, windows-latest]
         python-version: ["3.11", "3.12"]
         shard-index: [0, 1]
 
@@ -186,7 +194,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-15, macos-15-intel, windows-latest]
+        os: [ubuntu-latest, macos-15-intel, macos-15, windows-latest]
         python-version: ["3.11", "3.12"]
 
     steps:
