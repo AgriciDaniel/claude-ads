@@ -173,7 +173,7 @@ jobs:
 
       - name: Upload complete native test collection and shard selection
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: native-tests-${{ matrix.os }}-py${{ matrix.python-version }}-shard${{ matrix.shard-index }}
           path: target-evidence/native-shard.json
@@ -221,7 +221,7 @@ jobs:
           python scripts/verify_target_lock.py --profile development --pip-report target-evidence/development-pip-report.json --wheel-dir target-evidence/development-wheels --output target-evidence/development-attestation.json
 
       - name: Upload exact native target evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: dependency-evidence-${{ matrix.os }}-py${{ matrix.python-version }}
           path: |
@@ -307,7 +307,7 @@ jobs:
           exit 0
 
       - name: Upload installed CLI evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: installed-cli-${{ matrix.os }}-py${{ matrix.python-version }}
           path: |
@@ -389,7 +389,7 @@ jobs:
           test "$(cat "$probe/skills/unrelated-skill/SKILL.md")" = 'unrelated owner data'
 
       - name: Upload minimum-floor evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: dependency-evidence-linux-glibc228-${{ matrix.python-tag }}
           path: |
